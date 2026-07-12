@@ -1,0 +1,7 @@
+<svg width="360" height="420" viewBox="0 0 360 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="p" x1="80" y1="30" x2="280" y2="390" gradientUnits="userSpaceOnUse"><stop stop-color="#fff"/><stop offset="1" stop-color="#edf0ed"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-opacity=".12"/></filter></defs>
+  <g filter="url(#s)"><path d="M83 58l28-28h173l-7 337-26 27H83V58z" fill="url(#p)" stroke="#d9ddd9"/><path d="M83 58h194l-30 34H83V58z" fill="#fff"/><path d="M83 58l28-28h31l-35 62H83V58z" fill="#33a852"/></g>
+  <text x="180" y="126" text-anchor="middle" fill="#6e746f" font-family="serif" font-size="21">HILIVING</text><text x="180" y="151" text-anchor="middle" fill="#888" font-family="Arial" font-size="12">Dishwashing</text><text x="180" y="167" text-anchor="middle" fill="#888" font-family="Arial" font-size="12">Detergent</text>
+  <circle cx="180" cy="225" r="53" fill="#e6ebe7"/><path d="M145 244c28-48 48-49 72-1-20-13-47-13-72 1z" fill="#c7d1ca"/><circle cx="177" cy="205" r="17" fill="#bcc9c0"/>
+  <text x="180" y="310" text-anchor="middle" fill="#777" font-family="Arial" font-size="15">SUPER CONCENTRATED</text><text x="180" y="339" text-anchor="middle" fill="#606560" font-family="Arial" font-size="20" font-weight="700">DISH CLEANER</text><text x="180" y="365" text-anchor="middle" fill="#777" font-family="Arial" font-size="16">1 L</text>
+</svg>
