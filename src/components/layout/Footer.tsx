@@ -1,10 +1,9 @@
-import { Facebook, Instagram, Youtube } from 'lucide-react'
 import { Container } from './Container'
 
 const socialLinks = [
-  { label: 'YouTube', icon: Youtube },
-  { label: 'Instagram', icon: Instagram },
-  { label: 'Facebook', icon: Facebook },
+  { label: 'YouTube', icon: '/icons/youtube.svg' },
+  { label: 'Instagram', icon: '/icons/instagram.svg' },
+  { label: 'Facebook', icon: '/icons/facebook.svg' },
 ]
 
 export function Footer() {
@@ -12,11 +11,11 @@ export function Footer() {
     <footer className="mb-[74px] mt-16 bg-neutral-50 text-neutral-400 md:mb-0 md:mt-24">
       <div className="border-b border-neutral-200 bg-neutral-100/70 py-5">
         <Container className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <img src="/logo.svg" alt="Hiliving Mongolia" className="h-auto w-[230px] opacity-90 md:w-[310px]" />
+          <img src="/hiLivingLogo" alt="Hiliving Mongolia" className="h-auto w-[230px] opacity-90 md:w-[310px]" />
           <div className="flex gap-3">
-            {socialLinks.map(({ label, icon: Icon }) => (
+            {socialLinks.map(({ label, icon }) => (
               <a key={label} href={`#${label.toLowerCase()}`} aria-label={label} className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-500 text-white transition-all duration-300 ease-out hover:-translate-y-0.5 hover:bg-brand-600 motion-reduce:transform-none">
-                <Icon className="h-5 w-5" aria-hidden="true" />
+                <img src={icon} alt="" aria-hidden="true" className="h-5 w-5 invert" />
               </a>
             ))}
           </div>

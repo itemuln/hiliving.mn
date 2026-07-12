@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion, useReducedMotion } from 'motion/react'
-import { Pause, Play } from 'lucide-react'
 import { heroBanners } from '../../data/homeData'
 import { CarouselControls } from '../ui/CarouselControls'
 
@@ -66,7 +65,7 @@ export function HeroCarousel() {
       <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 py-1 pl-3 pr-1.5 text-xs text-white backdrop-blur-sm md:bottom-5">
         <span>{selectedIndex + 1} / {heroBanners.length}</span>
         <button type="button" onClick={toggleAutoplay} className="flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ease-out hover:bg-white/20" aria-label={isPlaying ? 'Автомат сэлгэлтийг түр зогсоох' : 'Автомат сэлгэлтийг үргэлжлүүлэх'}>
-          {isPlaying ? <Pause className="h-3.5 w-3.5" aria-hidden="true" /> : <Play className="h-3.5 w-3.5" aria-hidden="true" />}
+          <img src={isPlaying ? '/icons/pause.svg' : '/icons/play.svg'} alt="" aria-hidden="true" className="h-3.5 w-3.5 invert" />
         </button>
       </div>
     </section>

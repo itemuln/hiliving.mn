@@ -1,4 +1,3 @@
-import { Search } from 'lucide-react'
 import { Container } from './Container'
 import { navigation } from '../../data/homeData'
 
@@ -7,7 +6,7 @@ export function Header() {
     <header className="relative z-30 border-b border-neutral-100 bg-white">
       <Container className="flex h-[72px] items-center justify-between md:h-[128px] md:items-end">
         <a href="#top" className="mb-0 shrink-0 md:mb-6" aria-label="Hiliving Mongolia нүүр хуудас">
-          <img src="/logo.svg" alt="Hiliving Mongolia" className="h-auto w-[190px] md:w-[250px]" />
+          <img src="/hiLivingLogo.svg" alt="Hiliving Mongolia" className="h-auto w-[190px] md:w-[250px]" />
         </a>
 
         <div className="hidden flex-1 md:block">
@@ -25,8 +24,7 @@ export function Header() {
                     index === 0
                       ? 'bg-brand-500 text-white hover:bg-brand-600'
                       : 'bg-neutral-100 text-neutral-500 hover:bg-brand-50 hover:text-brand-500'
-                  }`}
-                >
+                  }`}>
                   {item}
                 </a>
               ))}
@@ -35,7 +33,7 @@ export function Header() {
               <label htmlFor="desktop-search" className="sr-only">Бүтээгдэхүүн хайх</label>
               <input id="desktop-search" type="search" placeholder="Хайх" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-neutral-400" />
               <button type="submit" aria-label="Хайх" className="ml-2 text-neutral-600 transition-all duration-300 ease-out hover:text-brand-500">
-                <Search className="h-5 w-5" aria-hidden="true" />
+                <img src="/icons/search.svg" alt="" aria-hidden="true" className="h-5 w-5" />
               </button>
             </form>
           </div>

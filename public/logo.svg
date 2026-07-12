@@ -1,9 +1,0 @@
-<svg width="320" height="92" viewBox="0 0 320 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <g transform="translate(4 7)" stroke-linecap="round" stroke-linejoin="round" stroke-width="7">
-    <path d="M35 39C18 39 12 23 19 15c7-8 19-2 20 8" stroke="#F04A32"/><path d="M39 35C30 21 40 8 51 10c11 2 10 16 1 22" stroke="#3777BF"/><path d="M43 38C52 24 68 28 70 39c2 10-11 15-21 9" stroke="#F3C534"/><path d="M43 43c16-2 24 11 18 20-6 9-19 3-22-7" stroke="#B73994"/><path d="M37 44c8 14-2 26-13 23-10-3-8-17 1-23" stroke="#1EAF63"/>
-    <circle cx="40" cy="41" r="5" fill="#F7554E" stroke="none"/>
-  </g>
-  <text x="90" y="37" fill="#747474" font-family="Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="1">HILIVING</text>
-  <text x="90" y="67" fill="#747474" font-family="Arial, sans-serif" font-size="28" font-weight="700" letter-spacing="1">MONGOLIA</text>
-  <text x="91" y="84" fill="#9B9B9B" font-family="Arial, sans-serif" font-size="10">Тантай хамт байх 100 жилийн эхлэл...</text>
-</svg>

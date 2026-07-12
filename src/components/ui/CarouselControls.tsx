@@ -1,5 +1,3 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-
 interface CarouselControlsProps {
   onPrevious: () => void
   onNext: () => void
@@ -17,10 +15,10 @@ export function CarouselControls({ onPrevious, onNext, variant = 'overlay' }: Ca
   return (
     <>
       <button type="button" className={`${base} ${variantClass}`} onClick={onPrevious} aria-label="Өмнөх слайд">
-        <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" />
+        <img src="/icons/chevron-left.svg" alt="" aria-hidden="true" className="h-5 w-5 md:h-6 md:w-6" />
       </button>
       <button type="button" className={`${base} ${variantClass}`} onClick={onNext} aria-label="Дараагийн слайд">
-        <ChevronRight className="h-5 w-5 md:h-6 md:w-6" aria-hidden="true" />
+        <img src="/icons/chevron-right.svg" alt="" aria-hidden="true" className="h-5 w-5 md:h-6 md:w-6" />
       </button>
     </>
   )

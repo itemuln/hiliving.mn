@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Grid2X2, Home, Menu, ShoppingCart, UserRound, X } from 'lucide-react'
 
 const navItems = [
-  { label: 'Эхлэл', icon: Home, href: '#top' },
-  { label: 'Ангилал', icon: Grid2X2, href: '#categories' },
-  { label: 'Сагс', icon: ShoppingCart, href: '#cart', badge: 2 },
-  { label: 'Нэвтрэх', icon: UserRound, href: '#login' },
+  { label: 'Эхлэл', icon: '/icons/home.svg', href: '#top' },
+  { label: 'Ангилал', icon: '/icons/grid.svg', href: '#categories' },
+  { label: 'Сагс', icon: '/icons/cart.svg', href: '#cart', badge: 2 },
+  { label: 'Нэвтрэх', icon: '/icons/user.svg', href: '#login' },
 ]
 
 export function MobileBottomNav() {
@@ -26,17 +25,17 @@ export function MobileBottomNav() {
     <>
       <nav aria-label="Гар утасны цэс" className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_22px_rgba(0,0,0,0.05)] backdrop-blur md:hidden">
         <div className="grid h-[70px] grid-cols-5">
-          {navItems.map(({ label, icon: Icon, href, badge }, index) => (
+          {navItems.map(({ label, icon, href, badge }, index) => (
             <a key={label} href={href} className={`relative flex min-w-0 flex-col items-center justify-center gap-1 text-[10px] transition-all duration-300 ease-out ${index === 0 ? 'text-brand-500' : 'text-neutral-400 hover:text-brand-500'}`}>
               <span className={index === 0 ? 'rounded-full bg-brand-50 p-1.5' : 'p-1.5'}>
-                <Icon className="h-5 w-5" aria-hidden="true" />
+                <img src={icon} alt="" aria-hidden="true" className="h-5 w-5" />
               </span>
               {badge ? <span className="absolute left-1/2 top-1 ml-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[9px] text-white">{badge}</span> : null}
               <span className="truncate">{label}</span>
             </a>
           ))}
           <button type="button" onClick={() => setIsMoreOpen(true)} className="flex min-w-0 flex-col items-center justify-center gap-1 text-[10px] text-neutral-400 transition-all duration-300 ease-out hover:text-brand-500" aria-haspopup="dialog" aria-expanded={isMoreOpen}>
-            <Menu className="h-5 w-5" aria-hidden="true" />
+            <img src="/icons/menu.svg" alt="" aria-hidden="true" className="h-5 w-5" />
             <span>Бусад</span>
           </button>
         </div>
@@ -68,7 +67,7 @@ export function MobileBottomNav() {
               <div className="mb-5 flex items-center justify-between">
                 <h2 id="more-menu-title" className="text-lg font-medium text-neutral-700">Нэмэлт цэс</h2>
                 <button type="button" autoFocus onClick={() => setIsMoreOpen(false)} aria-label="Хаах" className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 transition-all duration-300 ease-out hover:bg-brand-50 hover:text-brand-500">
-                  <X className="h-5 w-5" aria-hidden="true" />
+                  <img src="/icons/close.svg" alt="" aria-hidden="true" className="h-5 w-5" />
                 </button>
               </div>
               <div className="grid grid-cols-2 gap-3">
