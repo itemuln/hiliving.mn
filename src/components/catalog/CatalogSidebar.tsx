@@ -1,0 +1,50 @@
+import { Link } from 'react-router-dom'
+
+interface CatalogSidebarItem {
+  slug: string
+  name: string
+  icon?: string
+}
+
+interface CatalogSidebarProps {
+  items: CatalogSidebarItem[]
+  activeSlug: string
+  basePath: string
+  variant: 'brand' | 'category'
+}
+
+export function CatalogSidebar({ items, activeSlug, basePath, variant }: CatalogSidebarProps) {
+  return (
+    <nav aria-label={variant === 'brand' ? 'Брэнд сонгох' : 'Ангилал сонгох'}>
+      <ul className="space-y-1">
+        {items.map((item) => {
+          const isActive = item.slug === activeSlug
+          const href = item.slug === 'all' ? basePath : `${basePath}/${item.slug}`
+
+          return (
+            <li key={item.slug}>
+              <Link
+                to={href}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex min-h-11 w-full items-center gap-3 px-4 py-2.5 text-sm transition-colors duration-200 ${
+                  isActive
+                    ? 'bg-brand-500 font-medium text-white'
+                    : 'text-neutral-400 hover:bg-brand-50 hover:text-brand-500'
+                }`}
+              >
+                {item.icon ? (
+                  <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
+                    <img src={item.icon} alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
+                  </span>
+                ) : null}
+                <span>{item.name}</span>
+                {isActive ? <span className="sr-only">(сонгогдсон)</span> : null}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+

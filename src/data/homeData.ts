@@ -1,7 +1,7 @@
 export type CategoryIcon =
   | 'health'
   | 'beauty'
-  | 'electric'
+  | 'electronics'
   | 'home'
   | 'kitchen'
   | 'daily'
@@ -51,7 +51,7 @@ export const heroBanners: Banner[] = [
 export const categories: Category[] = [
   { id: 'health', label: 'Эрүүл мэнд', icon: 'health' },
   { id: 'beauty', label: 'Гоо сайхан', icon: 'beauty' },
-  { id: 'electric', label: 'Цахилгаан', icon: 'electric' },
+  { id: 'electronics', label: 'Цахилгаан', icon: 'electronics' },
   { id: 'home', label: 'Гэр ахуй', icon: 'home' },
   { id: 'kitchen', label: 'Гал тогоо', icon: 'kitchen' },
   { id: 'daily', label: 'Өдөр тутам', icon: 'daily' },
@@ -107,7 +107,7 @@ export const newsItems: NewsItem[] = [
   },
 ]
 
-const brandNames = ['TEZBLANC', 'bluwell', 'entree', 'RMP402', 'MAMÁRTE']
+const brandNames = ['TEZBLANC', 'BLUWELL', 'ENTREE', 'RAPHA402', 'MAMARTE']
 
 export const brands: Brand[] = Array.from({ length: 20 }, (_, index) => ({
   id: `brand-${index + 1}`,
