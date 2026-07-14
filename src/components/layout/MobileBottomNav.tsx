@@ -2,8 +2,8 @@ import { Link, useLocation } from 'react-router-dom'
 
 const navItems = [
   { label: 'Эхлэл', icon: '/icons/home.svg', to: '/', section: 'home' },
-  { label: 'Ангилал', icon: '/icons/grid.svg', to: '/categories/electronics', section: 'categories' },
-  { label: 'Сагс', icon: '/icons/cart.svg', to: '/#cart', section: 'cart', badge: 2 },
+  { label: 'Ангилал', icon: '/icons/grid.svg', to: '/categories/', section: 'categories' },
+  { label: 'Сагс', icon: '/icons/cart.svg', to: '/#cart', section: 'cart', badge: 0 },
   { label: 'Нэвтрэх', icon: '/icons/user.svg', to: '/#login', section: 'login' },
 ]
 

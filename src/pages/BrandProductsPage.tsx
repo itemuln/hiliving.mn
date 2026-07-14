@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { CatalogEmptyState } from '../components/catalog/CatalogEmptyState'
 import { CatalogLayout } from '../components/catalog/CatalogLayout'
 import { CatalogPagination } from '../components/catalog/CatalogPagination'
-import { CatalogSidebar } from '../components/catalog/CatalogSidebar'
+import { Sidebar } from '../components/catalog/Sidebar'
 import { MobileBrandSelector } from '../components/catalog/MobileBrandSelector'
 import { ProductGrid } from '../components/catalog/ProductGrid'
 import { useCatalogPagination } from '../components/catalog/useCatalogPagination'
@@ -18,11 +18,10 @@ const sidebarBrands = [{ slug: 'all', name: 'БҮГД' }, ...brands]
 export function BrandProductsPage() {
   const { brandSlug } = useParams()
   const activeSlug = brandSlug ?? 'all'
-  const activeBrand = brands.find((brand) => brand.slug === brandSlug)
+  const hasUnknownSlug = Boolean(brandSlug && !brands.some((brand) => brand.slug === brandSlug))
   const filteredProducts = brandSlug
     ? products.filter((product) => product.brandSlug === brandSlug)
     : products
-  const hasUnknownSlug = Boolean(brandSlug && !activeBrand)
   const { currentPage, totalPages, paginatedItems } = useCatalogPagination({
     items: filteredProducts,
     enabled: !hasUnknownSlug,
@@ -34,7 +33,7 @@ export function BrandProductsPage() {
       <main>
         <HeroCarousel />
         <CatalogLayout
-          sidebar={<CatalogSidebar items={sidebarBrands} activeSlug={activeSlug} basePath="/brands" variant="brand" />}
+          sidebar={<Sidebar items={sidebarBrands} activeSlug={activeSlug} basePath="/brands" variant="brand" />}
           mobileNavigation={<MobileBrandSelector brands={brands} activeSlug={activeSlug} />}
         >
           {hasUnknownSlug ? (

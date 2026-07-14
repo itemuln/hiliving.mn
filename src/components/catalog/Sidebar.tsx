@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom'
 
-interface CatalogSidebarItem {
+interface SideBar {
   slug: string
   name: string
   icon?: string
 }
 
-interface CatalogSidebarProps {
-  items: CatalogSidebarItem[]
+interface SidebarProps {
+  items: SideBar[]
   activeSlug: string
   basePath: string
   variant: 'brand' | 'category'
 }
 
-export function CatalogSidebar({ items, activeSlug, basePath, variant }: CatalogSidebarProps) {
+export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) {
   return (
     <nav aria-label={variant === 'brand' ? 'Брэнд сонгох' : 'Ангилал сонгох'}>
       <ul className="space-y-1">
@@ -22,7 +22,7 @@ export function CatalogSidebar({ items, activeSlug, basePath, variant }: Catalog
           const href = item.slug === 'all' ? basePath : `${basePath}/${item.slug}`
 
           return (
-            <li key={item.slug}>
+            <li key={item.slug}> 
               <Link
                 to={href}
                 aria-current={isActive ? 'page' : undefined}
@@ -36,7 +36,9 @@ export function CatalogSidebar({ items, activeSlug, basePath, variant }: Catalog
                   <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
                     <img src={item.icon} alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
                   </span>
-                ) : null}
+                ) : <span>
+                  <img src="/icons/grid" alt="not found"/>
+                  </span>}
                 <span>{item.name}</span>
                 {isActive ? <span className="sr-only">(сонгогдсон)</span> : null}
               </Link>

@@ -1,8 +1,8 @@
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 
 interface CatalogPaginationProps {
-  currentPage: number
-  totalPages: number
+  readonly currentPage: number
+  readonly totalPages: number
 }
 
 type PageItem = number | string

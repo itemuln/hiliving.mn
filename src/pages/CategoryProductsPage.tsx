@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { CatalogEmptyState } from '../components/catalog/CatalogEmptyState'
 import { CatalogLayout } from '../components/catalog/CatalogLayout'
 import { CatalogPagination } from '../components/catalog/CatalogPagination'
-import { CatalogSidebar } from '../components/catalog/CatalogSidebar'
+import { Sidebar } from '../components/catalog/Sidebar'
 import { MobileCategoryHeader } from '../components/catalog/MobileCategoryHeader'
 import { ProductGrid } from '../components/catalog/ProductGrid'
 import { useCatalogPagination } from '../components/catalog/useCatalogPagination'
@@ -35,7 +35,7 @@ export function CategoryProductsPage() {
       <main>
         <HeroCarousel />
         <CatalogLayout
-          sidebar={<CatalogSidebar items={sidebarCategories} activeSlug={activeSlug} basePath="/categories" variant="category" />}
+          sidebar={<Sidebar items={sidebarCategories} activeSlug={activeSlug} basePath="/categories" variant="category" />}
           mobileNavigation={<MobileCategoryHeader categories={categories} activeCategory={activeCategory} isAll={isAll} />}
         >
           {hasUnknownSlug ? (

@@ -1,5 +1,6 @@
 interface CarouselControlsProps {
-  onPrevious: () => void
+  // carousel control previous and next to be implemented later on when there are multiple carousels
+  onPrevious: () => void 
   onNext: () => void
   variant?: 'overlay' | 'outside'
 }

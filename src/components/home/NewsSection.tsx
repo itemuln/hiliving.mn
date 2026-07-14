@@ -1,6 +1,6 @@
 import { newsItems } from '../../data/homeData'
 import { Container } from '../layout/Container'
-import { NewsCard } from '../ui/NewsCard'
+import { NewsCard } from '../layout/ScrollToTop'
 import { SectionReveal } from '../ui/SectionReveal'
 import { SectionTitle } from '../ui/SectionTitle'
 
