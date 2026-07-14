@@ -4,31 +4,36 @@ import type { Category } from '../../data/categories'
 interface MobileCategoryHeaderProps {
   categories: Category[]
   activeCategory?: Category
+  isAll: boolean
 }
 
-export function MobileCategoryHeader({ categories, activeCategory }: MobileCategoryHeaderProps) {
+export function MobileCategoryHeader({ categories, activeCategory, isAll }: MobileCategoryHeaderProps) {
   const navigate = useNavigate()
+  const activeIcon = isAll ? '/icons/grid.svg' : activeCategory?.icon
+  const activeLabel = isAll ? 'БҮГД' : activeCategory?.name ?? 'Ангилал олдсонгүй'
+  const selectedValue = isAll ? 'all' : activeCategory?.slug ?? ''
 
   return (
     <div className="mb-6">
       <div className="flex items-stretch">
         <span className="flex h-10 w-11 shrink-0 items-center justify-center border border-neutral-300 bg-white">
-          {activeCategory ? (
-            <img src={activeCategory.icon} alt="" aria-hidden="true" className="max-h-8 max-w-9 object-contain" />
+          {activeIcon ? (
+            <img src={activeIcon} alt="" aria-hidden="true" className="max-h-8 max-w-9 object-contain" />
           ) : null}
         </span>
         <h1 className="flex min-w-0 flex-1 items-center bg-brand-500 px-3 text-lg font-medium uppercase text-white">
-          {activeCategory?.name ?? 'Ангилал олдсонгүй'}
+          {activeLabel}
         </h1>
       </div>
       <label className="mt-2 flex items-center justify-end gap-2 text-xs text-neutral-400">
         <span>Ангилал солих</span>
         <select
-          value={activeCategory?.slug ?? ''}
-          onChange={(event) => navigate(`/categories/${event.target.value}`)}
+          value={selectedValue}
+          onChange={(event) => navigate(event.target.value === 'all' ? '/categories' : `/categories/${event.target.value}`)}
           className="min-h-9 max-w-[180px] rounded border border-neutral-200 bg-white px-2 text-xs text-neutral-600 focus:border-brand-400 focus:outline-none"
         >
-          {!activeCategory ? <option value="" disabled>Сонгох</option> : null}
+          {!isAll && !activeCategory ? <option value="" disabled>Олдсонгүй</option> : null}
+          <option value="all">БҮГД</option>
           {categories.map((category) => (
             <option key={category.slug} value={category.slug}>{category.name}</option>
           ))}
@@ -37,4 +42,3 @@ export function MobileCategoryHeader({ categories, activeCategory }: MobileCateg
     </div>
   )
 }
-

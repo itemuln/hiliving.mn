@@ -5,10 +5,9 @@ import { ProductCard } from '../ui/ProductCard'
 interface ProductGridProps {
   products: Product[]
   variant: 'brand' | 'category'
-  mobileLimit: number
 }
 
-export function ProductGrid({ products, variant, mobileLimit }: ProductGridProps) {
+export function ProductGrid({ products, variant }: ProductGridProps) {
   const [cartCount, setCartCount] = useState(0)
 
   return (
@@ -18,7 +17,7 @@ export function ProductGrid({ products, variant, mobileLimit }: ProductGridProps
       </p>
       <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-5 md:gap-y-12 xl:grid-cols-4">
         {products.map((product, index) => (
-          <div key={product.id} className={`min-w-0 ${index >= mobileLimit ? 'hidden md:block' : ''}`}>
+          <div key={product.id} className="min-w-0">
             <ProductCard
               product={product}
               variant={variant}

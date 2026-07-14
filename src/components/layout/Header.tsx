@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Container } from './Container'
 
 const navigation = [
-  { label: 'Дэлгүүр хэсэх', to: '/categories/electronics', section: 'categories' },
+  { label: 'Дэлгүүр хэсэх', to: '/categories/', section: 'categories' },
   { label: 'Hiliving MGL', to: '/#hiliving-mgl', section: 'about' },
   { label: 'Брэндүүд', to: '/brands', section: 'brands' },
   { label: 'Мэдээлэл', to: '/#news', section: 'news' },

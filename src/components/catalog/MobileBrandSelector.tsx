@@ -7,7 +7,7 @@ interface MobileBrandSelectorProps {
   activeSlug: string
 }
 
-export function MobileBrandSelector({ brands, activeSlug }: MobileBrandSelectorProps) {
+export function MobileBrandSelector({ brands, activeSlug }: Readonly<MobileBrandSelectorProps>) {
   const items = [{ slug: 'all', name: 'БҮГД' }, ...brands]
 
   return (

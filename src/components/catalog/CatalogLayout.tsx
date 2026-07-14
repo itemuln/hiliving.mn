@@ -9,7 +9,7 @@ interface CatalogLayoutProps {
 
 export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLayoutProps) {
   return (
-    <section className="py-8 md:py-12 lg:py-14">
+    <section id="catalog-products" className="scroll-mt-4 py-8 md:py-12 lg:py-14">
       <Container>
         <div className="px-6 md:px-0">
           <div className="md:hidden">{mobileNavigation}</div>
@@ -22,4 +22,3 @@ export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLa
     </section>
   )
 }
-
