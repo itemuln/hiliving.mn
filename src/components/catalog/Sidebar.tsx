@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 
 interface SideBar {
-  slug: string
-  name: string
-  icon?: string
+  readonly slug: string
+  readonly name: string
+  readonly icon?: string
 }
 
 interface SidebarProps {

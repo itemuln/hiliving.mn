@@ -4,8 +4,8 @@ import { useSearchParams } from 'react-router-dom'
 export const CATALOG_PAGE_SIZE = 16
 
 interface CatalogPaginationOptions<T> {
-  items: T[]
-  enabled?: boolean
+  readonly items: T[]
+  readonly enabled?: boolean
 }
 
 export function useCatalogPagination<T>({ items, enabled = true }: CatalogPaginationOptions<T>) {

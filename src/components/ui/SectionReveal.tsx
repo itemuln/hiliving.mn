@@ -2,11 +2,11 @@ import type { PropsWithChildren } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 
 interface SectionRevealProps extends PropsWithChildren {
-  className?: string
-  id?: string
+  readonly className?: string
+  readonly id?: string
 }
 
-export function SectionReveal({ children, className = '', id }: SectionRevealProps) {
+export function SectionReveal({ children, className = '', id }: Readonly<SectionRevealProps>) {
   const shouldReduceMotion = useReducedMotion()
 
   return (

@@ -1,15 +1,15 @@
 import { Suspense, useEffect, useRef, useState, type PropsWithChildren } from 'react'
 
 interface DeferredContentProps extends PropsWithChildren {
-  fallbackClassName: string
-  rootMargin?: string
+  readonly fallbackClassName: string
+  readonly rootMargin?: string
 }
 
 export function DeferredContent({
   children,
   fallbackClassName,
   rootMargin = '500px 0px',
-}: DeferredContentProps) {
+}: Readonly<DeferredContentProps>) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [shouldRender, setShouldRender] = useState(false)
 

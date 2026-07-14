@@ -1,6 +1,6 @@
 interface SectionTitleProps {
-  accent: string
-  suffix?: string
+  readonly accent: string
+  readonly suffix?: string
 }
 
 export function SectionTitle({ accent, suffix }: SectionTitleProps) {

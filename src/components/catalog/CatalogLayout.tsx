@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 import { Container } from '../layout/Container'
 
 interface CatalogLayoutProps {
-  sidebar: ReactNode
-  mobileNavigation: ReactNode
-  children: ReactNode
+  readonly sidebar: ReactNode
+  readonly mobileNavigation: ReactNode
+  readonly children: ReactNode
 }
 
 export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLayoutProps) {

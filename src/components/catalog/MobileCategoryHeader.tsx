@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom'
 import type { Category } from '../../data/categories'
 
 interface MobileCategoryHeaderProps {
-  categories: Category[]
-  activeCategory?: Category
-  isAll: boolean
+  readonly categories: Category[]
+  readonly activeCategory?: Category
+  readonly isAll: boolean
 }
 
 export function MobileCategoryHeader({ categories, activeCategory, isAll }: MobileCategoryHeaderProps) {

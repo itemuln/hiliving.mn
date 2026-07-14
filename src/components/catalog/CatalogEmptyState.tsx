@@ -1,5 +1,5 @@
 interface CatalogEmptyStateProps {
-  title: string
+  readonly title: string
 }
 
 export function CatalogEmptyState({ title }: CatalogEmptyStateProps) {

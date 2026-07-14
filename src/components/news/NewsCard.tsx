@@ -2,9 +2,9 @@ import { Link } from 'react-router-dom'
 import type { NewsArticle } from '../../data/news'
 
 type NewsCardProps = {
-  article: NewsArticle
-  imageLoading?: 'eager' | 'lazy'
-  className?: string
+  readonly article: NewsArticle
+  readonly imageLoading?: 'eager' | 'lazy'
+  readonly className?: string
 }
 
 export function NewsCard({ article, imageLoading = 'lazy', className = '' }: NewsCardProps) {

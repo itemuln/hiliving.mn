@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import type { Brand } from '../../data/brands'
 
 interface MobileBrandSelectorProps {
-  brands: Brand[]
-  activeSlug: string
+  readonly brands: Brand[]
+  readonly activeSlug: string
 }
 
 export function MobileBrandSelector({ brands, activeSlug }: Readonly<MobileBrandSelectorProps>) {

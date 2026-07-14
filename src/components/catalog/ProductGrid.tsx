@@ -3,8 +3,8 @@ import type { Product } from '../../data/products'
 import { ProductCard } from '../ui/ProductCard'
 
 interface ProductGridProps {
-  products: Product[]
-  variant: 'brand' | 'category'
+  readonly products: Product[]
+  readonly variant: 'brand' | 'category'
 }
 
 export function ProductGrid({ products, variant }: ProductGridProps) {

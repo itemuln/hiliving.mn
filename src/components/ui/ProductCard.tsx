@@ -1,16 +1,16 @@
 interface ProductCardProduct {
-  id: string
-  name: string
-  originalPrice: number
-  salePrice: number
-  image: string
+  readonly id: string
+  readonly name: string
+  readonly originalPrice: number
+  readonly salePrice: number
+  readonly image: string
 }
 
 interface ProductCardProps {
-  product: ProductCardProduct
-  variant?: 'home' | 'brand' | 'category'
-  imageLoading?: 'eager' | 'lazy'
-  onAddToCart?: () => void
+  readonly product: ProductCardProduct
+  readonly variant?: 'home' | 'brand' | 'category'
+  readonly imageLoading?: 'eager' | 'lazy'
+  readonly onAddToCart?: () => void
 }
 
 const priceFormatter = new Intl.NumberFormat('mn-MN')
