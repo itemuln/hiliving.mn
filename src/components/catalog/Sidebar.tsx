@@ -7,10 +7,10 @@ interface SideBar {
 }
 
 interface SidebarProps {
-  items: SideBar[]
-  activeSlug: string
-  basePath: string
-  variant: 'brand' | 'category'
+  readonly items: readonly SideBar[]
+  readonly activeSlug: string
+  readonly basePath: string
+  readonly variant: 'brand' | 'category'
 }
 
 export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) {
@@ -36,11 +36,13 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
                   <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
                     <img src={item.icon} alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
                   </span>
-                ) : <span>
-                  <img src="/icons/grid" alt="not found"/>
-                  </span>}
+                ) : (
+                  <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
+                    <img src="/icons/grid.svg" alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
+                  </span>
+                )}
                 <span>{item.name}</span>
-                {isActive ? <span className="sr-only">(сонгогдсон)</span> : null}
+                {isActive ? <span className="sr-only">(selected)</span> : null}
               </Link>
             </li>
           )
