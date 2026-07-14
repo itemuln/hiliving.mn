@@ -9,6 +9,7 @@ const BrandProductsPage = lazy(() =>
 const CategoryProductsPage = lazy(() =>
   import('./pages/CategoryProductsPage').then((module) => ({ default: module.CategoryProductsPage })),
 )
+const NewsPage = lazy(() => import('./pages/NewsPage').then((module) => ({ default: module.NewsPage })))
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
           <Route path="/brands/:brandSlug" element={<BrandProductsPage />} />
           <Route path="/categories" element={<CategoryProductsPage />} />
           <Route path="/categories/:categorySlug" element={<CategoryProductsPage />} />
+          <Route path="/news" element={<NewsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

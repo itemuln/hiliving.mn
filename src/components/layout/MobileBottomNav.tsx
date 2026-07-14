@@ -15,7 +15,8 @@ export function MobileBottomNav() {
       <div className="grid h-[70px] grid-cols-4">
         {navItems.map(({ label, icon, to, section, badge }) => {
           const isActive =
-            (section === 'home' && (pathname === '/' || pathname.startsWith('/brands'))) ||
+            (section === 'home' &&
+              (pathname === '/' || pathname.startsWith('/brands') || pathname.startsWith('/news'))) ||
             (section === 'categories' && pathname.startsWith('/categories'))
 
           return (

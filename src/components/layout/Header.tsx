@@ -5,7 +5,7 @@ const navigation = [
   { label: 'Дэлгүүр хэсэх', to: '/categories/', section: 'categories' },
   { label: 'Hiliving MGL', to: '/#hiliving-mgl', section: 'about' },
   { label: 'Брэндүүд', to: '/brands', section: 'brands' },
-  { label: 'Мэдээлэл', to: '/#news', section: 'news' },
+  { label: 'Мэдээлэл', to: '/news', section: 'news' },
   { label: 'Холбоо барих', to: '/#contact', section: 'contact' },
 ] as const
 
@@ -30,7 +30,8 @@ export function Header() {
               {navigation.map((item) => {
                 const isActive =
                   (item.section === 'categories' && (pathname === '/' || pathname.startsWith('/categories'))) ||
-                  (item.section === 'brands' && pathname.startsWith('/brands'))
+                  (item.section === 'brands' && pathname.startsWith('/brands')) ||
+                  (item.section === 'news' && pathname.startsWith('/news'))
 
                 return (
                   <Link
