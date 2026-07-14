@@ -11,7 +11,7 @@ export function ProductCard({ product }: ProductCardProps) {
     <article className="group min-w-0">
       <a href={`#${product.id}`} className="block overflow-hidden rounded-sm border border-neutral-200 bg-white transition-all duration-300 ease-out hover:-translate-y-1 hover:border-brand-100 hover:shadow-soft motion-reduce:transform-none">
         <div className="aspect-[4/4.25] overflow-hidden p-2 sm:p-4">
-          <img src={product.image} alt={product.name} loading="lazy" className="h-full w-full object-contain transition-all duration-300 ease-out group-hover:scale-[1.025] motion-reduce:transform-none" />
+          <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-contain transition-all duration-300 ease-out group-hover:scale-[1.025] motion-reduce:transform-none" />
         </div>
       </a>
       <h3 className="mt-3 line-clamp-3 min-h-[3.5rem] text-[11px] font-normal leading-[1.35] text-neutral-500 sm:text-xs md:min-h-[3rem] md:text-sm">

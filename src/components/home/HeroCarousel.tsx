@@ -51,7 +51,13 @@ export function HeroCarousel() {
                 animate={selectedIndex === index && !shouldReduceMotion ? { opacity: [0.84, 1], scale: [1.006, 1] } : { opacity: 1, scale: 1 }}
                 transition={{ duration: 0.35, ease: 'easeOut' }}
               >
-                <img src={banner.image} alt={banner.alt} className="h-[170px] w-full object-fill sm:h-[260px] md:h-[340px] md:object-cover lg:h-[390px]" />
+                <img
+                  src={banner.image}
+                  alt={banner.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-[170px] w-full object-fill sm:h-[260px] md:h-[340px] md:object-cover lg:h-[390px]"
+                />
               </motion.div>
             </div>
           ))}

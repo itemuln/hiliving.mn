@@ -8,7 +8,7 @@ export function NewsCard({ item }: NewsCardProps) {
   return (
     <article className="group min-w-0">
       <a href={`#news-${item.id}`} className="block overflow-hidden rounded-xl bg-neutral-100">
-        <img src={item.image} alt={item.title} loading="lazy" className="aspect-[2.15/1] w-full object-cover transition-all duration-300 ease-out group-hover:scale-[1.025] motion-reduce:transform-none" />
+        <img src={item.image} alt={item.title} loading="lazy" decoding="async" className="aspect-[2.15/1] w-full object-cover transition-all duration-300 ease-out group-hover:scale-[1.025] motion-reduce:transform-none" />
       </a>
       <h3 className="mt-4 text-sm font-medium leading-snug text-neutral-700 md:text-base">
         <a href={`#news-${item.id}`} className="transition-colors duration-300 ease-out hover:text-brand-500">{item.title}</a>

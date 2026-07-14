@@ -26,7 +26,7 @@ export function PromotionalBanner() {
         <div className="flex touch-pan-y">
           {promotionalBanners.map((banner) => (
             <div key={banner.id} className="min-w-0 flex-[0_0_100%]">
-              <img src={banner.image} alt={banner.alt} loading="lazy" className="h-[180px] w-full object-fill sm:h-[260px] md:h-[330px] md:object-cover" />
+              <img src={banner.image} alt={banner.alt} loading="lazy" decoding="async" className="h-[180px] w-full object-fill sm:h-[260px] md:h-[330px] md:object-cover" />
             </div>
           ))}
         </div>

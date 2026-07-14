@@ -6,11 +6,12 @@ export function Header() {
     <header className="relative z-30 border-b border-neutral-100 bg-white">
       <Container className="flex h-[72px] items-center justify-between md:h-[128px] md:items-end">
         <a href="#top" className="mb-0 shrink-0 md:mb-6" aria-label="Hiliving Mongolia нүүр хуудас">
-          <img src="/hiLivingLogo.svg" alt="Hiliving Mongolia" className="h-auto w-[190px] md:w-[250px]" />
+          <img src="/hiLivingLogo.svg" alt="Hiliving Mongolia" loading="eager" decoding="async" className="h-auto w-[190px] md:w-[250px]" />
         </a>
 
         <div className="hidden flex-1 md:block">
           <div className="mb-7 flex items-center justify-end gap-5 text-xs text-neutral-600">
+            {/* to be implemented */}
             <a href="#login" className="transition-all duration-300 ease-out hover:text-brand-500">Нэвтрэх</a>
             <a href="#register" className="transition-all duration-300 ease-out hover:text-brand-500">Бүртгүүлэх</a>
           </div>
