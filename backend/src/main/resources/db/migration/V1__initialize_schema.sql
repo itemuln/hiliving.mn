@@ -1,0 +1,2 @@
+-- Establish the versioned HiLiving database migration chain.
+-- Phase 1 intentionally creates no business-domain tables.

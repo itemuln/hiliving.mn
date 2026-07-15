@@ -1,0 +1,8 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: "${DB_URL:jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:hiliving}}"
+    username: "${DB_USERNAME:${POSTGRES_USER:hiliving}}"
+    password: "${DB_PASSWORD:${POSTGRES_PASSWORD:}}"

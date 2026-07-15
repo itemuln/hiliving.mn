@@ -29,12 +29,15 @@ pipeline {
         deleteDir()
         sh '''
           set -eu
-          test -f "$SOURCE_DIR/package-lock.json"
+          test -f "$SOURCE_DIR/frontend/package-lock.json"
           /usr/bin/rsync -a --delete \
             --exclude .git \
-            --exclude node_modules \
-            --exclude dist \
+            --exclude frontend/node_modules \
+            --exclude frontend/dist \
+            --exclude backend/target \
             --exclude .env \
+            --exclude '.env.*' \
+            --exclude '*.env' \
             "$SOURCE_DIR/" "$WORKSPACE/"
           node --version
           npm --version
@@ -44,19 +47,25 @@ pipeline {
 
     stage('Install') {
       steps {
-        sh 'npm ci --no-audit --no-fund'
+        dir('frontend') {
+          sh 'npm ci --no-audit --no-fund'
+        }
       }
     }
 
     stage('Lint') {
       steps {
-        sh 'npm run lint'
+        dir('frontend') {
+          sh 'npm run lint'
+        }
       }
     }
 
     stage('Build') {
       steps {
-        sh 'npm run build'
+        dir('frontend') {
+          sh 'npm run build'
+        }
       }
     }
 
@@ -84,7 +93,7 @@ pipeline {
         script {
           env.ARTIFACT_NAME = "hiliving-frontend-${env.BUILD_NUMBER}.tgz"
         }
-        sh 'tar -czf "$ARTIFACT_NAME" dist package.json package-lock.json'
+        sh 'tar -czf "$ARTIFACT_NAME" -C frontend dist package.json package-lock.json'
         archiveArtifacts artifacts: '*.tgz', fingerprint: true
       }
     }
