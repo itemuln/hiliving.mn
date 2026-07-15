@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import type { Product } from '../../data/products'
+import type { CatalogProduct } from '../../features/catalog/catalog.types'
 import { ProductCard } from '../ui/ProductCard'
 
 interface ProductGridProps {
-  readonly products: Product[]
+  readonly products: readonly CatalogProduct[]
   readonly variant: 'brand' | 'category'
 }
 

@@ -61,6 +61,14 @@ pipeline {
       }
     }
 
+    stage('Test') {
+      steps {
+        dir('frontend') {
+          sh 'npm test'
+        }
+      }
+    }
+
     stage('Build') {
       steps {
         dir('frontend') {

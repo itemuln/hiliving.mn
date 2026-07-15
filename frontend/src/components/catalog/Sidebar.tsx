@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 interface SideBar {
   readonly slug: string
   readonly name: string
-  readonly icon?: string
+  readonly iconUrl?: string
 }
 
 interface SidebarProps {
@@ -22,7 +22,7 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
           const href = item.slug === 'all' ? basePath : `${basePath}/${item.slug}`
 
           return (
-            <li key={item.slug}> 
+            <li key={item.slug}>
               <Link
                 to={href}
                 aria-current={isActive ? 'page' : undefined}
@@ -32,9 +32,9 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
                     : 'text-neutral-400 hover:bg-brand-50 hover:text-brand-500'
                 }`}
               >
-                {item.icon ? (
+                {item.iconUrl ? (
                   <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
-                    <img src={item.icon} alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
+                    <img src={item.iconUrl} alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
                   </span>
                 ) : (
                   <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
@@ -51,4 +51,3 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
     </nav>
   )
 }
-

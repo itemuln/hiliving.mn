@@ -1,15 +1,15 @@
 import { useNavigate } from 'react-router-dom'
-import type { Category } from '../../data/categories'
+import type { CatalogCategory } from '../../features/catalog/catalog.types'
 
 interface MobileCategoryHeaderProps {
-  readonly categories: Category[]
-  readonly activeCategory?: Category
+  readonly categories: readonly CatalogCategory[]
+  readonly activeCategory?: CatalogCategory
   readonly isAll: boolean
 }
 
 export function MobileCategoryHeader({ categories, activeCategory, isAll }: MobileCategoryHeaderProps) {
   const navigate = useNavigate()
-  const activeIcon = isAll ? '/icons/grid.svg' : activeCategory?.icon
+  const activeIcon = isAll ? '/icons/grid.svg' : activeCategory?.iconUrl
   const activeLabel = isAll ? 'БҮГД' : activeCategory?.name ?? 'Ангилал олдсонгүй'
   const selectedValue = isAll ? 'all' : activeCategory?.slug ?? ''
 

@@ -5,7 +5,7 @@ HiLiving is a modular monorepo containing an independently buildable React/Vite 
 ## Repository layout
 
 - `frontend/` - React, TypeScript, and Vite storefront
-- `backend/` - Java 21 and Spring Boot API foundation
+- `backend/` - Java 21 and Spring Boot catalog API
 - `docs/` - project state, architecture, decisions, backlog, and CI guidance
 - `infrastructure/` - future production infrastructure assets
 - `compose.yaml` - local PostgreSQL service
@@ -26,9 +26,12 @@ Local secrets must live only in the gitignored root `.env` file. Start from `.en
 cd frontend
 npm ci
 npm run lint
+npm test
 npm run build
 npm run dev
 ```
+
+The storefront calls same-origin `/api/v1` paths. Vite proxies `/api` to `http://localhost:8080` by default. Set `VITE_DEV_API_PROXY_TARGET` in the ignored root `.env` when the backend uses another local port, or see `frontend/README.md` for the explicit base URL option.
 
 ## PostgreSQL
 
@@ -55,10 +58,10 @@ set +a
 ./mvnw spring-boot:run
 ```
 
-Verify the backend at <http://localhost:8080/actuator/health>. No business endpoints exist in Phase 1.
+Verify the backend at <http://localhost:8080/actuator/health>. Public catalog reads are available at `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`.
 
 If another local service such as Jenkins already uses port 8080, override the backend for that run with `SERVER_PORT`, for example `SERVER_PORT=18080 ./mvnw spring-boot:run`.
 
 ## Production target
 
-The future Contabo Ubuntu LTS deployment will use NGINX for static assets and HTTPS, Spring Boot on localhost port 8080 under systemd, locally bound PostgreSQL, environment-based secrets, and off-server backups. Production deployment is intentionally outside Phase 1.
+The future Contabo Ubuntu LTS deployment will use NGINX for static assets and HTTPS, Spring Boot on localhost port 8080 under systemd, locally bound PostgreSQL, environment-based secrets, and off-server backups. Production deployment remains intentionally deferred.

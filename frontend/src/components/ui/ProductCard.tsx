@@ -1,9 +1,12 @@
+import { Link } from 'react-router-dom'
+
 interface ProductCardProduct {
-  readonly id: string
+  readonly id: number
+  readonly slug: string
   readonly name: string
-  readonly originalPrice: number
-  readonly salePrice: number
-  readonly image: string
+  readonly listPrice: number
+  readonly currentPrice: number
+  readonly imageUrl: string
 }
 
 interface ProductCardProps {
@@ -20,21 +23,25 @@ export function ProductCard({ product, variant = 'home', imageLoading = 'lazy', 
 
   return (
     <article className="group min-w-0">
-      <div className="aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-white p-2 transition-colors duration-200 group-hover:border-brand-100 sm:p-3">
-        <img
-          src={product.image}
-          alt={product.name}
-          loading={imageLoading}
-          decoding="async"
-          className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transform-none"
-        />
-      </div>
-      <h3 className="mt-2.5 line-clamp-3 min-h-[3.25rem] text-[11px] font-normal leading-[1.35] text-neutral-500 sm:text-xs md:mt-3 md:min-h-[3.2rem] md:text-[13px]">
-        {product.name}
-      </h3>
+      <Link to={`/products/${product.slug}`} className="block focus-visible:rounded-sm">
+        <div className="aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-white p-2 transition-colors duration-200 group-hover:border-brand-100 sm:p-3">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading={imageLoading}
+            decoding="async"
+            className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transform-none"
+          />
+        </div>
+        <h3 className="mt-2.5 line-clamp-3 min-h-[3.25rem] text-[11px] font-normal leading-[1.35] text-neutral-500 sm:text-xs md:mt-3 md:min-h-[3.2rem] md:text-[13px]">
+          {product.name}
+        </h3>
+      </Link>
       <div className="mt-1.5 flex min-w-0 items-center gap-1.5 md:gap-2">
-        <span className="shrink-0 whitespace-nowrap text-[9px] tracking-tight text-neutral-400 line-through sm:text-[11px]">{priceFormatter.format(product.originalPrice)}₮</span>
-        <span className="min-w-0 whitespace-nowrap text-[13px] font-medium text-brand-500 sm:text-base">{priceFormatter.format(product.salePrice)}₮</span>
+        {product.currentPrice < product.listPrice ? (
+          <span className="shrink-0 whitespace-nowrap text-[9px] tracking-tight text-neutral-400 line-through sm:text-[11px]">{priceFormatter.format(product.listPrice)}₮</span>
+        ) : null}
+        <span className="min-w-0 whitespace-nowrap text-[13px] font-medium text-brand-500 sm:text-base">{priceFormatter.format(product.currentPrice)}₮</span>
         {showCartButton ? (
           <button
             type="button"

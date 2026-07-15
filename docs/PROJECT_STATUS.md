@@ -2,37 +2,47 @@
 
 ## Current project state
 
-HiLiving is a modular monorepo. The existing React/Vite application is in `frontend/`, the Java 21 Spring Boot foundation is in `backend/`, local PostgreSQL is defined in root `compose.yaml`, and project/infrastructure documentation is separated from application source.
+HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot catalog API in `backend/`. Phase 3 is complete: the storefront now reads categories, brands, paginated products, and product details from the backend through a typed frontend adapter. Root Docker Compose provides local PostgreSQL, and local frontend development reaches the API through a same-origin Vite proxy.
 
 ## Features currently working
 
-- React/Vite storefront pages and static catalog data
-- Frontend dependency installation, ESLint, and production build from `frontend/`
-- Jenkins frontend pipeline with updated monorepo paths, SonarQube quality gate, and JFrog packaging
-- Spring Boot 4.1.0 application startup with Java 21 compilation target
-- Local PostgreSQL 17 through Docker Compose with a persistent volume and health check
-- PostgreSQL connectivity, Flyway migration execution, Hibernate schema validation, and Actuator health
-- Testcontainers-backed Spring context and Flyway integration test
+- Responsive React/Vite storefront with preserved home, category, brand, product, and news routes
+- Environment-based catalog API configuration with same-origin defaults
+- Typed backend DTO definitions, explicit frontend-domain mapping, centralized fetch/status handling, cancellation, and safe normalized errors
+- Backend-driven home categories, brands, and featured products
+- Backend-driven category and brand pages with URL-based search, controlled sorting, and server pagination
+- Slug-based product cards and a minimal product-detail page
+- Loading skeletons plus successful, empty, safe error, retry, 400, 404, and backend-unavailable states
+- Static hero, promotion, and news content retained independently from catalog data
+- Frontend Vitest and Testing Library coverage at the HTTP boundary
+- Frontend clean install, ESLint, tests, TypeScript compilation, and production Vite build
+- Spring Boot 4.1.0 catalog API compiled and tested on Temurin Java 21
+- PostgreSQL 17, Flyway through version 2, Hibernate schema validation, and Testcontainers integration coverage
+- GitHub Actions and Jenkins frontend test stages
 
 ## Current active task
 
-No implementation task is active. Phase 1 is complete and ready for review.
+No implementation task is active. Phase 3 is complete and ready for review.
 
 ## Latest meaningful changes
 
-- 2026-07-15: Migrated all frontend-owned files into `frontend/` and updated Jenkins and Sonar paths.
-- 2026-07-15: Added the Java 21/Spring Boot 4.1.0 Maven backend foundation, Maven wrapper, Actuator, JPA, Flyway, PostgreSQL, validation, and Testcontainers support.
-- 2026-07-15: Added root Compose PostgreSQL, secret-safe environment handling, root documentation, and the infrastructure boundary.
-- 2026-07-15: Verified frontend install/lint/build, backend tests/package/startup, Compose health, PostgreSQL connectivity, Flyway version 1, Hibernate validation, and Actuator health.
-- 2026-07-15: Preserved and minimally corrected the pre-existing untracked frontend product service so the frontend compiles; it is not connected to the backend.
+- 2026-07-15: Added `VITE_API_BASE_URL` and local Vite proxy configuration through the root environment boundary.
+- 2026-07-15: Added a typed catalog client, backend DTO types, safe API errors, explicit frontend models, and request cancellation.
+- 2026-07-15: Migrated home, category, brand, search, sort, pagination, and product-detail data flows to `/api/v1`.
+- 2026-07-15: Removed obsolete category, brand, and product mocks plus the incorrect legacy product service; retained non-catalog marketing/news data.
+- 2026-07-15: Added loading, empty, retry, safe failure, product 404, and unavailable-service UI states without changing the established design language.
+- 2026-07-15: Added 10 frontend adapter/UI tests and added frontend tests to GitHub Actions and Jenkins.
+- 2026-07-15: Verified live categories, brands, filters, sorting, pagination, product details, safe 400/404 handling, backend unavailability, news deep links, and a 390×844 responsive layout.
+- 2026-07-15: Reverified the backend with 11 passing tests on Temurin Java 21, Flyway V1–V2, PostgreSQL 17, and Hibernate validation.
 
 ## Known issues
 
-- This workstation already has services on ports 5432 and 8080. The gitignored local `.env` uses PostgreSQL port 5433; backend startup was verified on port 18080. Committed defaults and the production target remain 5432 and 8080.
-- This workstation has Java 26 but not Java 21. Maven produced Java 21-compatible bytecode and all backend checks passed on Java 26; the exact Java 21 runtime still needs coverage in CI or a Java 21 development environment.
-- The Jenkins pipeline remains frontend-specific. Backend CI stages are not yet configured.
-- No business schema, entities, repositories, services, or API endpoints exist by design.
+- This workstation already has services on ports 5432 and 8080. Its ignored `.env` uses PostgreSQL 5433, and integration uses Spring Boot 18080. Committed and production defaults remain 5432 and 8080.
+- Direct cross-origin `VITE_API_BASE_URL` values require a deliberately configured backend/API gateway origin policy. No backend CORS configuration is added because local Vite and future NGINX use same-origin `/api` proxying.
+- Frontend API DTOs are manually mirrored from the backend contract; future contract changes must update both sides and their tests together.
+- The catalog remains read-only. Authentication, cart persistence, inventory reservation, checkout, orders, payments, administration, variants, and reviews are not implemented.
+- Product currency is still implicit, and public slug changes do not yet have a redirect or alias policy.
 
 ## Next recommended step
 
-Begin Phase 2 with a reviewed PostgreSQL schema design and ERD. Define table boundaries, keys, constraints, indexes, audit columns, and migration sequencing before creating Java entities or business APIs.
+Begin Phase 4 with a reviewed shopping-cart design. Define anonymous cart identity, persistence, line-item quantity rules, authoritative server-side price recalculation, expiration, and the frontend cart state/API contract before implementing cart mutations. Keep checkout, orders, payments, and inventory reservation outside that phase unless explicitly approved.

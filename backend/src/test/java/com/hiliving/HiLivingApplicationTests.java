@@ -16,12 +16,12 @@ class HiLivingApplicationTests {
     private JdbcTemplate jdbcTemplate;
 
     @Test
-    void contextLoadsAndFlywayAppliesInitialMigration() {
-        Boolean migrationSucceeded = jdbcTemplate.queryForObject(
-                "select success from flyway_schema_history where version = '1'",
-                Boolean.class
+    void contextLoadsAndFlywayAppliesAllMigrations() {
+        Integer successfulMigrations = jdbcTemplate.queryForObject(
+                "select count(*) from flyway_schema_history where version in ('1', '2') and success",
+                Integer.class
         );
 
-        assertThat(migrationSucceeded).isTrue();
+        assertThat(successfulMigrations).isEqualTo(2);
     }
 }

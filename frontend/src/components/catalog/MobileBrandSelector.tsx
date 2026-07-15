@@ -1,9 +1,9 @@
 import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
-import type { Brand } from '../../data/brands'
+import type { CatalogBrand } from '../../features/catalog/catalog.types'
 
 interface MobileBrandSelectorProps {
-  readonly brands: Brand[]
+  readonly brands: readonly CatalogBrand[]
   readonly activeSlug: string
 }
 
