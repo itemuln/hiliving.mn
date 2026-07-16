@@ -199,3 +199,53 @@
 **Rationale:** Boundary mocks keep tests fast and focused while backend Testcontainers tests remain authoritative for business and persistence rules.
 
 **Consequences:** CI runs frontend tests before production builds. Live integration remains necessary to prove the proxy and cross-application contract together.
+
+## 2026-07-16 - Server-side session authentication
+
+**Context:** HiLiving's target deployment serves the SPA and `/api` from one NGINX origin, and Phase 4A does not need independently delegated bearer tokens.
+
+**Decision:** Use Spring Security server-side sessions instead of JWT. `JSESSIONID` is HttpOnly and `SameSite=Lax`; `SESSION_COOKIE_SECURE` is enabled in production. Login rotates the session identifier, logout invalidates it, and the frontend determines identity only through `/api/v1/account/me`. Registration does not automatically log the customer in. No auth credential is stored in localStorage or sessionStorage.
+
+**Rationale:** This minimizes credential exposure and token lifecycle complexity while matching same-origin deployment.
+
+**Consequences:** Horizontal scaling later needs shared/sticky session design. Password change keeps the current session and cannot yet invalidate every other session; that capability is deferred rather than simulated.
+
+## 2026-07-16 - SPA-compatible CSRF defense
+
+**Context:** Cookie-authenticated mutations require CSRF protection.
+
+**Decision:** Keep Spring Security CSRF enabled. `GET /api/v1/auth/csrf` initializes a readable `XSRF-TOKEN` cookie, and the frontend mirrors its value in `X-XSRF-TOKEN` for POST, PATCH, and DELETE requests. The token cookie is not an auth credential. Same-origin Vite/NGINX routing remains authoritative; no permissive CORS policy is added.
+
+**Rationale:** The double-submit cookie/header pattern works with a client-rendered SPA without exposing the HttpOnly session cookie.
+
+**Consequences:** Every new state-changing frontend adapter must use the shared account request boundary. Security tests verify missing-token rejection and real cookie/header acceptance.
+
+## 2026-07-16 - Identity normalization, password storage, and login lockout
+
+**Context:** Email and Mongolian phone aliases must not bypass uniqueness or authentication controls, and local brute-force resistance is required without Redis.
+
+**Decision:** Trim and lowercase emails. Normalize supported Mongolian phone input to `+976` plus eight digits before uniqueness checks and lookup. Hash passwords with `PasswordEncoderFactories.createDelegatingPasswordEncoder()` and enforce at least 10 characters, one letter, one number, and the encoder-compatible byte limit. After five invalid passwords, set a 15-minute `locked_until`; successful login clears failure state. Unknown identifiers and bad passwords return the same `INVALID_CREDENTIALS` response.
+
+**Rationale:** Canonical identity values create reliable unique constraints, delegating hashes preserve upgrade paths, and bounded database lockout provides basic protection without introducing distributed infrastructure.
+
+**Consequences:** Future international phone support requires a deliberate normalization migration. Distributed rate limiting remains future work.
+
+## 2026-07-16 - Roles, statuses, memberships, and discounts
+
+**Context:** Customer self-service and a minimal admin boundary need explicit authorization and account lifecycle state, while membership discounts must remain auditable.
+
+**Decision:** Roles are `CUSTOMER` and `ADMIN`; public registration always grants `CUSTOMER`. Statuses are `ACTIVE`, `DISABLED`, and `LOCKED`; customer accounts are soft-disabled rather than deleted. Permanent Flyway reference tiers are REGULAR 0%, BRONZE 3%, SILVER 5%, and GOLD 10%. Each user references one tier and may have a nullable 0–100% manual override. Effective discount is override-first, otherwise tier default.
+
+**Rationale:** Explicit enums and relational reference data keep authorization and pricing policy visible at both database and service boundaries.
+
+**Consequences:** Admin APIs may update status, tier, and override but never passwords. Full admin UI, role expansion, and automatic tier progression are deferred.
+
+## 2026-07-16 - Delivery-address ownership and lifecycle
+
+**Context:** Address IDs alone are insufficient authorization and concurrent default switching could create multiple defaults.
+
+**Decision:** Every address lookup and mutation is scoped by authenticated user ID. A PostgreSQL partial unique index permits at most one `is_default` row per user, and services clear the prior default before setting another in the same transaction. Address deletion is physical; deleting the default deliberately leaves no default. Recipient phones use the same canonical Mongolian format.
+
+**Rationale:** Ownership-scoped repositories prevent horizontal access, while the database index protects all write paths.
+
+**Consequences:** Address history is not retained in Phase 4A. Future orders must snapshot delivery details rather than rely on mutable account addresses.

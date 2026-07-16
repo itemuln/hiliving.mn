@@ -19,10 +19,12 @@ The frontend is a client-rendered React application using React Router, Tailwind
 - `src/api`: backend response DTOs, URL/query serialization, HTTP status handling, safe error normalization, and DTO-to-domain mapping
 - `src/config`: environment normalization
 - `src/features/catalog`: presentation-safe catalog models and cancellation-aware resource/query hooks
+- `src/features/auth`: three-state session hydration, auth context, login/registration forms, and protected routing
+- `src/features/account`: profile, password, membership, and delivery-address UI
 - `src/components/catalog`: reusable loading, empty, error, retry, navigation, filter, grid, and pagination UI
 - `src/pages`: category, brand, news, and slug-based product-detail routes
 
-Only the API client calls `fetch`. Presentational components receive frontend catalog models using names such as `listPrice`, `currentPrice`, `imageUrl`, and presentation icon metadata; they do not consume backend DTOs directly. No global state or server-state library is installed. Read-only resources use local React state, `AbortController`, stable request callbacks, and explicit retry.
+Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity uses a small React context because header, route protection, and account pages share it.
 
 Category, brand, and product mocks have been removed. Static hero banners, promotions, and news remain because they are marketing content outside the catalog API.
 
@@ -43,15 +45,27 @@ Catalog routes are:
 - `/products/:productSlug`
 - `/news`
 
+Identity and account routes are `/login`, `/register`, `/account`, `/account/profile`, `/account/addresses`, and `/account/security`. Account routes hydrate through `GET /api/v1/account/me` and distinguish loading, anonymous, and authenticated state. Anonymous navigation is redirected to `/login?returnTo=<internal-path>`; only same-origin relative paths are accepted.
+
 Catalog query state uses the URL. The browser exposes one-based `page` values while the adapter converts requests to the backend's zero-based page convention. Search and controlled sort selections also remain shareable in the URL. Product cards navigate by slug.
 
 Every API-backed section starts with a dimensionally similar skeleton, then renders data, an explicit empty state, or a safe generic error with retry. Product 404 has a dedicated not-found page. Backend messages, codes, SQL details, exception names, and stack traces are never rendered. Browser navigation uses React Router deep links; target NGINX configuration must later use an SPA fallback such as `try_files ... /index.html` while routing `/api` separately.
 
 ## Backend architecture
 
-The backend uses Java 21, Maven, and Spring Boot 4.1.0. `com.hiliving` is the component-scan root. Shared HTTP envelopes and error handling live under `com.hiliving.api`; catalog code is organized by feature under category, brand, product, and local seed packages. Controllers expose DTOs rather than JPA entities. Services own visibility and mapping; repositories own persistence queries and specifications. Actuator supplies `/actuator/health`.
+The backend uses Java 21, Maven, and Spring Boot 4.1.0. `com.hiliving` is the component-scan root. Shared HTTP envelopes and safe error handling live under `com.hiliving.api`; catalog and identity code use feature-first packages. Identity separates auth behavior, user persistence, customer account service, and admin user policy. Controllers expose DTOs rather than JPA entities. Services own normalization, authorization-sensitive behavior, and mapping; repositories own persistence queries. Actuator supplies `/actuator/health`.
 
-Phase 3 found no backend contract mismatch and made no backend API or CORS change.
+Spring Security uses server-side sessions. The session cookie is HttpOnly and `SameSite=Lax`; `SESSION_COOKIE_SECURE` must be true behind production HTTPS. Login explicitly rotates the session identifier. The browser never stores an auth token. A readable `XSRF-TOKEN` cookie is mirrored into `X-XSRF-TOKEN` for state-changing requests; the cookie exists only for CSRF defense and is not an authentication credential.
+
+Public catalog GETs, registration, login, CSRF initialization, and health are permitted. `/api/v1/account/**` requires authentication, `/api/v1/admin/**` requires `ADMIN`, and unmatched routes are denied. No broad CORS policy is enabled because Vite and future NGINX preserve same-origin requests.
+
+## Identity and account data model
+
+Flyway migration `V3__create_identity_and_account_schema.sql` creates `membership_tiers`, `users`, and `user_addresses`. Membership rows are permanent reference data: REGULAR 0%, BRONZE 3%, SILVER 5%, and GOLD 10%. Users may have a nullable validated override; the effective discount is the override when present and otherwise the tier default.
+
+Emails are trimmed and lowercased. Supported Mongolian phone inputs are normalized to `+976` plus eight digits before lookup and uniqueness checks. Passwords use Spring Security's delegating encoder and are never returned. Public registration creates only active `CUSTOMER`/`REGULAR` users and does not automatically log in.
+
+Users are soft-disabled with `ACTIVE`, `DISABLED`, or `LOCKED`; they are not deleted through this phase. Five failed password attempts set a 15-minute `locked_until`, while successful login clears the failed state. Address reads and mutations include both address ID and authenticated user ID. A PostgreSQL partial unique index allows at most one default address per user, and default switching clears and sets within one transaction. Address deletion is physical; deleting a default leaves no default.
 
 ## Catalog data model
 
@@ -69,15 +83,15 @@ Flyway is the only schema-management mechanism. Versioned SQL lives in `backend/
 
 ## API boundaries
 
-Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`. Successful responses use `data`; pages include items and page metadata. Product filters are category, brand, search, and featured. Sorts are limited to newest, price ascending/descending, and name ascending. Failures use a safe `error` envelope.
+Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`. Auth endpoints are under `/api/v1/auth`; customer self-service is under `/api/v1/account`; minimal administrative user management is under `/api/v1/admin/users`. Successful responses use `data`; pages include items and page metadata. Failures use the existing safe `error` envelope with stable account/security codes where useful.
 
 ## Validation strategy
 
-Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. Tests cover product loading, skeletons, empty pages, safe unavailable state and retry, filter serialization, adapter mapping/errors, malformed success responses, and detail 404.
+Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 25 tests cover existing catalog behavior plus auth hydration, operational hydration failure, login/logout, CSRF headers, registration errors, safe returns, profile/password changes, address states, and session expiry.
 
-Live validation runs Vite against the real Spring Boot/PostgreSQL stack and checks category/brand filters, search, sorting, pagination, detail deep links, 400/404 behavior, backend unavailability, and responsive layout. Temporary pagination rows are removed immediately after verification.
+Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 4A verified registration, session login, membership display, default-address creation, logout, protected redirects, and 390×844 no-overflow layouts. Temporary verification users and dependent addresses are removed immediately afterward.
 
-Backend validation uses Maven on Temurin Java 21 with PostgreSQL Testcontainers, Flyway through V2, Hibernate validation, repository/service/controller coverage, and JAR packaging. GitHub Actions runs independent frontend and backend jobs; Jenkins remains a frontend delivery pipeline and now runs frontend tests before building.
+Backend validation uses Maven on Temurin Java 21 with PostgreSQL Testcontainers, Flyway through V3, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 27 tests include the existing catalog suite plus identity constraints, normalization, password hashing, lockout, session fixation, CSRF, account operations, address ownership, and admin authorization.
 
 ## Target Contabo deployment architecture
 

@@ -2,11 +2,13 @@
 
 ## Active
 
-- No active implementation task. Phase 3 is complete.
+- No active implementation task. Phase 4A is complete.
 
 ## Planned
 
-- [ ] **P1 - Phase 4:** review and design the shopping-cart boundary: anonymous identity, persistence, line-item quantities, server-authoritative prices, expiration, API shape, and frontend state. Do not combine checkout, orders, payments, or inventory reservation without explicit approval.
+- [ ] **P1 - Phase 4B:** design password-reset and email/phone verification tokens, expiry, one-time use, abuse protection, session invalidation, and the email/SMS delivery boundary. Do not add delivery providers before the boundary is reviewed.
+- [ ] **P1:** review and design the shopping-cart boundary: anonymous identity, persistence, line-item quantities, server-authoritative prices, expiration, API shape, and frontend state. Keep checkout, orders, payments, and inventory reservation separate.
+- [ ] **P1:** decide whether password changes need shared session storage or a session registry before promising cross-session invalidation.
 - [ ] **P1:** define the catalog slug-change and redirect policy before management workflows can edit public slugs.
 - [ ] **P2:** decide and model currency explicitly before supporting more than the current implicit currency.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
@@ -28,3 +30,9 @@
 - [x] Remove obsolete catalog mocks and retain only non-catalog marketing/news data.
 - [x] Add and integrate 10 frontend HTTP-boundary/UI tests into GitHub Actions and Jenkins.
 - [x] Verify clean frontend install/lint/tests/build, Java 21 backend tests, live API integration, deep links, pagination, and mobile responsive layout.
+- [x] Add Flyway V3 membership, user, and delivery-address schemas with canonical identity constraints and permanent membership reference data.
+- [x] Add Spring Security session login/logout, cookie/header CSRF, session fixation protection, password hashing, and failed-login lockout.
+- [x] Add registration, current account, profile, password, delivery-address, and minimal admin user APIs with safe error envelopes.
+- [x] Add three-state frontend auth hydration, login/registration/account routes, protected returns, membership display, profile/security forms, and address CRUD UI.
+- [x] Add identity/security/account tests; verify 27 backend tests on Temurin Java 21 and 25 frontend tests after a clean install.
+- [x] Verify live registration, login, default address, logout, protected redirects, and 390×844 no-overflow account layouts; remove temporary verification data.

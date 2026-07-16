@@ -1,6 +1,7 @@
 import { type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Container } from './Container'
+import { useOptionalAuth } from '../../features/auth/useAuth'
 
 const navigation = [
   { label: 'Дэлгүүр хэсэх', to: '/categories/', section: 'categories' },
@@ -13,6 +14,9 @@ const navigation = [
 export function Header() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
+  const auth = useOptionalAuth()
+  const state = auth?.state ?? { status: 'anonymous' as const, user: null }
+  const logout = auth?.logout ?? (async () => undefined)
 
   const searchCatalog = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -30,9 +34,15 @@ export function Header() {
 
         <div className="hidden flex-1 md:block">
           <div className="mb-7 flex items-center justify-end gap-5 text-xs text-neutral-600">
-            {/* to be implemented */}
-            <a href="#login" className="transition-all duration-300 ease-out hover:text-brand-500">Нэвтрэх</a>
-            <a href="#register" className="transition-all duration-300 ease-out hover:text-brand-500">Бүртгүүлэх</a>
+            {state.status === 'authenticated' ? <>
+              <span className="max-w-32 truncate text-neutral-500">{state.user.firstName}</span>
+              <Link to="/account" className="transition hover:text-brand-500">Миний бүртгэл</Link>
+              {state.user.role === 'ADMIN' ? <Link to="/account" className="font-medium text-brand-600">Админ хэсэг</Link> : null}
+              <button type="button" onClick={() => void logout()} className="transition hover:text-brand-500">Гарах</button>
+            </> : state.status === 'anonymous' ? <>
+              <Link to="/login" className="transition hover:text-brand-500">Нэвтрэх</Link>
+              <Link to="/register" className="transition hover:text-brand-500">Бүртгүүлэх</Link>
+            </> : <span className="h-4 w-28 animate-pulse rounded bg-neutral-100" aria-label="Бүртгэл шалгаж байна" />}
           </div>
           <div className="flex items-end justify-end gap-3">
             <nav aria-label="Үндсэн цэс" className="flex items-end gap-1">

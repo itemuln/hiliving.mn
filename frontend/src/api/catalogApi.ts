@@ -21,6 +21,7 @@ import type {
 export type CatalogApiErrorKind = 'aborted' | 'invalid-response' | 'not-found' | 'unavailable' | 'validation' | 'server'
 
 const categoryIcons: Readonly<Record<string, string>> = {
+  cleaning: '/brush.png',
   health: '/health.png',
   skincare: '/skincare.png',
   electronics: '/air.png',

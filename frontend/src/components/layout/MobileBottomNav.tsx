@@ -1,14 +1,21 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useOptionalAuth } from '../../features/auth/useAuth'
 
-const navItems = [
+const baseNavItems = [
   { label: 'Эхлэл', icon: '/icons/home.svg', to: '/', section: 'home' },
   { label: 'Ангилал', icon: '/icons/grid.svg', to: '/categories/', section: 'categories' },
   { label: 'Сагс', icon: '/icons/cart.svg', to: '/#cart', section: 'cart', badge: 0 },
-  { label: 'Нэвтрэх', icon: '/icons/user.svg', to: '/#login', section: 'login' },
 ]
 
 export function MobileBottomNav() {
   const { pathname } = useLocation()
+  const state = useOptionalAuth()?.state ?? { status: 'anonymous' as const, user: null }
+  const navItems = [...baseNavItems, {
+    label: state.status === 'authenticated' ? 'Бүртгэл' : 'Нэвтрэх',
+    icon: '/icons/user.svg',
+    to: state.status === 'authenticated' ? '/account' : '/login',
+    section: 'account',
+  }]
 
   return (
     <nav aria-label="Гар утасны цэс" className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_22px_rgba(0,0,0,0.05)] backdrop-blur md:hidden">
@@ -17,7 +24,8 @@ export function MobileBottomNav() {
           const isActive =
             (section === 'home' &&
               (pathname === '/' || pathname.startsWith('/brands') || pathname.startsWith('/news'))) ||
-            (section === 'categories' && pathname.startsWith('/categories'))
+            (section === 'categories' && pathname.startsWith('/categories')) ||
+            (section === 'account' && (pathname.startsWith('/account') || pathname === '/login' || pathname === '/register'))
 
           return (
             <Link

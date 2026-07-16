@@ -7,7 +7,9 @@
 - Frontend job: Node 24, `npm ci`, ESLint, Vitest, and Vite production build from `frontend/`
 - Backend job: Temurin Java 21 and Maven `verify` from `backend/`
 
-Frontend tests mock the HTTP boundary and cover adapter/query behavior plus observable catalog loading, success, empty, safe failure/retry, and product 404 states. Backend tests use PostgreSQL Testcontainers, apply all Flyway migrations, start Hibernate with schema validation, and exercise persistence/service/API rules.
+Frontend tests mock the HTTP boundary and cover existing catalog states plus session hydration, CSRF requests, login/logout, safe protected returns, profile/password mutations, address CRUD states, and session expiry. Backend tests use PostgreSQL Testcontainers, apply Flyway V1–V3, start Hibernate with schema validation, and exercise catalog, identity, session security, account, address ownership, and admin authorization rules.
+
+The current clean verification baseline is 25 frontend tests and 27 backend tests. The backend suite was executed successfully inside `eclipse-temurin:21-jdk` on Java 21.0.11 with PostgreSQL 17 Testcontainers and JAR packaging. The frontend baseline was executed after `npm ci`, followed by lint, Vitest, TypeScript, and the production Vite build.
 
 The workflow grants read-only repository contents permission and cancels superseded runs on the same branch or pull request.
 

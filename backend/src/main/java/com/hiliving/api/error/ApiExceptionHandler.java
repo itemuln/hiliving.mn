@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.Instant;
 import java.util.List;
@@ -124,6 +125,35 @@ public class ApiExceptionHandler {
                 HttpStatus.METHOD_NOT_ALLOWED,
                 "METHOD_NOT_ALLOWED",
                 "HTTP method is not supported for this resource",
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(ApiRequestException.class)
+    ResponseEntity<ApiErrorResponse> handleApiRequest(
+            ApiRequestException exception,
+            HttpServletRequest request
+    ) {
+        return response(
+                exception.getStatus(),
+                exception.getCode(),
+                exception.getMessage(),
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ResponseEntity<ApiErrorResponse> handleConflict(
+            DataIntegrityViolationException exception,
+            HttpServletRequest request
+    ) {
+        LOGGER.warn("Database constraint rejected request for {}", request.getRequestURI());
+        return response(
+                HttpStatus.CONFLICT,
+                "RESOURCE_CONFLICT",
+                "The requested change conflicts with existing data",
                 request,
                 List.of()
         );
