@@ -1,13 +1,15 @@
 interface CatalogErrorStateProps {
-  readonly onRetry: () => void
-  readonly compact?: boolean
+  readonly onRetry: () => void;
+  readonly compact?: boolean;
 }
 
 export function CatalogErrorState({ onRetry, compact = false }: CatalogErrorStateProps) {
   return (
     <div
       role="alert"
-      className={`flex items-center justify-center border border-brand-100 bg-brand-50 px-6 text-center ${compact ? 'min-h-40' : 'min-h-72'}`}
+      className={`flex items-center justify-center border border-brand-100 bg-brand-50 px-6 text-center ${
+        compact ? 'min-h-40' : 'min-h-72'
+      }`}
     >
       <div>
         <h2 className="text-base font-medium text-neutral-700">Мэдээлэл ачаалж чадсангүй</h2>
@@ -21,5 +23,5 @@ export function CatalogErrorState({ onRetry, compact = false }: CatalogErrorStat
         </button>
       </div>
     </div>
-  )
+  );
 }

@@ -1,13 +1,13 @@
-import type { PropsWithChildren } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import type { PropsWithChildren } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 
 interface SectionRevealProps extends PropsWithChildren {
-  readonly className?: string
-  readonly id?: string
+  readonly className?: string;
+  readonly id?: string;
 }
 
 export function SectionReveal({ children, className = '', id }: Readonly<SectionRevealProps>) {
-  const shouldReduceMotion = useReducedMotion()
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <motion.section
@@ -20,5 +20,5 @@ export function SectionReveal({ children, className = '', id }: Readonly<Section
     >
       {children}
     </motion.section>
-  )
+  );
 }

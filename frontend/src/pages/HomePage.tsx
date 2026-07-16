@@ -1,21 +1,23 @@
-import { lazy } from 'react'
-import { CategorySection } from '../components/home/CategorySection'
-import { HeroCarousel } from '../components/home/HeroCarousel'
-import { ProductSection } from '../components/home/ProductSection'
-import { Footer } from '../components/layout/Footer'
-import { Header } from '../components/layout/Header'
-import { MobileBottomNav } from '../components/layout/MobileBottomNav'
-import { DeferredContent } from '../components/ui/DeferredContent'
+import { lazy } from 'react';
+import { CategorySection } from '../components/home/CategorySection';
+import { HeroCarousel } from '../components/home/HeroCarousel';
+import { ProductSection } from '../components/home/ProductSection';
+import { Footer } from '../components/layout/Footer';
+import { Header } from '../components/layout/Header';
+import { MobileBottomNav } from '../components/layout/MobileBottomNav';
+import { DeferredContent } from '../components/ui/DeferredContent';
 
 const PromotionalBanner = lazy(() =>
-  import('../components/home/PromotionalBanner').then((module) => ({ default: module.PromotionalBanner })),
-)
+  import('../components/home/PromotionalBanner').then((module) => ({
+    default: module.PromotionalBanner,
+  }))
+);
 const NewsSection = lazy(() =>
-  import('../components/home/NewsSection').then((module) => ({ default: module.NewsSection })),
-)
+  import('../components/home/NewsSection').then((module) => ({ default: module.NewsSection }))
+);
 const BrandsSection = lazy(() =>
-  import('../components/home/BrandsSection').then((module) => ({ default: module.BrandsSection })),
-)
+  import('../components/home/BrandsSection').then((module) => ({ default: module.BrandsSection }))
+);
 
 export function HomePage() {
   return (
@@ -38,5 +40,5 @@ export function HomePage() {
       <Footer />
       <MobileBottomNav />
     </div>
-  )
+  );
 }

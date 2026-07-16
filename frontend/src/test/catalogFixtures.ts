@@ -1,4 +1,9 @@
-import type { ApiResponse, PagedResponseDto, ProductDetailDto, ProductSummaryDto } from '../api/catalogApi.types'
+import type {
+  ApiResponse,
+  PagedResponseDto,
+  ProductDetailDto,
+  ProductSummaryDto,
+} from '../api/catalogApi.types';
 
 export const productSummaryDto: ProductSummaryDto = {
   id: 1,
@@ -13,7 +18,7 @@ export const productSummaryDto: ProductSummaryDto = {
   primaryImageUrl: '/product-cleaner.svg',
   createdAt: '2026-07-15T10:05:26Z',
   updatedAt: '2026-07-15T10:05:26Z',
-}
+};
 
 export const productDetailDto: ProductDetailDto = {
   ...productSummaryDto,
@@ -27,9 +32,11 @@ export const productDetailDto: ProductDetailDto = {
       primaryImage: true,
     },
   ],
-}
+};
 
-export function productPageEnvelope(items: readonly ProductSummaryDto[]): ApiResponse<PagedResponseDto<ProductSummaryDto>> {
+export function productPageEnvelope(
+  items: readonly ProductSummaryDto[]
+): ApiResponse<PagedResponseDto<ProductSummaryDto>> {
   return {
     data: {
       items,
@@ -40,12 +47,12 @@ export function productPageEnvelope(items: readonly ProductSummaryDto[]): ApiRes
       first: true,
       last: true,
     },
-  }
+  };
 }
 
 export function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json' },
-  })
+  });
 }

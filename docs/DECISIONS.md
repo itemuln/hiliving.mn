@@ -289,3 +289,9 @@
 **Rationale:** Decode-and-reencode validates actual image content and strips metadata, while generated keys and normalized paths prevent original-filename and traversal risks. An external root survives application clean builds and release replacement. The storage interface lets the same local implementation use a different root on Contabo and gives an S3-compatible implementation a narrow future seam.
 
 **Consequences:** Supported files are JPEG and PNG; WEBP remains rejected until the Java baseline has verified codec support. EXIF orientation is not normalized. Upload completion means the immutable file, media row, and audit event were created; database failure triggers best-effort file compensation, but a machine/process failure can still leave an orphan. Replacing or removing a URL does not delete the old file until reference-aware retention is designed. PostgreSQL and the upload directory require coordinated off-server backup and restore testing. Move to S3-compatible storage when multi-node deployment, CDN delivery, durability, growth, or backup operations justify it.
+
+## 2026-07-17 - Remove banner scheduling from normal administration
+
+**Decision:** Remove the Starts at and Ends at fields from the banner editor. New and edited banners omit scheduling values, while the existing nullable backend response fields and database columns remain for backward compatibility.
+
+**Consequences:** Administrators control banner visibility with the Active switch. Editing a previously scheduled banner clears its schedule through the existing nullable request contract; untouched legacy rows may still be filtered by their stored schedule until edited or migrated.

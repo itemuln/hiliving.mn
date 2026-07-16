@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react'
-import { Container } from '../layout/Container'
+import type { ReactNode } from 'react';
+import { Container } from '../layout/Container';
 
 interface CatalogLayoutProps {
-  readonly sidebar: ReactNode
-  readonly mobileNavigation: ReactNode
-  readonly children: ReactNode
+  readonly sidebar: ReactNode;
+  readonly mobileNavigation: ReactNode;
+  readonly children: ReactNode;
 }
 
 export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLayoutProps) {
@@ -20,5 +20,5 @@ export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLa
         </div>
       </Container>
     </section>
-  )
+  );
 }

@@ -1,9 +1,9 @@
-import { loadEnv } from 'vite'
-import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig(({ mode }) => {
-  const environment = loadEnv(mode, '..', 'VITE_')
+  const environment = loadEnv(mode, '..', 'VITE_');
 
   return {
     envDir: '..',
@@ -26,5 +26,5 @@ export default defineConfig(({ mode }) => {
       setupFiles: './src/test/setup.ts',
       restoreMocks: true,
     },
-  }
-})
+  };
+});

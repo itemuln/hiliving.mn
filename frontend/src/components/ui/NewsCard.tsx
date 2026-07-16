@@ -1,7 +1,5 @@
-import type { NewsItem } from '../../data/homeData'
+import type { NewsItem } from '../../data/homeData';
 
 export interface NewsCardProps {
-  readonly item: NewsItem
+  readonly item: NewsItem;
 }
-
-

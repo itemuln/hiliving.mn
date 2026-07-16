@@ -1,4 +1,4 @@
-import type { AuthenticatedUser } from '../features/auth/auth.types'
+import type { AuthenticatedUser } from '../features/auth/auth.types';
 
 export const authenticatedUser: AuthenticatedUser = {
   id: 42,
@@ -11,13 +11,19 @@ export const authenticatedUser: AuthenticatedUser = {
   emailVerified: false,
   phoneVerified: false,
   membership: {
-    code: 'SILVER', displayName: 'Silver', defaultDiscountPercentage: 5,
-    discountOverridePercentage: null, effectiveDiscountPercentage: 5,
+    code: 'SILVER',
+    displayName: 'Silver',
+    defaultDiscountPercentage: 5,
+    discountOverridePercentage: null,
+    effectiveDiscountPercentage: 5,
   },
   createdAt: '2026-07-16T00:00:00Z',
   updatedAt: '2026-07-16T00:00:00Z',
-}
+};
 
 export function accountJson(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } })
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
 }

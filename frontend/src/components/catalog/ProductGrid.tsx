@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import type { CatalogProduct } from '../../features/catalog/catalog.types'
-import { ProductCard } from '../ui/ProductCard'
+import { useState } from 'react';
+import type { CatalogProduct } from '../../features/catalog/catalog.types';
+import { ProductCard } from '../ui/ProductCard';
 
 interface ProductGridProps {
-  readonly products: readonly CatalogProduct[]
-  readonly variant: 'brand' | 'category'
+  readonly products: readonly CatalogProduct[];
+  readonly variant: 'brand' | 'category';
 }
 
 export function ProductGrid({ products, variant }: ProductGridProps) {
-  const [cartCount, setCartCount] = useState(0)
+  const [cartCount, setCartCount] = useState(0);
 
   return (
     <>
@@ -28,5 +28,5 @@ export function ProductGrid({ products, variant }: ProductGridProps) {
         ))}
       </div>
     </>
-  )
+  );
 }

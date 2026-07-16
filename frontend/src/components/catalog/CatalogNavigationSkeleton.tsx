@@ -6,5 +6,5 @@ export function CatalogNavigationSkeleton() {
       ))}
       <span className="sr-only">Каталогийн цэс ачаалж байна.</span>
     </div>
-  )
+  );
 }

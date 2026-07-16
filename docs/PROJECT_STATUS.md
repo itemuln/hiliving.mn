@@ -13,7 +13,7 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Backend-driven category and brand pages with URL-based search, controlled sorting, and server pagination
 - Slug-based product cards and a minimal product-detail page
 - Loading skeletons plus successful, empty, safe error, retry, 400, 404, and backend-unavailable states
-- API-backed active/scheduled hero banners and published news list/detail content
+- API-backed active hero banners and published news list/detail content
 - Frontend Vitest and Testing Library coverage at the HTTP boundary
 - Frontend clean install, ESLint, tests, TypeScript compilation, and production Vite build
 - Customer registration followed by explicit login; public registration never grants `ADMIN`
@@ -37,6 +37,8 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 No implementation task is active. Phase 5.1 implementation, automated verification, persistence/restart checks, and live browser/API workflows are complete.
 
 ## Latest meaningful changes
+
+- 2026-07-17: Removed the Starts at and Ends at controls from normal banner administration. New and edited banners are saved without scheduling dates; legacy response fields remain compatible.
 
 - 2026-07-16: Added Flyway V5 media metadata, an ADMIN-only multipart image endpoint, validated JPEG/PNG processing, purpose-specific limits/resizing, UUID storage keys, external local storage, read-only `/media/**` delivery, and media audit events.
 - 2026-07-16: Replaced product, brand, banner, and news manual image-URL entry with a reusable progress-aware upload control while preserving compatible stored/external URLs.

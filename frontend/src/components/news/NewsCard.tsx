@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom'
-import type { NewsArticle } from '../../data/news'
+import { Link } from 'react-router-dom';
+import type { NewsArticle } from '../../data/news';
 
 type NewsCardProps = {
-  readonly article: NewsArticle
-  readonly imageLoading?: 'eager' | 'lazy'
-  readonly className?: string
-}
+  readonly article: NewsArticle;
+  readonly imageLoading?: 'eager' | 'lazy';
+  readonly className?: string;
+};
 
 export function NewsCard({ article, imageLoading = 'lazy', className = '' }: NewsCardProps) {
   return (
@@ -21,8 +21,12 @@ export function NewsCard({ article, imageLoading = 'lazy', className = '' }: New
       </div>
 
       <div className="mt-5 px-2.5 md:px-6">
-        <h2 className="text-[14px] font-normal leading-[1.15] text-neutral-800 md:text-[13px]">{article.title}</h2>
-        <p className="mt-0.5 text-[14px] leading-[1.15] text-neutral-700 md:text-[13px]">{article.description}</p>
+        <h2 className="text-[14px] font-normal leading-[1.15] text-neutral-800 md:text-[13px]">
+          {article.title}
+        </h2>
+        <p className="mt-0.5 text-[14px] leading-[1.15] text-neutral-700 md:text-[13px]">
+          {article.description}
+        </p>
       </div>
 
       <div className="mt-3 flex justify-end pr-2 md:mt-3.5">
@@ -35,5 +39,5 @@ export function NewsCard({ article, imageLoading = 'lazy', className = '' }: New
         </Link>
       </div>
     </article>
-  )
+  );
 }

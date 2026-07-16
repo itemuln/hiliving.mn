@@ -1,14 +1,21 @@
-import { useEffect, useState } from 'react'
-import { getPublicNews } from '../../api/contentApi'
-import type { News } from '../../features/admin/admin.types'
-import { Container } from '../layout/Container'
-import { NewsCard } from './NewsCard'
+import { useEffect, useState } from 'react';
+import { getPublicNews } from '../../api/contentApi';
+import type { News } from '../../features/admin/admin.types';
+import { Container } from '../layout/Container';
+import { NewsCard } from './NewsCard';
 
 export function NewsGrid() {
-  const [items, setItems] = useState<News[] | null>(null)
-  useEffect(() => { void getPublicNews().then(setItems).catch(() => setItems([])) }, [])
+  const [items, setItems] = useState<News[] | null>(null);
+  useEffect(() => {
+    void getPublicNews()
+      .then(setItems)
+      .catch(() => setItems([]));
+  }, []);
   return (
-    <section aria-labelledby="news-page-title" className="pb-20 pt-8 md:pb-24 md:pt-14 lg:pb-28 lg:pt-16">
+    <section
+      aria-labelledby="news-page-title"
+      className="pb-20 pt-8 md:pb-24 md:pt-14 lg:pb-28 lg:pt-16"
+    >
       <Container className="px-[30px] sm:px-8 lg:px-10">
         <h1 id="news-page-title" className="sr-only">
           Мэдээлэл
@@ -17,14 +24,24 @@ export function NewsGrid() {
           {(items ?? []).map((article, index) => (
             <NewsCard
               key={article.id}
-              article={{ id: String(article.id), slug: article.slug, title: article.title, description: article.summary, image: article.thumbnailUrl ?? '/news-team.svg' }}
+              article={{
+                id: String(article.id),
+                slug: article.slug,
+                title: article.title,
+                description: article.summary,
+                image: article.thumbnailUrl ?? '/news-team.svg',
+              }}
               imageLoading={index < 3 ? 'eager' : 'lazy'}
               className={index >= 4 ? 'hidden md:block' : ''}
             />
           ))}
-          {items?.length === 0 && <p className="col-span-full py-16 text-center text-neutral-500">Одоогоор нийтлэгдсэн мэдээ алга.</p>}
+          {items?.length === 0 && (
+            <p className="col-span-full py-16 text-center text-neutral-500">
+              Одоогоор нийтлэгдсэн мэдээ алга.
+            </p>
+          )}
         </div>
       </Container>
     </section>
-  )
+  );
 }

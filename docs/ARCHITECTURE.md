@@ -27,7 +27,7 @@ The frontend is a client-rendered React application using React Router, Tailwind
 
 Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity uses a small React context because header, route protection, and account pages share it.
 
-Category, brand, product, hero-banner, and news mocks are no longer application sources. Active scheduled banners and published news are read from the API; the unrelated promotional strip remains static.
+Category, brand, product, hero-banner, and news mocks are no longer application sources. Active banners and published news are read from the API; the unrelated promotional strip remains static.
 
 ## Frontend environment and same-origin API path
 
@@ -105,7 +105,7 @@ PostgreSQL and the upload root form one recoverable dataset and must be snapshot
 
 All `/api/v1/admin/**` endpoints require `ADMIN`; anonymous requests receive 401 and authenticated customers receive 403. The React admin routes use the same session/CSRF authentication but render a separate sidebar/header workspace. Orders and Pages are disabled navigation labels with no routes or fake CRUD.
 
-Categories are hierarchical. Services prevent self-parenting and indirect cycles, and deletion is blocked while children or products reference a category. Brand deletion preserves products through the existing nullable foreign-key rule. Banner public reads require active state and a valid optional schedule. News public reads require published state and a reached optional publication time.
+Categories are hierarchical. Services prevent self-parenting and indirect cycles, and deletion is blocked while children or products reference a category. Brand deletion preserves products through the existing nullable foreign-key rule. Normal banner administration has no start/end scheduling controls and sends no scheduling dates. The existing nullable fields remain in backend responses and the public filter for backward compatibility with older rows. News public reads require published state and a reached optional publication time.
 
 `admin_audit_log` stores actor email, action, entity type/id, a short non-sensitive detail, and timestamp for administration mutations. It never stores credentials, passwords, sessions, CSRF tokens, or secrets.
 

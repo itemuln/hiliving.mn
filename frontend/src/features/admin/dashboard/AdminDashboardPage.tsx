@@ -1,3 +1,65 @@
-import { useEffect,useState } from 'react';import { Archive,Boxes,Building2,Image,Newspaper,PackageCheck,PackageOpen,Tags,Users } from 'lucide-react';import * as api from '../../../api/adminApi';import type { DashboardCounts } from '../admin.types';import { AdminShell } from '../layout/AdminShell';import { ErrorPanel,LoadingPanel,panel } from '../components/AdminUi';
-const cards=[['totalProducts','Total products',Boxes],['activeProducts','Active products',PackageCheck],['draftProducts','Draft products',PackageOpen],['archivedProducts','Archived products',Archive],['categories','Categories',Tags],['brands','Brands',Building2],['users','Users',Users],['activeBanners','Active banners',Image],['publishedNews','Published news',Newspaper]] as const;
-export function AdminDashboardPage(){const[data,setData]=useState<DashboardCounts|null>(null);const[error,setError]=useState(false);const load=()=>{setError(false);api.getDashboard().then(setData).catch(()=>setError(true))};useEffect(load,[]);return <AdminShell title="Dashboard" description="A concise operational view of the HiLiving catalog and managed content.">{error?<ErrorPanel retry={load}/>:!data?<LoadingPanel/>:<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{cards.map(([key,label,Icon])=><div key={key} className={`${panel} flex items-center gap-4 p-5`}><div className="rounded-2xl bg-brand-50 p-3 text-brand-500"><Icon size={23}/></div><div><div className="text-3xl font-black text-slate-900">{data[key]}</div><div className="text-sm text-slate-500">{label}</div></div></div>)}</div>}</AdminShell>}
+import { useEffect, useState } from 'react';
+import {
+  Archive,
+  Boxes,
+  Building2,
+  Image,
+  Newspaper,
+  PackageCheck,
+  PackageOpen,
+  Tags,
+  Users,
+} from 'lucide-react';
+import * as api from '../../../api/adminApi';
+import type { DashboardCounts } from '../admin.types';
+import { AdminShell } from '../layout/AdminShell';
+import { ErrorPanel, LoadingPanel, panel } from '../components/AdminUi';
+const cards = [
+  ['totalProducts', 'Total products', Boxes],
+  ['activeProducts', 'Active products', PackageCheck],
+  ['draftProducts', 'Draft products', PackageOpen],
+  ['archivedProducts', 'Archived products', Archive],
+  ['categories', 'Categories', Tags],
+  ['brands', 'Brands', Building2],
+  ['users', 'Users', Users],
+  ['activeBanners', 'Active banners', Image],
+  ['publishedNews', 'Published news', Newspaper],
+] as const;
+export function AdminDashboardPage() {
+  const [data, setData] = useState<DashboardCounts | null>(null);
+  const [error, setError] = useState(false);
+  const load = () => {
+    setError(false);
+    api
+      .getDashboard()
+      .then(setData)
+      .catch(() => setError(true));
+  };
+  useEffect(load, []);
+  return (
+    <AdminShell
+      title="Dashboard"
+      description="A concise operational view of the HiLiving catalog and managed content."
+    >
+      {error ? (
+        <ErrorPanel retry={load} />
+      ) : !data ? (
+        <LoadingPanel />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {cards.map(([key, label, Icon]) => (
+            <div key={key} className={`${panel} flex items-center gap-4 p-5`}>
+              <div className="rounded-2xl bg-brand-50 p-3 text-brand-500">
+                <Icon size={23} />
+              </div>
+              <div>
+                <div className="text-3xl font-black text-slate-900">{data[key]}</div>
+                <div className="text-sm text-slate-500">{label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </AdminShell>
+  );
+}

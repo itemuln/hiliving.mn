@@ -1,16 +1,16 @@
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router-dom';
 
 interface SideBar {
-  readonly slug: string
-  readonly name: string
-  readonly iconUrl?: string
+  readonly slug: string;
+  readonly name: string;
+  readonly iconUrl?: string;
 }
 
 interface SidebarProps {
-  readonly items: readonly SideBar[]
-  readonly activeSlug: string
-  readonly basePath: string
-  readonly variant: 'brand' | 'category'
+  readonly items: readonly SideBar[];
+  readonly activeSlug: string;
+  readonly basePath: string;
+  readonly variant: 'brand' | 'category';
 }
 
 export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) {
@@ -18,8 +18,8 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
     <nav aria-label={variant === 'brand' ? 'Брэнд сонгох' : 'Ангилал сонгох'}>
       <ul className="space-y-1">
         {items.map((item) => {
-          const isActive = item.slug === activeSlug
-          const href = item.slug === 'all' ? basePath : `${basePath}/${item.slug}`
+          const isActive = item.slug === activeSlug;
+          const href = item.slug === 'all' ? basePath : `${basePath}/${item.slug}`;
 
           return (
             <li key={item.slug}>
@@ -33,21 +33,39 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
                 }`}
               >
                 {item.iconUrl ? (
-                  <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
-                    <img src={item.iconUrl} alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
+                  <span
+                    className={`flex h-8 w-9 shrink-0 items-center justify-center ${
+                      isActive ? 'bg-white/90' : ''
+                    }`}
+                  >
+                    <img
+                      src={item.iconUrl}
+                      alt=""
+                      aria-hidden="true"
+                      className="max-h-7 max-w-8 object-contain"
+                    />
                   </span>
                 ) : (
-                  <span className={`flex h-8 w-9 shrink-0 items-center justify-center ${isActive ? 'bg-white/90' : ''}`}>
-                    <img src="/icons/grid.svg" alt="" aria-hidden="true" className="max-h-7 max-w-8 object-contain" />
+                  <span
+                    className={`flex h-8 w-9 shrink-0 items-center justify-center ${
+                      isActive ? 'bg-white/90' : ''
+                    }`}
+                  >
+                    <img
+                      src="/icons/grid.svg"
+                      alt=""
+                      aria-hidden="true"
+                      className="max-h-7 max-w-8 object-contain"
+                    />
                   </span>
                 )}
                 <span>{item.name}</span>
                 {isActive ? <span className="sr-only">(selected)</span> : null}
               </Link>
             </li>
-          )
+          );
         })}
       </ul>
     </nav>
-  )
+  );
 }

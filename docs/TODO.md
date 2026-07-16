@@ -51,3 +51,4 @@
 - [x] Add Flyway V5 media metadata, validated JPEG/PNG processing, purpose-specific limits/resizing, secure UUID storage keys, configurable external local storage, media audit events, and public read-only `/media/**` delivery.
 - [x] Replace product, brand, banner, and news URL-entry fields with a reusable picker/drag-drop/progress/preview/retry upload control while retaining compatible existing external URLs.
 - [x] Verify 38 backend tests on Temurin Java 21, 35 frontend tests, lint/build, clean-build persistence, restart persistence, authorization/rejection paths, replacement immutability, public media rendering, and mobile admin layouts.
+- [x] Remove Starts at and Ends at from normal banner administration while preserving backward-compatible banner response fields.

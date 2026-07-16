@@ -1,8 +1,8 @@
-import { HeroCarousel } from '../components/home/HeroCarousel'
-import { Footer } from '../components/layout/Footer'
-import { Header } from '../components/layout/Header'
-import { MobileBottomNav } from '../components/layout/MobileBottomNav'
-import { NewsGrid } from '../components/news/NewsGrid'
+import { HeroCarousel } from '../components/home/HeroCarousel';
+import { Footer } from '../components/layout/Footer';
+import { Header } from '../components/layout/Header';
+import { MobileBottomNav } from '../components/layout/MobileBottomNav';
+import { NewsGrid } from '../components/news/NewsGrid';
 
 export function NewsPage() {
   return (
@@ -15,5 +15,5 @@ export function NewsPage() {
       <Footer />
       <MobileBottomNav />
     </div>
-  )
+  );
 }

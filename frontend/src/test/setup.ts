@@ -1,14 +1,16 @@
-import '@testing-library/jest-dom/vitest'
+import '@testing-library/jest-dom/vitest';
 
 class IntersectionObserverMock implements IntersectionObserver {
-  readonly root = null
-  readonly rootMargin = '0px'
-  readonly scrollMargin = '0px'
-  readonly thresholds = [0]
+  readonly root = null;
+  readonly rootMargin = '0px';
+  readonly scrollMargin = '0px';
+  readonly thresholds = [0];
 
   disconnect() {}
   observe() {}
-  takeRecords(): IntersectionObserverEntry[] { return [] }
+  takeRecords(): IntersectionObserverEntry[] {
+    return [];
+  }
   unobserve() {}
 }
 
@@ -21,11 +23,11 @@ class ResizeObserverMock implements ResizeObserver {
 Object.defineProperty(globalThis, 'IntersectionObserver', {
   configurable: true,
   value: IntersectionObserverMock,
-})
+});
 Object.defineProperty(globalThis, 'ResizeObserver', {
   configurable: true,
   value: ResizeObserverMock,
-})
+});
 Object.defineProperty(window, 'matchMedia', {
   configurable: true,
   value: (query: string): MediaQueryList => ({
@@ -38,4 +40,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: () => undefined,
     dispatchEvent: () => false,
   }),
-})
+});

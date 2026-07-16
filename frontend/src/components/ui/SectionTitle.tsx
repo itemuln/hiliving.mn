@@ -1,6 +1,6 @@
 interface SectionTitleProps {
-  readonly accent: string
-  readonly suffix?: string
+  readonly accent: string;
+  readonly suffix?: string;
 }
 
 export function SectionTitle({ accent, suffix }: SectionTitleProps) {
@@ -9,5 +9,5 @@ export function SectionTitle({ accent, suffix }: SectionTitleProps) {
       <span className="text-brand-500">{accent}</span>
       {suffix ? ` ${suffix}` : ''}
     </h2>
-  )
+  );
 }

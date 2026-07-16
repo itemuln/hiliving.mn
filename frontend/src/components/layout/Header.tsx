@@ -1,7 +1,7 @@
-import { type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Container } from './Container'
-import { useOptionalAuth } from '../../features/auth/useAuth'
+import { type FormEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Container } from './Container';
+import { useOptionalAuth } from '../../features/auth/useAuth';
 
 const navigation = [
   { label: 'Дэлгүүр хэсэх', to: '/categories/', section: 'categories' },
@@ -9,48 +9,80 @@ const navigation = [
   { label: 'Брэндүүд', to: '/brands', section: 'brands' },
   { label: 'Мэдээлэл', to: '/news', section: 'news' },
   { label: 'Холбоо барих', to: '/#contact', section: 'contact' },
-] as const
+] as const;
 
 export function Header() {
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
-  const auth = useOptionalAuth()
-  const state = auth?.state ?? { status: 'anonymous' as const, user: null }
-  const logout = auth?.logout ?? (async () => undefined)
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const auth = useOptionalAuth();
+  const state = auth?.state ?? { status: 'anonymous' as const, user: null };
+  const logout = auth?.logout ?? (async () => undefined);
 
   const searchCatalog = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const search = String(form.get('search') ?? '').trim()
-    navigate(search ? `/categories?search=${encodeURIComponent(search)}` : '/categories')
-  }
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const search = String(form.get('search') ?? '').trim();
+    navigate(search ? `/categories?search=${encodeURIComponent(search)}` : '/categories');
+  };
 
   return (
     <header className="relative z-30 border-b border-neutral-100 bg-white">
       <Container className="flex h-[72px] items-center justify-between md:h-[128px] md:items-end">
         <Link to="/" className="mb-0 shrink-0 md:mb-6" aria-label="Hiliving Mongolia нүүр хуудас">
-          <img src="/hiLivingLogo.svg" alt="Hiliving Mongolia" loading="eager" decoding="async" className="h-auto w-[190px] md:w-[190px] lg:w-[220px] xl:w-[250px]" />
+          <img
+            src="/hiLivingLogo.svg"
+            alt="Hiliving Mongolia"
+            loading="eager"
+            decoding="async"
+            className="h-auto w-[190px] md:w-[190px] lg:w-[220px] xl:w-[250px]"
+          />
         </Link>
 
         <div className="hidden flex-1 md:block">
           <div className="mb-7 flex items-center justify-end gap-5 text-xs text-neutral-600">
-            {state.status === 'authenticated' ? <>
-              <span className="max-w-32 truncate text-neutral-500">{state.user.firstName}</span>
-              <Link to="/account" className="transition hover:text-brand-500">Миний бүртгэл</Link>
-              {state.user.role === 'ADMIN' ? <Link to="/admin" className="font-medium text-brand-600">Админ хэсэг</Link> : null}
-              <button type="button" onClick={() => void logout()} className="transition hover:text-brand-500">Гарах</button>
-            </> : state.status === 'anonymous' ? <>
-              <Link to="/login" className="transition hover:text-brand-500">Нэвтрэх</Link>
-              <Link to="/register" className="transition hover:text-brand-500">Бүртгүүлэх</Link>
-            </> : <span className="h-4 w-28 animate-pulse rounded bg-neutral-100" aria-label="Бүртгэл шалгаж байна" />}
+            {state.status === 'authenticated' ? (
+              <>
+                <span className="max-w-32 truncate text-neutral-500">{state.user.firstName}</span>
+                <Link to="/account" className="transition hover:text-brand-500">
+                  Миний бүртгэл
+                </Link>
+                {state.user.role === 'ADMIN' ? (
+                  <Link to="/admin" className="font-medium text-brand-600">
+                    Админ хэсэг
+                  </Link>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => void logout()}
+                  className="transition hover:text-brand-500"
+                >
+                  Гарах
+                </button>
+              </>
+            ) : state.status === 'anonymous' ? (
+              <>
+                <Link to="/login" className="transition hover:text-brand-500">
+                  Нэвтрэх
+                </Link>
+                <Link to="/register" className="transition hover:text-brand-500">
+                  Бүртгүүлэх
+                </Link>
+              </>
+            ) : (
+              <span
+                className="h-4 w-28 animate-pulse rounded bg-neutral-100"
+                aria-label="Бүртгэл шалгаж байна"
+              />
+            )}
           </div>
           <div className="flex items-end justify-end gap-3">
             <nav aria-label="Үндсэн цэс" className="flex items-end gap-1">
               {navigation.map((item) => {
                 const isActive =
-                  (item.section === 'categories' && (pathname === '/' || pathname.startsWith('/categories'))) ||
+                  (item.section === 'categories' &&
+                    (pathname === '/' || pathname.startsWith('/categories'))) ||
                   (item.section === 'brands' && pathname.startsWith('/brands')) ||
-                  (item.section === 'news' && pathname.startsWith('/news'))
+                  (item.section === 'news' && pathname.startsWith('/news'));
 
                 return (
                   <Link
@@ -65,13 +97,30 @@ export function Header() {
                   >
                     {item.label}
                   </Link>
-                )
+                );
               })}
             </nav>
-            <form onSubmit={searchCatalog} className="mb-2 ml-4 hidden w-[200px] items-center rounded-full border border-neutral-300 px-4 py-2 focus-within:border-brand-400 xl:flex xl:w-[240px]" role="search">
-              <label htmlFor="desktop-search" className="sr-only">Бүтээгдэхүүн хайх</label>
-              <input id="desktop-search" name="search" type="search" maxLength={100} placeholder="Хайх" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-neutral-400" />
-              <button type="submit" aria-label="Хайх" className="ml-2 text-neutral-600 transition-all duration-300 ease-out hover:text-brand-500">
+            <form
+              onSubmit={searchCatalog}
+              className="mb-2 ml-4 hidden w-[200px] items-center rounded-full border border-neutral-300 px-4 py-2 focus-within:border-brand-400 xl:flex xl:w-[240px]"
+              role="search"
+            >
+              <label htmlFor="desktop-search" className="sr-only">
+                Бүтээгдэхүүн хайх
+              </label>
+              <input
+                id="desktop-search"
+                name="search"
+                type="search"
+                maxLength={100}
+                placeholder="Хайх"
+                className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-neutral-400"
+              />
+              <button
+                type="submit"
+                aria-label="Хайх"
+                className="ml-2 text-neutral-600 transition-all duration-300 ease-out hover:text-brand-500"
+              >
                 <img src="/icons/search.svg" alt="" aria-hidden="true" className="h-5 w-5" />
               </button>
             </form>
@@ -79,5 +128,5 @@ export function Header() {
         </div>
       </Container>
     </header>
-  )
+  );
 }
