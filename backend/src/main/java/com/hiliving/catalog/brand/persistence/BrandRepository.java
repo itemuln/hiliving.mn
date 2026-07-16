@@ -10,4 +10,6 @@ public interface BrandRepository extends JpaRepository<BrandEntity, Long> {
     List<BrandEntity> findAllByActiveTrueOrderByNameAsc();
 
     Optional<BrandEntity> findBySlug(String slug);
+
+    boolean existsBySlugAndIdNot(String slug, Long id);
 }

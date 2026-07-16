@@ -37,7 +37,7 @@ export function Header() {
             {state.status === 'authenticated' ? <>
               <span className="max-w-32 truncate text-neutral-500">{state.user.firstName}</span>
               <Link to="/account" className="transition hover:text-brand-500">Миний бүртгэл</Link>
-              {state.user.role === 'ADMIN' ? <Link to="/account" className="font-medium text-brand-600">Админ хэсэг</Link> : null}
+              {state.user.role === 'ADMIN' ? <Link to="/admin" className="font-medium text-brand-600">Админ хэсэг</Link> : null}
               <button type="button" onClick={() => void logout()} className="transition hover:text-brand-500">Гарах</button>
             </> : state.status === 'anonymous' ? <>
               <Link to="/login" className="transition hover:text-brand-500">Нэвтрэх</Link>

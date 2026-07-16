@@ -35,7 +35,7 @@ async function ensureCsrf() {
   if (!response.ok) throw new AccountApiError(response.status, await errorCode(response))
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = init.method?.toUpperCase() ?? 'GET'
   const mutating = !['GET', 'HEAD', 'OPTIONS'].includes(method)
   if (mutating) await ensureCsrf()
@@ -47,7 +47,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       credentials: 'include',
       headers: {
         Accept: 'application/json',
-        ...(init.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(init.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
         ...(csrf ? { 'X-XSRF-TOKEN': decodeURIComponent(csrf) } : {}),
         ...init.headers,
       },
@@ -72,20 +72,67 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   }
 }
 
+export interface UploadOptions {
+  signal?: AbortSignal
+  onProgress?: (percentage: number) => void
+}
+
+export async function apiUpload<T>(path: string, body: FormData, options: UploadOptions = {}): Promise<T> {
+  await ensureCsrf()
+  const csrf = cookie('XSRF-TOKEN')
+  return await new Promise<T>((resolve, reject) => {
+    const request = new XMLHttpRequest()
+    const abort = () => request.abort()
+    request.open('POST', apiUrl(path))
+    request.withCredentials = true
+    request.setRequestHeader('Accept', 'application/json')
+    if (csrf) request.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(csrf))
+    request.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) options.onProgress?.(Math.round((event.loaded / event.total) * 100))
+    })
+    request.addEventListener('load', () => {
+      options.signal?.removeEventListener('abort', abort)
+      let payload: DataEnvelope<T> | ErrorEnvelope | null = null
+      try { payload = JSON.parse(request.responseText) as DataEnvelope<T> | ErrorEnvelope } catch { /* normalized below */ }
+      if (request.status < 200 || request.status >= 300) {
+        const code = payload && 'error' in payload ? payload.error?.code ?? 'REQUEST_FAILED' : 'REQUEST_FAILED'
+        if (request.status === 401 && code === 'AUTHENTICATION_REQUIRED') window.dispatchEvent(new Event('hiliving:session-expired'))
+        reject(new AccountApiError(request.status, code))
+        return
+      }
+      if (!payload || !('data' in payload)) reject(new AccountApiError(request.status, 'INVALID_RESPONSE'))
+      else resolve(payload.data)
+    })
+    request.addEventListener('error', () => {
+      options.signal?.removeEventListener('abort', abort)
+      reject(new AccountApiError(null, 'SERVICE_UNAVAILABLE'))
+    })
+    request.addEventListener('abort', () => {
+      options.signal?.removeEventListener('abort', abort)
+      reject(new DOMException('Upload aborted', 'AbortError'))
+    })
+    if (options.signal?.aborted) abort()
+    else {
+      options.signal?.addEventListener('abort', abort, { once: true })
+      request.send(body)
+    }
+  })
+}
+
 export async function getCurrentUser() {
-  try { return await request<AuthenticatedUser>('/api/v1/account/me') }
+  try { return await apiRequest<AuthenticatedUser>('/api/v1/account/me') }
   catch (error) {
     if (error instanceof AccountApiError && error.status === 401) return null
     throw error
   }
 }
 
-export const login = (input: LoginInput) => request<AuthenticatedUser>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(input) })
-export const register = (input: RegisterInput) => request<AuthenticatedUser>('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(input) })
-export const logout = () => request<void>('/api/v1/auth/logout', { method: 'POST' })
-export const updateProfile = (input: ProfileInput) => request<AuthenticatedUser>('/api/v1/account/profile', { method: 'PATCH', body: JSON.stringify(input) })
-export const changePassword = (input: PasswordInput) => request<void>('/api/v1/account/password', { method: 'POST', body: JSON.stringify(input) })
-export const getAddresses = () => request<readonly Address[]>('/api/v1/account/addresses')
-export const createAddress = (input: AddressInput) => request<Address>('/api/v1/account/addresses', { method: 'POST', body: JSON.stringify(input) })
-export const updateAddress = (id: number, input: AddressInput) => request<Address>(`/api/v1/account/addresses/${id}`, { method: 'PATCH', body: JSON.stringify(input) })
-export const deleteAddress = (id: number) => request<void>(`/api/v1/account/addresses/${id}`, { method: 'DELETE' })
+export const login = (input: LoginInput) => apiRequest<AuthenticatedUser>('/api/v1/auth/login', { method: 'POST', body: JSON.stringify(input) })
+export const register = (input: RegisterInput) => apiRequest<AuthenticatedUser>('/api/v1/auth/register', { method: 'POST', body: JSON.stringify(input) })
+export const logout = () => apiRequest<void>('/api/v1/auth/logout', { method: 'POST' })
+export const updateProfile = (input: ProfileInput) => apiRequest<AuthenticatedUser>('/api/v1/account/profile', { method: 'PATCH', body: JSON.stringify(input) })
+export const changePassword = (input: PasswordInput) => apiRequest<void>('/api/v1/account/password', { method: 'POST', body: JSON.stringify(input) })
+export const getAddresses = () => apiRequest<readonly Address[]>('/api/v1/account/addresses')
+export const createAddress = (input: AddressInput) => apiRequest<Address>('/api/v1/account/addresses', { method: 'POST', body: JSON.stringify(input) })
+export const updateAddress = (id: number, input: AddressInput) => apiRequest<Address>(`/api/v1/account/addresses/${id}`, { method: 'PATCH', body: JSON.stringify(input) })
+export const deleteAddress = (id: number) => apiRequest<void>(`/api/v1/account/addresses/${id}`, { method: 'DELETE' })

@@ -65,8 +65,11 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/categories/**", "/api/v1/brands/**", "/api/v1/products/**",
+                                "/api/v1/banners/**", "/api/v1/news/**",
+                                "/media/**",
                                 "/api/v1/auth/csrf", "/actuator/health", "/actuator/health/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.HEAD, "/media/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").authenticated()
                         .requestMatchers("/api/v1/account/**").authenticated()

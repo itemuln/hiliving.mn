@@ -30,12 +30,19 @@ public class AdminUserController {
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @RequestParam(required = false) @Size(max = 100) String search,
+            @RequestParam(required = false) String membership,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "newest") String sort
-    ) { return ApiResponse.of(adminUserService.search(page, size, search, sort)); }
+    ) { return ApiResponse.of(adminUserService.search(page, size, search, membership, status, sort)); }
 
     @GetMapping("/{userId}")
     public ApiResponse<AccountResponse> find(@PathVariable @Min(1) Long userId) {
         return ApiResponse.of(adminUserService.find(userId));
+    }
+
+    @GetMapping("/{userId}/addresses")
+    public ApiResponse<java.util.List<com.hiliving.identity.account.api.AddressResponse>> addresses(@PathVariable @Min(1) Long userId) {
+        return ApiResponse.of(adminUserService.addresses(userId));
     }
 
     @PatchMapping("/{userId}/status")

@@ -249,3 +249,43 @@
 **Rationale:** Ownership-scoped repositories prevent horizontal access, while the database index protects all write paths.
 
 **Consequences:** Address history is not retained in Phase 4A. Future orders must snapshot delivery details rather than rely on mutable account addresses.
+
+## 2026-07-16 - Separate administration workspace
+
+**Decision:** Keep administration inside the React application and session system, but render a separate responsive dark-sidebar shell guarded by `ADMIN`. Orders and Pages appear only as disabled future navigation labels and have no routes.
+
+**Consequences:** Public storefront chrome is not reused in admin pages. Anonymous admin navigation returns through login, customers are rejected, and every admin API remains server-authorized.
+
+## 2026-07-16 - Catalog lifecycle, inventory, media, and membership eligibility
+
+**Decision:** Preserve `DRAFT`, `ACTIVE`, and `ARCHIVED` lifecycle status; add an independent operational `active` switch. Public visibility requires both active lifecycle and operational state plus visible category/brand relationships. Compute inventory state from stock and threshold. Store at most four URL-only images and require exactly one primary image for a publicly usable product. Store `membership_discount_eligible` as a required boolean.
+
+**Consequences:** Product eligibility only permits a future membership discount; it does not calculate final price or stacking. Binary uploads, object storage, inventory reservation, and checkout pricing remain future work.
+
+## 2026-07-16 - Category hierarchy and safe deletion
+
+**Decision:** Validate self-parent and indirect cycles in the administration service. Reject deletion while children or products reference a category and offer deactivation through normal updates. Preserve the existing brand `ON DELETE SET NULL` rule.
+
+**Consequences:** Administrators must resolve references before deleting categories. Stable conflict codes make these restrictions safe to present in the UI.
+
+## 2026-07-16 - Managed banners, news, and administration audit
+
+**Decision:** Add URL-based scheduled banners and draft/published plain-text news. Public endpoints filter by active/publication windows. Record administration changes in a small relational audit log with actor, action, entity identity, safe detail, and timestamp.
+
+**Consequences:** Static hero/news data is retired. Rich-text building, media analytics, binary storage, and a generic event platform are out of scope.
+
+## 2026-07-16 - Local development sample data
+
+**Decision:** Keep manually requested test accounts and catalog/content samples in the current local PostgreSQL volume rather than a Flyway migration or automatic application seeder. Use clearly marked local identities and `dev-` slugs, and leave media unset until real URLs are supplied.
+
+**Consequences:** Production and clean test databases remain free of shared credentials and demonstration records. Resetting the local Docker volume removes this dataset, and image-free products cannot be published as operationally active through the administration API until a primary image URL is assigned.
+
+## 2026-07-16 - Managed media processing and storage boundary
+
+**Context:** Phase 5 URL-only image fields required administrators to host files elsewhere and provided no validation, processing, persistence, or deployment-safe storage path. The first production target is a single Contabo VPS, but the application must not couple domain records to one storage provider.
+
+**Decision:** Add an ADMIN/CSRF-protected multipart image endpoint and a `MediaStorageService` provider boundary. Accept only positively decoded JPEG/PNG uploads whose claimed MIME type and extension match the detected format. Enforce purpose-specific byte and source-dimension limits, resize proportionally without upscaling, and re-encode before storage. Use UUID filenames in server-selected purpose directories under an external configurable root. Store media metadata and relative keys in PostgreSQL, but keep image binaries on the filesystem. Serve same-origin `/media/**` read-only in development; use a restricted NGINX alias in production. Preserve existing product/brand/banner/news URL columns as the association bridge so external URLs remain compatible. This supersedes Phase 5's deferral of binary uploads; it does not introduce an object store.
+
+**Rationale:** Decode-and-reencode validates actual image content and strips metadata, while generated keys and normalized paths prevent original-filename and traversal risks. An external root survives application clean builds and release replacement. The storage interface lets the same local implementation use a different root on Contabo and gives an S3-compatible implementation a narrow future seam.
+
+**Consequences:** Supported files are JPEG and PNG; WEBP remains rejected until the Java baseline has verified codec support. EXIF orientation is not normalized. Upload completion means the immutable file, media row, and audit event were created; database failure triggers best-effort file compensation, but a machine/process failure can still leave an orphan. Replacing or removing a URL does not delete the old file until reference-aware retention is designed. PostgreSQL and the upload directory require coordinated off-server backup and restore testing. Move to S3-compatible storage when multi-node deployment, CDN delivery, durability, growth, or backup operations justify it.

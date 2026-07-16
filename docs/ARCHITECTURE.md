@@ -21,16 +21,17 @@ The frontend is a client-rendered React application using React Router, Tailwind
 - `src/features/catalog`: presentation-safe catalog models and cancellation-aware resource/query hooks
 - `src/features/auth`: three-state session hydration, auth context, login/registration forms, and protected routing
 - `src/features/account`: profile, password, membership, and delivery-address UI
+- `src/features/admin`: separate responsive shell, centralized admin adapters, dashboard, catalog, user, banner, and news administration
 - `src/components/catalog`: reusable loading, empty, error, retry, navigation, filter, grid, and pagination UI
 - `src/pages`: category, brand, news, and slug-based product-detail routes
 
 Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity uses a small React context because header, route protection, and account pages share it.
 
-Category, brand, and product mocks have been removed. Static hero banners, promotions, and news remain because they are marketing content outside the catalog API.
+Category, brand, product, hero-banner, and news mocks are no longer application sources. Active scheduled banners and published news are read from the API; the unrelated promotional strip remains static.
 
 ## Frontend environment and same-origin API path
 
-The browser calls `/api/v1` by default. `VITE_API_BASE_URL` may provide an explicit base URL, but its safe default is blank. During local development, Vite proxies `/api` to `VITE_DEV_API_PROXY_TARGET`, which defaults to `http://localhost:8080`. Production NGINX is expected to proxy the same `/api` path to Spring Boot.
+The browser calls `/api/v1` by default. `VITE_API_BASE_URL` may provide an explicit base URL, but its safe default is blank. During local development, Vite proxies `/api` and `/media` to `VITE_DEV_API_PROXY_TARGET`, which defaults to `http://localhost:8080`. Production NGINX is expected to proxy `/api` to Spring Boot and expose `/media` from the external upload root as a read-only static alias.
 
 This same-origin design avoids browser CORS requirements in both the preferred local and target production topology. The backend does not enable wildcard or default cross-origin access. An explicitly cross-origin deployment must add a narrow, environment-configured allowlist as a separate reviewed decision.
 
@@ -71,9 +72,48 @@ Users are soft-disabled with `ACTIVE`, `DISABLED`, or `LOCKED`; they are not del
 
 Flyway migration `V2__create_catalog_schema.sql` creates Category, Brand, Product, and ProductImage tables. Category deletion is restricted while referenced, brand deletion nulls the optional product relationship, and product deletion cascades to image metadata. Slugs are unique validated public identifiers. Product status is `DRAFT`, `ACTIVE`, or `ARCHIVED`; public reads require active products/categories and an active or absent brand. Prices use `NUMERIC(12,2)`, and image content remains URL-based.
 
+Flyway V4 adds catalog descriptions/order fields, unique product codes, stock and low-stock thresholds, new/active flags, and `membership_discount_eligible`. Lifecycle status controls draft/published/archived workflow; `active` is the independent operational visibility switch. Public products require lifecycle `ACTIVE`, product `active=true`, an active category, and an active or absent brand. Inventory state is computed: zero is `OUT_OF_STOCK`, positive stock at or below the threshold is `LOW_STOCK`, and higher stock is `IN_STOCK`.
+
+Product, brand, banner, and news associations remain URL metadata, which preserves existing external URL compatibility. New administration uploads return same-origin `/media/...` URLs backed by managed media records. Product administration permits at most four images, unique order values, at most one primary image while drafting, and exactly one primary image for a publicly usable active product.
+
+## Media upload, processing, and storage
+
+`POST /api/v1/admin/media/images` accepts `multipart/form-data` with `file` and a `purpose` of `PRODUCT`, `BRAND`, `BANNER`, or `NEWS`. It uses the existing session, ADMIN authorization, and CSRF boundary. Multipart requests must not set their own `Content-Type` boundary. Successful responses contain the public URL and authoritative media metadata; editor forms persist only that returned URL after the upload completes.
+
+The processor never trusts the supplied name, extension, or MIME type. It checks upload size before decode, uses ImageIO readers to inspect source dimensions, rejects dimension bombs, decodes the image, requires the claimed MIME type and filename extension to match the detected format, and accepts only JPEG and PNG. The decoded pixels are resized proportionally without upscaling and re-encoded to strip embedded metadata and untrusted payloads. JPEG output is RGB; PNG preserves alpha. EXIF orientation is not normalized. WEBP remains rejected because this Java baseline has no verified built-in decode-and-encode path.
+
+Purpose policy is centralized:
+
+| Purpose | Maximum upload | Maximum source | Maximum output | Directory |
+| --- | ---: | ---: | ---: | --- |
+| Product | 5 MB | 4000×4000 | 1600×1600 | `products/` |
+| Brand | 2 MB | 3000×3000 | 1000×1000 | `brands/` |
+| Banner | 8 MB | 6000×4000 | 2400×1600 | `banners/` |
+| News | 5 MB | 4000×3000 | 1600×1200 | `news/` |
+
+`MediaStorageService` is the provider boundary. `LocalMediaStorageService` is used for both development and the first Contabo deployment; changing the absolute configured root does not change application code. It creates server-selected purpose directories, generates UUID filenames with the processor-selected extension, stages within the destination filesystem, and uses an atomic move where supported with a safe non-replacing fallback. It normalizes and validates every resolved path, rejects traversal and symlink destinations, never uses the original filename as a path, and does not overwrite an existing key.
+
+`HILIVING_MEDIA_STORAGE_PATH` configures the external storage root. The development default is `../infrastructure/data/uploads` relative to `backend/`; the directory is gitignored and is outside `backend/target` and `frontend/dist`, so Maven/npm clean builds do not delete uploads. Production should use `/var/lib/hiliving/uploads`, owned by a restricted `hiliving` service account, with directory/file permissions equivalent to `0750`/`0640`. The application needs read/write access; NGINX needs read-only traversal/read access. Binaries are never stored in PostgreSQL.
+
+Flyway V5 creates `media_assets` for provider, relative storage key, purpose, original filename, detected content type, byte size, final dimensions, creator, and timestamps. Only relative storage keys are stored. Upload processing first creates a temporary re-encoded file, storage moves it to its immutable final key, and a transaction records metadata plus the `MEDIA_UPLOADED` audit event. If metadata/audit persistence fails, the service attempts to remove the final file; all processing temporary files are cleaned. A process or machine failure between the filesystem move and compensating cleanup can still leave an orphan, so future maintenance must reconcile database keys and filesystem files. Replacing/removing an association deliberately does not delete the previous immutable file because a reference-count and retention policy do not yet exist.
+
+Spring serves `GET` and `HEAD /media/**` from the configured root during development with a bounded public cache policy. Directory listing and non-read methods are unavailable. In production, NGINX should serve the same URL space directly with a read-only `alias /var/lib/hiliving/uploads/`, deny dotfiles, disable auto-indexing, and keep `/api` routing ahead of the SPA fallback. Spring must not expose an unrelated working directory.
+
+PostgreSQL and the upload root form one recoverable dataset and must be snapshotted/backed up together, then copied off-server. Restore exercises must verify both metadata rows and referenced files. An S3-compatible implementation should replace only `MediaStorageService` when multi-node application instances, CDN delivery, off-server durability, storage growth, or operational backup burden justify it; URLs/keys may then require a reviewed migration strategy.
+
+## Administration and managed content
+
+All `/api/v1/admin/**` endpoints require `ADMIN`; anonymous requests receive 401 and authenticated customers receive 403. The React admin routes use the same session/CSRF authentication but render a separate sidebar/header workspace. Orders and Pages are disabled navigation labels with no routes or fake CRUD.
+
+Categories are hierarchical. Services prevent self-parenting and indirect cycles, and deletion is blocked while children or products reference a category. Brand deletion preserves products through the existing nullable foreign-key rule. Banner public reads require active state and a valid optional schedule. News public reads require published state and a reached optional publication time.
+
+`admin_audit_log` stores actor email, action, entity type/id, a short non-sensitive detail, and timestamp for administration mutations. It never stores credentials, passwords, sessions, CSRF tokens, or secrets.
+
 ## Local development environment
 
 Docker Compose manages PostgreSQL 17 only, persists data in a named volume, publishes it on loopback, and checks readiness. Backend, frontend, and database remain independently runnable. The standard ports are PostgreSQL 5432, Spring Boot 8080, and Vite 5173. This workstation overrides PostgreSQL to 5433 and uses backend 18080 because existing services occupy the defaults.
+
+The current workstation may contain explicitly requested local test rows for administration and storefront verification. These rows are written only to the local PostgreSQL volume, use clearly marked `.local` identities and `dev-` catalog slugs, and are not shipped through Flyway, application startup, tests, or production deployment. Image associations and optional news thumbnails are left empty; image-free products remain draft, archived, or operationally inactive.
 
 The `local` Spring profile adds a small sample catalog only when catalog tables are empty. Migrations contain schema rather than sample rows.
 
@@ -83,20 +123,20 @@ Flyway is the only schema-management mechanism. Versioned SQL lives in `backend/
 
 ## API boundaries
 
-Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`. Auth endpoints are under `/api/v1/auth`; customer self-service is under `/api/v1/account`; minimal administrative user management is under `/api/v1/admin/users`. Successful responses use `data`; pages include items and page metadata. Failures use the existing safe `error` envelope with stable account/security codes where useful.
+Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, `/api/v1/products/{slug}`, `/api/v1/banners`, and `/api/v1/news`. Auth endpoints are under `/api/v1/auth`; customer self-service is under `/api/v1/account`; administration is under `/api/v1/admin`. Successful responses use `data`; pages include items and page metadata. Failures use the existing safe `error` envelope with stable account/security codes where useful.
 
 ## Validation strategy
 
-Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 25 tests cover existing catalog behavior plus auth hydration, operational hydration failure, login/logout, CSRF headers, registration errors, safe returns, profile/password changes, address states, and session expiry.
+Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 35 tests cover existing catalog and account behavior plus administrator authorization, multipart/CSRF handling, upload progress/retry/removal, product image-slot rules, media-backed forms, and mobile banner source selection.
 
-Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 4A verified registration, session login, membership display, default-address creation, logout, protected redirects, and 390×844 no-overflow layouts. Temporary verification users and dependent addresses are removed immediately afterward.
+Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 5.1 verified ADMIN upload and CUSTOMER rejection, JPEG/PNG processing, unsafe/unsupported rejection, four-product-image enforcement, primary/reorder/replace behavior, immutable replacement keys, product/banner/news rendering, mobile image selection, persistence across clean builds and a backend restart, and 390×844 no-overflow administration layouts. Temporary verification records and files are removed immediately afterward.
 
-Backend validation uses Maven on Temurin Java 21 with PostgreSQL Testcontainers, Flyway through V3, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 27 tests include the existing catalog suite plus identity constraints, normalization, password hashing, lockout, session fixation, CSRF, account operations, address ownership, and admin authorization.
+Backend validation uses Maven on Temurin Java 21 with PostgreSQL Testcontainers, Flyway through V5, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 38 tests include the existing catalog, identity, and administration suites plus media validation, processing, secure storage, transaction-failure cleanup, authorization, serving restrictions, and association integration.
 
 ## Target Contabo deployment architecture
 
-The production target is one Ubuntu LTS VPS with NGINX on ports 80 and 443, static frontend assets and SPA fallback from NGINX, same-origin `/api` reverse proxying to Spring Boot on localhost 8080, and locally bound PostgreSQL. Spring Boot will run under systemd. Restricted environment files or secret management supply secrets, and database backups are copied off-server.
+The production target is one Ubuntu LTS VPS with NGINX on ports 80 and 443, frontend releases under `/opt/hiliving/frontend`, static assets and SPA fallback from NGINX, same-origin `/api` reverse proxying to Spring Boot on localhost 8080, a read-only `/media/` alias to `/var/lib/hiliving/uploads/`, and locally bound PostgreSQL. Backend releases live under `/opt/hiliving/backend` and run under systemd. Restricted environment files or secret management supply secrets. PostgreSQL and upload backups are coordinated and copied off-server.
 
 ## NGINX, systemd, and HTTPS plan
 
-NGINX will terminate Let's Encrypt HTTPS, serve the frontend, preserve React Router deep links, and proxy `/api` to Spring Boot. systemd will manage backend lifecycle and restricted environment loading. Production assets remain deferred.
+NGINX will terminate Let's Encrypt HTTPS, serve the frontend, preserve React Router deep links, proxy `/api` to Spring Boot, and expose `/media/` read-only without directory listing. systemd will manage backend lifecycle and restricted environment loading, including `HILIVING_MEDIA_STORAGE_PATH=/var/lib/hiliving/uploads`. Production configuration and deployment remain deferred.

@@ -42,6 +42,10 @@ public class CategoryEntity {
     @JoinColumn(name = "parent_id")
     private CategoryEntity parent;
 
+    @Size(max = 1000)
+    @Column(length = 1000)
+    private String description;
+
     @Min(0)
     @Column(name = "display_order", nullable = false)
     private int displayOrder;
@@ -78,6 +82,15 @@ public class CategoryEntity {
         return new CategoryEntity(name, slug, parent, displayOrder, active);
     }
 
+    public void update(String name, String slug, CategoryEntity parent, String description, int displayOrder, boolean active) {
+        this.name = name;
+        this.slug = slug;
+        this.parent = parent;
+        this.description = description;
+        this.displayOrder = displayOrder;
+        this.active = active;
+    }
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();
@@ -105,6 +118,8 @@ public class CategoryEntity {
     public CategoryEntity getParent() {
         return parent;
     }
+
+    public String getDescription() { return description; }
 
     public int getDisplayOrder() {
         return displayOrder;

@@ -23,6 +23,7 @@ public final class ProductSpecifications {
             var predicates = new ArrayList<>();
 
             predicates.add(criteriaBuilder.equal(root.get("status"), ProductStatus.ACTIVE));
+            predicates.add(criteriaBuilder.isTrue(root.get("active")));
             predicates.add(criteriaBuilder.isTrue(category.get("active")));
             predicates.add(criteriaBuilder.or(
                     criteriaBuilder.isNull(root.get("brand")),

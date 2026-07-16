@@ -11,6 +11,15 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 50
+  servlet:
+    multipart:
+      max-file-size: ${HILIVING_MEDIA_MULTIPART_MAX_FILE_SIZE:8MB}
+      max-request-size: ${HILIVING_MEDIA_MULTIPART_MAX_REQUEST_SIZE:9MB}
+      file-size-threshold: 0
+
+hiliving:
+  media:
+    storage-path: ${HILIVING_MEDIA_STORAGE_PATH:../infrastructure/data/uploads}
 
 server:
   port: ${SERVER_PORT:8080}

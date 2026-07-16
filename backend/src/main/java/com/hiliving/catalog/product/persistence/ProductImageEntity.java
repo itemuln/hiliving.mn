@@ -77,6 +77,14 @@ public class ProductImageEntity {
         return new ProductImageEntity(product, imageUrl, altText, displayOrder, primaryImage);
     }
 
+    public static ProductImageEntity draft(String imageUrl, String altText, int displayOrder, boolean primaryImage) {
+        return new ProductImageEntity(null, imageUrl, altText, displayOrder, primaryImage);
+    }
+
+    static ProductImageEntity copyFor(ProductEntity product, ProductImageEntity image) {
+        return create(product, image.imageUrl, image.altText, image.displayOrder, image.primaryImage);
+    }
+
     @PrePersist
     void onCreate() {
         createdAt = Instant.now();

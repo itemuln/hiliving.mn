@@ -38,6 +38,13 @@ public class BrandEntity {
     @Column(name = "logo_url", length = 2048)
     private String logoUrl;
 
+    @Size(max = 1000)
+    @Column(length = 1000)
+    private String description;
+
+    @Column(name = "display_order", nullable = false)
+    private int displayOrder;
+
     @Column(nullable = false)
     private boolean active;
 
@@ -61,6 +68,15 @@ public class BrandEntity {
 
     public static BrandEntity create(String name, String slug, String logoUrl, boolean active) {
         return new BrandEntity(name, slug, logoUrl, active);
+    }
+
+    public void update(String name, String slug, String logoUrl, String description, int displayOrder, boolean active) {
+        this.name = name;
+        this.slug = slug;
+        this.logoUrl = logoUrl;
+        this.description = description;
+        this.displayOrder = displayOrder;
+        this.active = active;
     }
 
     @PrePersist
@@ -90,6 +106,10 @@ public class BrandEntity {
     public String getLogoUrl() {
         return logoUrl;
     }
+
+    public String getDescription() { return description; }
+
+    public int getDisplayOrder() { return displayOrder; }
 
     public boolean isActive() {
         return active;

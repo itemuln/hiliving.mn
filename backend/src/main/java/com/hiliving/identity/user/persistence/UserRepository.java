@@ -36,4 +36,17 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
                or user.phoneNumber like concat('%', :search, '%')
             """)
     Page<UserEntity> search(@Param("search") String search, Pageable pageable);
+
+    @EntityGraph(attributePaths = "membershipTier")
+    @Query("""
+            select user from UserEntity user
+            where (:search = '' or lower(user.firstName) like lower(concat('%', :search, '%'))
+               or lower(user.lastName) like lower(concat('%', :search, '%'))
+               or lower(user.email) like lower(concat('%', :search, '%'))
+               or user.phoneNumber like concat('%', :search, '%'))
+              and (:membership = '' or user.membershipTier.code = :membership)
+              and (:status = '' or cast(user.status as string) = :status)
+            """)
+    Page<UserEntity> searchAdmin(@Param("search") String search, @Param("membership") String membership,
+                                 @Param("status") String status, Pageable pageable);
 }

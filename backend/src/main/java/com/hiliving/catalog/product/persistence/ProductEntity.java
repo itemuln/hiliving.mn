@@ -51,6 +51,11 @@ public class ProductEntity {
     @Column(nullable = false, unique = true, length = 260)
     private String slug;
 
+    @NotBlank
+    @Size(max = 80)
+    @Column(name = "product_code", nullable = false, unique = true, length = 80)
+    private String productCode;
+
     @Size(max = 500)
     @Column(name = "short_description", length = 500)
     private String shortDescription;
@@ -86,6 +91,21 @@ public class ProductEntity {
     @Column(nullable = false)
     private boolean featured;
 
+    @Column(name = "stock_quantity", nullable = false)
+    private int stockQuantity;
+
+    @Column(name = "low_stock_threshold", nullable = false)
+    private int lowStockThreshold;
+
+    @Column(name = "membership_discount_eligible", nullable = false)
+    private boolean membershipDiscountEligible = true;
+
+    @Column(name = "new_product", nullable = false)
+    private boolean newProduct;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -116,6 +136,7 @@ public class ProductEntity {
     ) {
         this.name = name;
         this.slug = slug;
+        this.productCode = slug.toUpperCase(java.util.Locale.ROOT);
         this.shortDescription = shortDescription;
         this.description = description;
         this.price = price;
@@ -124,6 +145,8 @@ public class ProductEntity {
         this.brand = brand;
         this.status = status;
         this.featured = featured;
+        this.membershipDiscountEligible = true;
+        this.active = true;
     }
 
     public static ProductEntity create(
@@ -156,6 +179,37 @@ public class ProductEntity {
         images.add(ProductImageEntity.create(this, imageUrl, altText, displayOrder, primaryImage));
     }
 
+    public void initializeAdministrationFields(String productCode, int stockQuantity, int lowStockThreshold,
+                                               boolean membershipDiscountEligible, boolean newProduct, boolean active) {
+        this.productCode = productCode;
+        this.stockQuantity = stockQuantity;
+        this.lowStockThreshold = lowStockThreshold;
+        this.membershipDiscountEligible = membershipDiscountEligible;
+        this.newProduct = newProduct;
+        this.active = active;
+    }
+
+    public void update(String name, String slug, String productCode, String shortDescription, String description,
+                       BigDecimal price, BigDecimal discountPrice, CategoryEntity category, BrandEntity brand,
+                       ProductStatus status, boolean featured, boolean newProduct, boolean active,
+                       int stockQuantity, int lowStockThreshold, boolean membershipDiscountEligible) {
+        this.name = name; this.slug = slug; this.productCode = productCode;
+        this.shortDescription = shortDescription; this.description = description; this.price = price;
+        this.discountPrice = discountPrice; this.category = category; this.brand = brand; this.status = status;
+        this.featured = featured; this.newProduct = newProduct; this.active = active;
+        this.stockQuantity = stockQuantity; this.lowStockThreshold = lowStockThreshold;
+        this.membershipDiscountEligible = membershipDiscountEligible;
+    }
+
+    public void replaceImages(List<ProductImageEntity> replacements) {
+        images.clear();
+        replacements.forEach(image -> images.add(ProductImageEntity.copyFor(this, image)));
+    }
+
+    public void clearImages() { images.clear(); }
+
+    public void changeStatus(ProductStatus status) { this.status = status; }
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();
@@ -179,6 +233,8 @@ public class ProductEntity {
     public String getSlug() {
         return slug;
     }
+
+    public String getProductCode() { return productCode; }
 
     public String getShortDescription() {
         return shortDescription;
@@ -211,6 +267,12 @@ public class ProductEntity {
     public boolean isFeatured() {
         return featured;
     }
+
+    public int getStockQuantity() { return stockQuantity; }
+    public int getLowStockThreshold() { return lowStockThreshold; }
+    public boolean isMembershipDiscountEligible() { return membershipDiscountEligible; }
+    public boolean isNewProduct() { return newProduct; }
+    public boolean isActive() { return active; }
 
     public Instant getCreatedAt() {
         return createdAt;

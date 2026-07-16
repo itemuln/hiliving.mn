@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { accountJson, authenticatedUser } from '../test/accountFixtures'
-import { AccountApiError, createAddress, getCurrentUser, login, logout } from './accountApi'
+import { AccountApiError, apiUpload, createAddress, getCurrentUser, login, logout } from './accountApi'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -55,5 +55,30 @@ describe('account API adapter', () => {
     vi.stubGlobal('fetch', fetchMock)
     await createAddress(input)
     expect(fetchMock).toHaveBeenCalledWith('/api/v1/account/addresses', expect.objectContaining({ method: 'POST', body: JSON.stringify(input) }))
+  })
+
+  it('uploads multipart data with credentials and CSRF without overriding the browser boundary', async () => {
+    document.cookie = 'XSRF-TOKEN=upload-token; path=/'
+    class FakeRequest extends EventTarget {
+      static latest: FakeRequest
+      upload = new EventTarget()
+      status = 201
+      responseText = JSON.stringify({ data: { url: '/media/products/generated.png' } })
+      withCredentials = false
+      headers: Record<string,string> = {}
+      body: Document | XMLHttpRequestBodyInit | null = null
+      constructor(){super();FakeRequest.latest=this}
+      open(){/* test double */}
+      setRequestHeader(name:string,value:string){this.headers[name]=value}
+      send(body:Document|XMLHttpRequestBodyInit|null){this.body=body;this.dispatchEvent(new Event('load'))}
+      abort(){this.dispatchEvent(new Event('abort'))}
+    }
+    vi.stubGlobal('XMLHttpRequest',FakeRequest)
+    const body=new FormData();body.append('file',new File(['png'],'image.png',{type:'image/png'}));body.append('purpose','PRODUCT')
+    await expect(apiUpload<{url:string}>('/api/v1/admin/media/images',body)).resolves.toEqual({url:'/media/products/generated.png'})
+    expect(FakeRequest.latest.withCredentials).toBe(true)
+    expect(FakeRequest.latest.headers).toMatchObject({Accept:'application/json','X-XSRF-TOKEN':'upload-token'})
+    expect(FakeRequest.latest.headers).not.toHaveProperty('Content-Type')
+    expect(FakeRequest.latest.body).toBe(body)
   })
 })

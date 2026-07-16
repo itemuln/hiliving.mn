@@ -14,6 +14,8 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 
 import java.time.Instant;
 import java.util.List;
@@ -154,6 +156,17 @@ public class ApiExceptionHandler {
                 HttpStatus.CONFLICT,
                 "RESOURCE_CONFLICT",
                 "The requested change conflicts with existing data",
+                request,
+                List.of()
+        );
+    }
+
+    @ExceptionHandler({MaxUploadSizeExceededException.class, MultipartException.class})
+    ResponseEntity<ApiErrorResponse> handleMultipart(Exception exception, HttpServletRequest request) {
+        return response(
+                HttpStatus.PAYLOAD_TOO_LARGE,
+                "MEDIA_MULTIPART_LIMIT_EXCEEDED",
+                "The uploaded file exceeds the request limit",
                 request,
                 List.of()
         );
