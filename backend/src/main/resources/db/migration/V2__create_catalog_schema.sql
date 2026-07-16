@@ -16,7 +16,7 @@ CREATE TABLE categories (
     CONSTRAINT categories_display_order_nonnegative CHECK (display_order >= 0),
     CONSTRAINT categories_not_own_parent CHECK (parent_id IS NULL OR parent_id <> id)
 );
-
+F
 CREATE INDEX categories_parent_id_idx ON categories (parent_id) WHERE parent_id IS NOT NULL;
 CREATE INDEX categories_active_order_idx ON categories (display_order, name, id) WHERE active;
 

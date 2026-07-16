@@ -21,18 +21,15 @@ import type {
 export type CatalogApiErrorKind = 'aborted' | 'invalid-response' | 'not-found' | 'unavailable' | 'validation' | 'server'
 
 const categoryIcons: Readonly<Record<string, string>> = {
-  wellness: '/health.png',
   health: '/health.png',
-  beauty: '/skincare.png',
+  skincare: '/skincare.png',
   electronics: '/air.png',
   household: '/tovel.png',
-  home: '/tovel.png',
   kitchen: '/pan.png',
-  cleaning: '/brush.png',
   daily: '/brush.png',
-  fashion: '/shoe.png',
+  clothes: '/shoe.png',
   food: '/ingredient.png',
-  other: '/book.png',
+  others: '/book.png',
 }
 
 export class CatalogApiError extends Error {

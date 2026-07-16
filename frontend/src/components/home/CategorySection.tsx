@@ -6,9 +6,24 @@ import { Container } from '../layout/Container'
 import { SectionReveal } from '../ui/SectionReveal'
 import { SectionTitle } from '../ui/SectionTitle'
 
+const CategoryTranslations : Record<string,string> = {
+  "Health": "Эрүүл мэнд",
+  "Daily": "Өдөр тутам",
+  "Household": "Гэр ахуй",
+  "Skincare" : "Гоо сайхан",
+  "Electronics": "Цахилгаан",
+  "Kitchen": "Гал тогоо",
+  "Clothes": "Хувцас",
+  "Food": "Хүнс",
+  "Others": "Бусад"
+};
+
 export function CategorySection() {
   const resource = useCategories()
 
+  const getTranslatedName = (name: string): string =>{
+    return CategoryTranslations[name] || name
+  };
   return (
     <SectionReveal id="categories" className="py-12 md:py-16">
       <Container>
@@ -33,7 +48,7 @@ export function CategorySection() {
                   <span className="flex h-16 w-16 items-center justify-center p-3 md:h-20 md:w-20 md:p-4">
                     <img src={category.iconUrl} alt="" aria-hidden="true" loading="lazy" decoding="async" className="h-full w-full object-contain" />
                   </span>
-                  <span className="text-xs text-neutral-400 transition-colors duration-300 ease-out group-hover:text-brand-500 md:text-sm">{category.name}</span>
+                  <span className="text-xs text-neutral-400 transition-colors duration-300 ease-out group-hover:text-brand-500 md:text-sm">{getTranslatedName(category.name)}</span>
                 </Link>
               ))}
             </div>
