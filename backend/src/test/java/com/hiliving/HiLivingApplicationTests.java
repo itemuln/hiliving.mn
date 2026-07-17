@@ -18,10 +18,10 @@ class HiLivingApplicationTests {
     @Test
     void contextLoadsAndFlywayAppliesAllMigrations() {
         Integer successfulMigrations = jdbcTemplate.queryForObject(
-                "select count(*) from flyway_schema_history where version in ('1', '2', '3', '4', '5') and success",
+                "select count(*) from flyway_schema_history where version in ('1', '2', '3', '4', '5', '6') and success",
                 Integer.class
         );
 
-        assertThat(successfulMigrations).isEqualTo(5);
+        assertThat(successfulMigrations).isEqualTo(6);
     }
 }

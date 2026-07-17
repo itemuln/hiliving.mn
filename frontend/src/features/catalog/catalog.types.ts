@@ -47,7 +47,15 @@ export interface CatalogProductImage {
 
 export interface CatalogProductDetail extends CatalogProduct {
   readonly description: string | null;
+  readonly sku: string;
+  readonly membershipDiscountPercentage: number;
+  readonly membershipSavings: number;
+  readonly membershipDiscountEligible: boolean;
+  readonly availableQuantity: number;
+  readonly inventoryStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+  readonly published: boolean;
   readonly images: readonly CatalogProductImage[];
+  readonly relatedProducts: readonly CatalogProduct[];
 }
 
 export interface CatalogPage<T> {

@@ -2,6 +2,7 @@ import { type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container } from './Container';
 import { useOptionalAuth } from '../../features/auth/useAuth';
+import { useOptionalCart } from '../../features/cart/useCart';
 
 const navigation = [
   { label: 'Дэлгүүр хэсэх', to: '/categories/', section: 'categories' },
@@ -17,6 +18,7 @@ export function Header() {
   const auth = useOptionalAuth();
   const state = auth?.state ?? { status: 'anonymous' as const, user: null };
   const logout = auth?.logout ?? (async () => undefined);
+  const cartCount = useOptionalCart()?.itemCount ?? 0;
 
   const searchCatalog = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -100,6 +102,18 @@ export function Header() {
                 );
               })}
             </nav>
+            <Link
+              to="/cart"
+              aria-label={`Сагс, ${cartCount} бараа`}
+              className="relative mb-2 ml-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 hover:bg-brand-50"
+            >
+              <img src="/icons/cart.svg" alt="" aria-hidden="true" className="h-5 w-5" />
+              {cartCount > 0 ? (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] text-white">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              ) : null}
+            </Link>
             <form
               onSubmit={searchCatalog}
               className="mb-2 ml-4 hidden w-[200px] items-center rounded-full border border-neutral-300 px-4 py-2 focus-within:border-brand-400 xl:flex xl:w-[240px]"

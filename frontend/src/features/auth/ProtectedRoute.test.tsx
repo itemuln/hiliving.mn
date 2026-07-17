@@ -44,6 +44,28 @@ describe('protected account routes', () => {
     ).toBeInTheDocument();
   });
 
+  it('hands anonymous checkout to login and safely returns to checkout', () => {
+    render(
+      <AuthContext.Provider value={anonymous}>
+        <MemoryRouter initialEntries={['/checkout']}>
+          <Routes>
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <span>checkout</span>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<LocationProbe />} />
+          </Routes>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    );
+    expect(screen.getByText('/login?returnTo=%2Fcheckout')).toBeInTheDocument();
+    expect(safeReturnTo('/checkout')).toBe('/checkout');
+  });
+
   it('accepts only same-origin relative return paths', () => {
     expect(safeReturnTo('/account/security?from=login')).toBe('/account/security?from=login');
     expect(safeReturnTo('//evil.example/steal')).toBe('/account');

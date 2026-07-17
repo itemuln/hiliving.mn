@@ -2,7 +2,7 @@
 
 ## Current project state
 
-HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot API in `backend/`. Phase 5.1 is implemented: the catalog and account flows remain intact, while the role-guarded administration workspace now uploads, processes, stores, and serves managed product, brand, banner, and news images.
+HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot API in `backend/`. Phase 6 is implemented: complete product detail, a persistent anonymous cart, backend-authoritative quotation, authenticated checkout preparation, transactional order placement, and secure order confirmation now extend the existing catalog, account, administration, and managed-media features.
 
 ## Features currently working
 
@@ -11,7 +11,7 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Typed backend DTO definitions, explicit frontend-domain mapping, centralized fetch/status handling, cancellation, and safe normalized errors
 - Backend-driven home categories, brands, and featured products
 - Backend-driven category and brand pages with URL-based search, controlled sorting, and server pagination
-- Slug-based product cards and a minimal product-detail page
+- Complete slug-based product detail with ordered gallery images, SKU, membership-aware pricing, bounded quantities, stock state, add-to-cart, and related products
 - Loading skeletons plus successful, empty, safe error, retry, 400, 404, and backend-unavailable states
 - API-backed active hero banners and published news list/detail content
 - Frontend Vitest and Testing Library coverage at the HTTP boundary
@@ -28,15 +28,25 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Reusable safe admin audit logging for catalog, price, inventory, membership, status, banner, and news changes
 - JPEG/PNG decode-and-reencode processing with purpose-specific limits, safe UUID keys, external filesystem storage, and public read-only `/media/**` delivery
 - Reusable upload controls with picker, drag/drop, progress, preview, replacement, removal, retry, and save blocking while uploads are pending
+- Versioned browser cart persistence containing only product slugs and quantities, with duplicate merging, malformed-data recovery, live item counts, and server reconciliation
+- Public backend-authoritative cart quotation in MNT, including catalog discounts, eligible customer membership discounts, configured standard delivery, stock validation, and final totals
+- Protected checkout with safe post-login return, ownership-scoped address selection/creation, cash-on-delivery confirmation, submission locking, and failure-safe cart retention
+- Transactional order creation with immutable item/address/pricing snapshots, row-locked inventory deduction, per-customer idempotency keys, and ownership-scoped order confirmation
+- Explicit initial `PENDING_CONFIRMATION`/`UNPAID` order state plus a payment-provider interface boundary without a real payment integration
 - Spring Boot 4.1.0 catalog API compiled and tested on Temurin Java 21
-- PostgreSQL 17, Flyway through version 5, Hibernate schema validation, and Testcontainers integration coverage
+- PostgreSQL 17, Flyway through version 6, Hibernate schema validation, and Testcontainers integration coverage
 - GitHub Actions and Jenkins frontend test stages
 
 ## Current active task
 
-No implementation task is active. Phase 5.1 implementation, automated verification, persistence/restart checks, and live browser/API workflows are complete.
+No implementation task is active. Phase 6 implementation, automated verification, concurrency checks, and the live product-to-order browser/API workflow are complete.
 
 ## Latest meaningful changes
+
+- 2026-07-17: Added Flyway V6 order, order-item, and delivery-address snapshot persistence with explicit lifecycle/payment states, idempotency constraints, and lookup indexes.
+- 2026-07-17: Centralized purchasability and MNT pricing, including catalog-first then membership discounting, authoritative cart quotation, configured standard delivery, and transactional inventory locking/deduction.
+- 2026-07-17: Replaced the minimal product page and fake cart controls with a complete product-detail gallery, persistent cart, protected checkout, order placement, and ownership-scoped success page.
+- 2026-07-17: Verified 44 backend tests on Java 21 with PostgreSQL/Flyway V1-V6/Hibernate/JAR packaging, 48 frontend tests with lint/build, live anonymous-to-authenticated checkout, idempotent replay, cross-customer denial, inventory deduction, and responsive layouts at mobile, tablet, and desktop widths.
 
 - 2026-07-17: Removed the Starts at and Ends at controls from normal banner administration. New and edited banners are saved without scheduling dates; legacy response fields remain compatible.
 
@@ -70,15 +80,18 @@ No implementation task is active. Phase 5.1 implementation, automated verificati
 - This workstation already has services on ports 5432 and 8080. Its ignored `.env` uses PostgreSQL 5433, and integration uses Spring Boot 18080. Committed and production defaults remain 5432 and 8080.
 - Direct cross-origin `VITE_API_BASE_URL` values require a deliberately configured backend/API gateway origin policy. No backend CORS configuration is added because local Vite and future NGINX use same-origin `/api` proxying.
 - Frontend API DTOs are manually mirrored from the backend contract; future contract changes must update both sides and their tests together.
-- Cart persistence, inventory reservation, checkout, orders, payments, variants, reviews, password reset, and verification delivery are not implemented.
+- Inventory is validated and deducted only during order placement; there is no cart-time reservation, reservation expiry, backorder, or cancellation-driven stock restoration yet.
+- Checkout currently supports one `STANDARD_DELIVERY` option with a configurable flat MNT 5,000 default and only `CASH_ON_DELIVERY`. Orders start `UNPAID`; no real payment provider, payment callback, refund, or settlement flow exists.
+- The cart is browser-local and anonymous-capable. It does not synchronize across devices or customer sessions, and server repricing can change or remove lines when stock/catalog state changes.
+- Customer order access is limited to the success/detail endpoint. Administration order lists, fulfillment/status transitions, cancellation policy, audit history, notifications, and customer order history are not implemented.
+- Variants, reviews, password reset, and verification delivery are not implemented.
 - Password changes keep the current session valid and cannot invalidate other sessions until shared/session-registry infrastructure is deliberately added.
 - WEBP is deliberately rejected until the Java runtime has a verified decoder/encoder; supported uploads are JPEG and PNG only.
 - EXIF orientation is not normalized, so phone photos must already have display-correct pixel orientation.
 - Existing external image URLs remain readable, but new administration uploads return same-origin `/media/...` URLs. There is no delete/reference-count endpoint yet, so replaced or removed files require a future safe orphan-maintenance job.
 - Local storage and PostgreSQL must be backed up together. Production backup automation and an S3-compatible provider are designed but not implemented.
-- Product membership eligibility is recorded, but discount stacking and final checkout pricing remain deferred.
-- Product currency is still implicit, and public slug changes do not yet have a redirect or alias policy.
+- Checkout and order amounts explicitly use MNT, but the older catalog tables still do not store a per-product currency. Public slug changes do not yet have a redirect or alias policy.
 
 ## Next recommended step
 
-Complete media operations before starting cart work: provision the restricted Contabo upload directory, add the reviewed NGINX read-only `/media/` alias, and rehearse paired PostgreSQL/upload backups plus restore. A later media-lifecycle task should add reference-aware orphan cleanup; S3-compatible storage remains behind the existing storage boundary when scale or multi-node deployment justifies it.
+Implement Phase 7 as administration order management and fulfillment: secure order list/detail views, explicit validated status transitions, cancellation and stock-restoration policy, operational audit events, and customer order history. Keep the existing cash-on-delivery flow while that lifecycle is proven; design provider callbacks, reconciliation, and refunds before connecting a real payment service. Production media provisioning and paired database/upload backup rehearsal remain required before deployment.

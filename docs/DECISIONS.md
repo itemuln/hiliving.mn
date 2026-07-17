@@ -260,7 +260,7 @@
 
 **Decision:** Preserve `DRAFT`, `ACTIVE`, and `ARCHIVED` lifecycle status; add an independent operational `active` switch. Public visibility requires both active lifecycle and operational state plus visible category/brand relationships. Compute inventory state from stock and threshold. Store at most four URL-only images and require exactly one primary image for a publicly usable product. Store `membership_discount_eligible` as a required boolean.
 
-**Consequences:** Product eligibility only permits a future membership discount; it does not calculate final price or stacking. Binary uploads, object storage, inventory reservation, and checkout pricing remain future work.
+**Consequences:** At this point product eligibility only permitted a future membership discount. Phase 5.1 subsequently added managed binary uploads, and the Phase 6 pricing decision below now defines checkout pricing. Object storage and cart-time inventory reservation remain future work.
 
 ## 2026-07-16 - Category hierarchy and safe deletion
 
@@ -295,3 +295,35 @@
 **Decision:** Remove the Starts at and Ends at fields from the banner editor. New and edited banners omit scheduling values, while the existing nullable backend response fields and database columns remain for backward compatibility.
 
 **Consequences:** Administrators control banner visibility with the Active switch. Editing a previously scheduled banner clears its schedule through the existing nullable request contract; untouched legacy rows may still be filtered by their stored schedule until edited or migrated.
+
+## 2026-07-17 - Minimal browser cart with backend-authoritative quotation
+
+**Context:** Anonymous customers need a cart that survives refresh and login, but browser state must never become an authority for product availability, customer discounts, or order money.
+
+**Decision:** Persist a versioned cart containing only product slugs and bounded quantities in localStorage. Merge duplicate slugs and discard malformed data. Send those identifiers to public, CSRF-protected `POST /api/v1/cart/quote`; the backend reloads products, validates purchasability and stock, resolves the optional authenticated membership, and returns every displayable price and total. Requote on cart or authentication changes and again immediately before order placement.
+
+**Consequences:** Anonymous carts survive refresh and the safe login-to-checkout redirect without creating server-side cart tables. They do not synchronize across devices or accounts, expire server-side, or reserve stock. A quote can become stale, so the order transaction must always revalidate and reprice; the UI removes or corrects rejected lines and presents safe errors.
+
+## 2026-07-17 - MNT price composition and temporary delivery policy
+
+**Context:** Catalog prices, catalog discounts, membership tiers, and checkout delivery charges must produce one reproducible server result without floating-point drift or client calculation.
+
+**Decision:** Use Java `BigDecimal` at scale 2 with `HALF_UP`. Apply an existing product `discount_price` first, then apply the customer's effective membership percentage only when `membership_discount_eligible` is true. Sum regular subtotal, catalog savings, membership savings, effective subtotal, configured delivery, and grand total. Quote and order currency is `MNT`. Configure `STANDARD_DELIVERY` through `HILIVING_STANDARD_SHIPPING_FEE`, default `5000.00`; the browser renders the quoted value.
+
+**Consequences:** The calculation order and snapshots are deterministic and testable, while ineligible products receive no membership savings. There is one currency, one delivery method, and one flat fee for this phase; zones, free-shipping thresholds, taxes, coupons, variants, and multiple currencies require later explicit policies and schema changes.
+
+## 2026-07-17 - Immutable order snapshots and pessimistic inventory control
+
+**Context:** Orders must remain historically correct after catalog/address changes, and concurrent customers must not both buy the last unit or cause partial orders.
+
+**Decision:** Flyway V6 creates orders, item snapshots, and address snapshots. During one database transaction, serialize a customer's placement attempts, resolve and pessimistically lock product rows in sorted ID order, revalidate/reprice all lines, persist immutable identity/money/address snapshots, and deduct stock. Any invalid line fails the whole transaction. Scope order retrieval by authenticated customer and public order number.
+
+**Consequences:** Catalog price, title, image, and customer-address edits cannot rewrite order history. Deterministic locks and the nonnegative stock invariant allow exactly one successful last-unit buyer and prevent partial deductions. There is intentionally no cart-time inventory reservation, expiry, backorder, cancellation stock restoration, admin fulfillment UI, or customer order-history list yet.
+
+## 2026-07-17 - Customer-scoped idempotency and unpaid cash-on-delivery
+
+**Context:** Double clicks, slow responses, and network retries must not create duplicate orders, while Phase 6 must not pretend a payment was collected or couple core ordering to a provider that has not been chosen.
+
+**Decision:** Require an `Idempotency-Key` UUID on order placement and enforce uniqueness with the customer ID. Store a SHA-256 hash of the canonical request. Return the original order for an exact replay and reject the key when the request differs. Start orders as `PENDING_CONFIRMATION` and `UNPAID`, with only `CASH_ON_DELIVERY` and `STANDARD_DELIVERY`. Define a `PaymentProvider` interface extension point but provide no implementation or fake call.
+
+**Consequences:** Retrying the same request is safe and conflicting key reuse is visible. The browser disables an in-flight submission, retains the same key for the unchanged checkout fingerprint, and clears its cart only after success. No payment authorization, capture, callback, reconciliation, settlement, refund, or paid state is implemented; those require a reviewed provider/security lifecycle later.

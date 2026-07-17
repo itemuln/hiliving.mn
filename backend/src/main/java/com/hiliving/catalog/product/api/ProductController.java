@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.hiliving.identity.auth.security.UserPrincipal;
 
 @Validated
 @RestController
@@ -53,8 +55,9 @@ public class ProductController {
 
     @GetMapping("/{slug}")
     public ApiResponse<ProductDetailResponse> findBySlug(
-            @PathVariable @Size(max = 260) @Pattern(regexp = SLUG_PATTERN) String slug
+            @PathVariable @Size(max = 260) @Pattern(regexp = SLUG_PATTERN) String slug,
+            @AuthenticationPrincipal UserPrincipal principal
     ) {
-        return ApiResponse.of(productService.findPublicProduct(slug));
+        return ApiResponse.of(productService.findPublicProduct(slug, principal == null ? null : principal.id()));
     }
 }

@@ -13,20 +13,28 @@ import com.hiliving.catalog.product.persistence.ProductImageEntity;
 import com.hiliving.catalog.product.persistence.ProductRepository;
 import com.hiliving.catalog.product.persistence.ProductSpecifications;
 import com.hiliving.catalog.product.persistence.ProductStatus;
+import com.hiliving.commerce.pricing.PricingService;
+import com.hiliving.identity.user.persistence.UserEntity;
+import com.hiliving.identity.user.persistence.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.math.BigDecimal;
 
 @Service
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final UserRepository users;
+    private final PricingService pricing;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, UserRepository users, PricingService pricing) {
         this.productRepository = productRepository;
+        this.users = users;
+        this.pricing = pricing;
     }
 
     @Transactional(readOnly = true)
@@ -60,9 +68,15 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDetailResponse findPublicProduct(String slug) {
+        return findPublicProduct(slug, null);
+    }
+
+    @Transactional(readOnly = true)
+    public ProductDetailResponse findPublicProduct(String slug, Long customerId) {
         ProductEntity product = productRepository.findPublicBySlug(slug, ProductStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Product was not found"));
-        return toDetailResponse(product);
+        UserEntity customer = customerId == null ? null : users.findById(customerId).orElse(null);
+        return toDetailResponse(product, customer);
     }
 
     private ProductSummaryResponse toSummaryResponse(ProductEntity product) {
@@ -87,22 +101,42 @@ public class ProductService {
         );
     }
 
-    private ProductDetailResponse toDetailResponse(ProductEntity product) {
+    private ProductDetailResponse toDetailResponse(ProductEntity product, UserEntity customer) {
         List<ProductImageResponse> images = product.getImages().stream()
                 .map(this::toImageResponse)
                 .toList();
+        BigDecimal membershipPercentage = customer == null ? BigDecimal.ZERO : customer.effectiveDiscountPercentage();
+        PricingService.PricedProduct priced = pricing.price(product, membershipPercentage);
+        List<ProductSummaryResponse> related = productRepository.findRelatedPublic(
+                        product.getCategory().getId(), product.getId(), ProductStatus.ACTIVE, PageRequest.of(0, 4))
+                .stream().map(this::toSummaryResponse).toList();
+        String primaryImageUrl = product.getImages().stream()
+                .filter(ProductImageEntity::isPrimaryImage)
+                .map(ProductImageEntity::getImageUrl)
+                .findFirst().orElse(images.isEmpty() ? null : images.getFirst().imageUrl());
         return new ProductDetailResponse(
                 product.getId(),
                 product.getName(),
                 product.getSlug(),
                 product.getShortDescription(),
                 product.getDescription(),
+                product.getProductCode(),
                 product.getPrice(),
                 product.getDiscountPrice(),
+                priced.effectivePrice(),
+                priced.membershipPercentage(),
+                priced.catalogPrice().subtract(priced.effectivePrice()),
+                product.isMembershipDiscountEligible(),
+                product.getStockQuantity(),
+                product.getStockQuantity() == 0 ? "OUT_OF_STOCK"
+                        : product.getStockQuantity() <= product.getLowStockThreshold() ? "LOW_STOCK" : "IN_STOCK",
                 toReference(product.getCategory()),
                 toReference(product.getBrand()),
                 product.isFeatured(),
+                true,
+                primaryImageUrl,
                 images,
+                related,
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );

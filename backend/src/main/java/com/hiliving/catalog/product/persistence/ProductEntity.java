@@ -210,6 +210,13 @@ public class ProductEntity {
 
     public void changeStatus(ProductStatus status) { this.status = status; }
 
+    public void deductStock(int quantity) {
+        if (quantity <= 0 || stockQuantity < quantity) {
+            throw new IllegalArgumentException("Insufficient stock");
+        }
+        stockQuantity -= quantity;
+    }
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();

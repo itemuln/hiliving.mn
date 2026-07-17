@@ -21,11 +21,15 @@ The frontend is a client-rendered React application using React Router, Tailwind
 - `src/features/catalog`: presentation-safe catalog models and cancellation-aware resource/query hooks
 - `src/features/auth`: three-state session hydration, auth context, login/registration forms, and protected routing
 - `src/features/account`: profile, password, membership, and delivery-address UI
+- `src/features/cart`: versioned minimal local persistence, cart quotation state, reconciliation, and the cart page
+- `src/features/checkout`: order contracts, protected checkout orchestration, and order confirmation
 - `src/features/admin`: separate responsive shell, centralized admin adapters, dashboard, catalog, user, banner, and news administration
 - `src/components/catalog`: reusable loading, empty, error, retry, navigation, filter, grid, and pagination UI
 - `src/pages`: category, brand, news, and slug-based product-detail routes
 
-Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity uses a small React context because header, route protection, and account pages share it.
+Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity and cart coordination use small React contexts because header, route protection, cart, and checkout share them.
+
+The cart persists only `{version, items: [{productSlug, quantity}]}` under `hiliving.cart.v1`; it never stores trusted prices, discounts, stock, customer identity, or order state. Malformed entries are discarded, duplicate slugs merge within the quantity limit, and every cart/auth change is reconciled through the quote API. Cart data survives login and is cleared only after confirmed order creation.
 
 Category, brand, product, hero-banner, and news mocks are no longer application sources. Active banners and published news are read from the API; the unrelated promotional strip remains static.
 
@@ -45,8 +49,11 @@ Catalog routes are:
 - `/brands` and `/brands/:brandSlug`
 - `/products/:productSlug`
 - `/news`
+- `/cart`
+- `/checkout`
+- `/checkout/success/:orderNumber`
 
-Identity and account routes are `/login`, `/register`, `/account`, `/account/profile`, `/account/addresses`, and `/account/security`. Account routes hydrate through `GET /api/v1/account/me` and distinguish loading, anonymous, and authenticated state. Anonymous navigation is redirected to `/login?returnTo=<internal-path>`; only same-origin relative paths are accepted.
+Identity and account routes are `/login`, `/register`, `/account`, `/account/profile`, `/account/addresses`, and `/account/security`. Account and checkout routes hydrate through `GET /api/v1/account/me` and distinguish loading, anonymous, and authenticated state. Anonymous checkout navigation is redirected to `/login?returnTo=%2Fcheckout`; only same-origin relative paths are accepted, so a successful login safely returns to checkout without losing the browser cart.
 
 Catalog query state uses the URL. The browser exposes one-based `page` values while the adapter converts requests to the backend's zero-based page convention. Search and controlled sort selections also remain shareable in the URL. Product cards navigate by slug.
 
@@ -54,11 +61,11 @@ Every API-backed section starts with a dimensionally similar skeleton, then rend
 
 ## Backend architecture
 
-The backend uses Java 21, Maven, and Spring Boot 4.1.0. `com.hiliving` is the component-scan root. Shared HTTP envelopes and safe error handling live under `com.hiliving.api`; catalog and identity code use feature-first packages. Identity separates auth behavior, user persistence, customer account service, and admin user policy. Controllers expose DTOs rather than JPA entities. Services own normalization, authorization-sensitive behavior, and mapping; repositories own persistence queries. Actuator supplies `/actuator/health`.
+The backend uses Java 21, Maven, and Spring Boot 4.1.0. `com.hiliving` is the component-scan root. Shared HTTP envelopes and safe error handling live under `com.hiliving.api`; catalog, identity, and commerce code use feature-first packages. Commerce separates cart quotation, centralized pricing, order persistence/orchestration, and a future payment-provider boundary. Controllers expose DTOs rather than JPA entities. Services own normalization, authorization-sensitive behavior, and mapping; repositories own persistence queries. Actuator supplies `/actuator/health`.
 
 Spring Security uses server-side sessions. The session cookie is HttpOnly and `SameSite=Lax`; `SESSION_COOKIE_SECURE` must be true behind production HTTPS. Login explicitly rotates the session identifier. The browser never stores an auth token. A readable `XSRF-TOKEN` cookie is mirrored into `X-XSRF-TOKEN` for state-changing requests; the cookie exists only for CSRF defense and is not an authentication credential.
 
-Public catalog GETs, registration, login, CSRF initialization, and health are permitted. `/api/v1/account/**` requires authentication, `/api/v1/admin/**` requires `ADMIN`, and unmatched routes are denied. No broad CORS policy is enabled because Vite and future NGINX preserve same-origin requests.
+Public catalog GETs, public cart quotation, registration, login, CSRF initialization, and health are permitted. `/api/v1/account/**` requires authentication, `/api/v1/orders/**` requires `CUSTOMER`, `/api/v1/admin/**` requires `ADMIN`, and unmatched routes are denied. CSRF remains required for anonymous quote POSTs and authenticated order POSTs. No broad CORS policy is enabled because Vite and future NGINX preserve same-origin requests.
 
 ## Identity and account data model
 
@@ -75,6 +82,22 @@ Flyway migration `V2__create_catalog_schema.sql` creates Category, Brand, Produc
 Flyway V4 adds catalog descriptions/order fields, unique product codes, stock and low-stock thresholds, new/active flags, and `membership_discount_eligible`. Lifecycle status controls draft/published/archived workflow; `active` is the independent operational visibility switch. Public products require lifecycle `ACTIVE`, product `active=true`, an active category, and an active or absent brand. Inventory state is computed: zero is `OUT_OF_STOCK`, positive stock at or below the threshold is `LOW_STOCK`, and higher stock is `IN_STOCK`.
 
 Product, brand, banner, and news associations remain URL metadata, which preserves existing external URL compatibility. New administration uploads return same-origin `/media/...` URLs backed by managed media records. Product administration permits at most four images, unique order values, at most one primary image while drafting, and exactly one primary image for a publicly usable active product.
+
+Public product detail resolves the optional authenticated customer and returns ordered images, the primary image, SKU, effective price, membership savings/eligibility, available quantity, and up to four other public products from the same category. The current product is excluded. The server does not expose draft, archived, inactive, hidden-category/brand, or otherwise unpurchasable products through this route.
+
+## Pricing, cart quotation, and orders
+
+`PricingService` is the single authority for product purchasability and checkout money. Requests contain only product slugs and quantities; the server reloads products and customer membership, rejects duplicate/invalid/unpublished/out-of-stock/excess lines, and returns regular, catalog-discount, membership-discount, effective subtotal, delivery, and grand totals. Catalog `discount_price` is applied first. If the product is eligible, the customer's effective membership percentage is then applied to that catalog-adjusted price. Every money operation uses `BigDecimal`, scale 2, and `HALF_UP`; order and quote currency is explicitly `MNT`.
+
+Standard delivery is a temporary flat fee configured by `HILIVING_STANDARD_SHIPPING_FEE`, defaulting to `5000.00`. The browser displays the amount returned by the backend and does not calculate it. Quotation does not reserve inventory; the final order request is fully revalidated and repriced.
+
+Flyway V6 creates `orders`, `order_items`, and `order_address_snapshots`. Order items snapshot product identity, slug, SKU, name, primary-image URL, regular/effective unit price, catalog and membership discounts, quantity, and line total. The address snapshot copies all delivery fields so later account edits or deletion cannot change order history. Orders store totals, currency, delivery/payment choices, customer note, explicit order/payment state, request hash, idempotency key, and timestamps.
+
+`POST /api/v1/orders` requires a `CUSTOMER` session, CSRF, an owned address, and an `Idempotency-Key` UUID. The transaction locks the customer row to serialize that customer's retries, then locks all requested product rows in sorted ID order, reprices, validates stock, writes snapshots, and deducts stock. Any failed line rolls back the entire order and all deductions. Deterministic lock order avoids deadlocks, and the stock invariant plus locks prevents negative inventory under concurrent low-stock purchases.
+
+Idempotency is scoped by `(customer_id, idempotency_key)`. A canonical SHA-256 request hash covers sorted line quantities, address, delivery/payment methods, and note. An exact replay returns the original order; reusing a key for a different request is rejected. The browser keeps one key per unchanged checkout submission fingerprint, disables repeat submission while pending, and does not clear the cart on failure.
+
+New orders start `PENDING_CONFIRMATION` and `UNPAID`, with `CASH_ON_DELIVERY` and `STANDARD_DELIVERY`. `PaymentProvider` is only an interface seam for a later integration; there is no provider implementation, callback, authorization, capture, settlement, or refund flow. `GET /api/v1/orders/{orderNumber}` scopes lookup to the authenticated customer and returns not found for another customer.
 
 ## Media upload, processing, and storage
 
@@ -103,7 +126,7 @@ PostgreSQL and the upload root form one recoverable dataset and must be snapshot
 
 ## Administration and managed content
 
-All `/api/v1/admin/**` endpoints require `ADMIN`; anonymous requests receive 401 and authenticated customers receive 403. The React admin routes use the same session/CSRF authentication but render a separate sidebar/header workspace. Orders and Pages are disabled navigation labels with no routes or fake CRUD.
+All `/api/v1/admin/**` endpoints require `ADMIN`; anonymous requests receive 401 and authenticated customers receive 403. The React admin routes use the same session/CSRF authentication but render a separate sidebar/header workspace. Orders and Pages remain disabled administration navigation labels; Phase 6 adds customer order placement/confirmation, not administration order management or fake CRUD.
 
 Categories are hierarchical. Services prevent self-parenting and indirect cycles, and deletion is blocked while children or products reference a category. Brand deletion preserves products through the existing nullable foreign-key rule. Normal banner administration has no start/end scheduling controls and sends no scheduling dates. The existing nullable fields remain in backend responses and the public filter for backward compatibility with older rows. News public reads require published state and a reached optional publication time.
 
@@ -119,19 +142,19 @@ The `local` Spring profile adds a small sample catalog only when catalog tables 
 
 ## PostgreSQL and Flyway strategy
 
-Flyway is the only schema-management mechanism. Versioned SQL lives in `backend/src/main/resources/db/migration`; applied migrations are immutable. Hibernate uses `ddl-auto=validate`. PostgreSQL 17 is pinned for local and integration tests, and the production version must be compatibility-tested before deployment.
+Flyway is the only schema-management mechanism. Versioned SQL lives in `backend/src/main/resources/db/migration`; applied migrations are immutable. Hibernate uses `ddl-auto=validate`. Flyway V6 adds checkout/order persistence and its uniqueness, status, money, quantity, and lookup constraints without modifying V1-V5. PostgreSQL 17 is pinned for local and integration tests, and the production version must be compatibility-tested before deployment.
 
 ## API boundaries
 
-Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, `/api/v1/products/{slug}`, `/api/v1/banners`, and `/api/v1/news`. Auth endpoints are under `/api/v1/auth`; customer self-service is under `/api/v1/account`; administration is under `/api/v1/admin`. Successful responses use `data`; pages include items and page metadata. Failures use the existing safe `error` envelope with stable account/security codes where useful.
+Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, `/api/v1/products/{slug}`, `/api/v1/banners`, and `/api/v1/news`. `POST /api/v1/cart/quote` is public but CSRF-protected and optionally applies the authenticated customer's eligible membership discount. Auth endpoints are under `/api/v1/auth`; customer self-service is under `/api/v1/account`; customer order placement/retrieval is under `/api/v1/orders`; administration is under `/api/v1/admin`. Successful responses use `data`; pages include items and page metadata. Failures use the existing safe `error` envelope with stable account, cart, order, and security codes where useful.
 
 ## Validation strategy
 
-Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 35 tests cover existing catalog and account behavior plus administrator authorization, multipart/CSRF handling, upload progress/retry/removal, product image-slot rules, media-backed forms, and mobile banner source selection.
+Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 48 tests preserve existing catalog, account, and administration coverage and add product gallery/quantity/cart behavior, malformed and duplicate cart persistence, authoritative quote/membership totals, stock-change recovery, CSRF/idempotency request shape, protected checkout returns, address selection, double-submit prevention, failure-safe cart retention, and order confirmation/error behavior.
 
-Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 5.1 verified ADMIN upload and CUSTOMER rejection, JPEG/PNG processing, unsafe/unsupported rejection, four-product-image enforcement, primary/reorder/replace behavior, immutable replacement keys, product/banner/news rendering, mobile image selection, persistence across clean builds and a backend restart, and 390×844 no-overflow administration layouts. Temporary verification records and files are removed immediately afterward.
+Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 6 verified product gallery selection, anonymous cart persistence after refresh, authoritative quotation, login return to checkout, address creation/selection, cash-on-delivery order placement, success details, inventory deduction, cart clearing only on success, exact idempotent replay, cross-customer order denial, and no horizontal overflow at mobile, tablet, and desktop widths. Temporary customers, address, order, product image, and stock changes were removed/restored immediately afterward. Existing Phase 5.1 media files were not modified.
 
-Backend validation uses Maven on Temurin Java 21 with PostgreSQL Testcontainers, Flyway through V5, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 38 tests include the existing catalog, identity, and administration suites plus media validation, processing, secure storage, transaction-failure cleanup, authorization, serving restrictions, and association integration.
+Backend validation uses Maven on Java 21 with PostgreSQL Testcontainers, Flyway through V6, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 44 tests preserve existing catalog, identity, administration, and media suites and add published product detail, image ordering, related products, anonymous/member/non-eligible pricing, invalid availability and quantity handling, monetary totals, address ownership/default behavior, order snapshots, rollback, CSRF/role/ownership checks, idempotent/conflicting retries, and a concurrent last-unit purchase that permits one order and leaves stock at zero.
 
 ## Target Contabo deployment architecture
 
@@ -139,4 +162,4 @@ The production target is one Ubuntu LTS VPS with NGINX on ports 80 and 443, fron
 
 ## NGINX, systemd, and HTTPS plan
 
-NGINX will terminate Let's Encrypt HTTPS, serve the frontend, preserve React Router deep links, proxy `/api` to Spring Boot, and expose `/media/` read-only without directory listing. systemd will manage backend lifecycle and restricted environment loading, including `HILIVING_MEDIA_STORAGE_PATH=/var/lib/hiliving/uploads`. Production configuration and deployment remain deferred.
+NGINX will terminate Let's Encrypt HTTPS, serve the frontend, preserve React Router deep links, proxy `/api` to Spring Boot, and expose `/media/` read-only without directory listing. systemd will manage backend lifecycle and restricted environment loading, including `HILIVING_MEDIA_STORAGE_PATH=/var/lib/hiliving/uploads` and an explicitly reviewed `HILIVING_STANDARD_SHIPPING_FEE`. Production configuration and deployment remain deferred.

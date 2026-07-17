@@ -18,6 +18,8 @@ spring:
       file-size-threshold: 0
 
 hiliving:
+  checkout:
+    standard-shipping-fee: ${HILIVING_STANDARD_SHIPPING_FEE:5000.00}
   media:
     storage-path: ${HILIVING_MEDIA_STORAGE_PATH:../infrastructure/data/uploads}
 

@@ -23,6 +23,15 @@ const NewsDetailPage = lazy(() =>
 const ProductDetailPage = lazy(() =>
   import('./pages/ProductDetailPage').then((module) => ({ default: module.ProductDetailPage }))
 );
+const CartPage = lazy(() =>
+  import('./pages/CartPage').then((module) => ({ default: module.CartPage }))
+);
+const CheckoutPage = lazy(() =>
+  import('./pages/CheckoutPage').then((module) => ({ default: module.CheckoutPage }))
+);
+const OrderSuccessPage = lazy(() =>
+  import('./pages/OrderSuccessPage').then((module) => ({ default: module.OrderSuccessPage }))
+);
 const LoginPage = lazy(() =>
   import('./pages/LoginPage').then((module) => ({ default: module.LoginPage }))
 );
@@ -98,6 +107,23 @@ export function App() {
           <Route path="/categories" element={<CategoryProductsPage />} />
           <Route path="/categories/:categorySlug" element={<CategoryProductsPage />} />
           <Route path="/products/:productSlug" element={<ProductDetailPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout/success/:orderNumber"
+            element={
+              <ProtectedRoute>
+                <OrderSuccessPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:newsSlug" element={<NewsDetailPage />} />
           <Route path="/login" element={<LoginPage />} />

@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import type { CatalogProduct } from '../../features/catalog/catalog.types';
+import { useCart } from '../../features/cart/useCart';
 import { ProductCard } from '../ui/ProductCard';
 
 interface ProductGridProps {
@@ -8,12 +8,12 @@ interface ProductGridProps {
 }
 
 export function ProductGrid({ products, variant }: ProductGridProps) {
-  const [cartCount, setCartCount] = useState(0);
+  const { addItem, itemCount } = useCart();
 
   return (
     <>
       <p className="sr-only" role="status" aria-live="polite">
-        {cartCount > 0 ? `Сагсанд ${cartCount} бүтээгдэхүүн нэмэгдлээ.` : ''}
+        {itemCount > 0 ? `Сагсанд нийт ${itemCount} бараа байна.` : ''}
       </p>
       <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 md:gap-x-5 md:gap-y-12 xl:grid-cols-4">
         {products.map((product, index) => (
@@ -22,7 +22,7 @@ export function ProductGrid({ products, variant }: ProductGridProps) {
               product={product}
               variant={variant}
               imageLoading={index < 4 ? 'eager' : 'lazy'}
-              onAddToCart={() => setCartCount((current) => current + 1)}
+              onAddToCart={() => addItem(product.slug)}
             />
           </div>
         ))}

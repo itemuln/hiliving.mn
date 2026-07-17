@@ -58,7 +58,7 @@ set +a
 ./mvnw spring-boot:run
 ```
 
-Verify the backend at <http://localhost:8080/actuator/health>. Public catalog reads are available at `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`.
+Verify the backend at <http://localhost:8080/actuator/health>. Public catalog reads are available at `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`. Public CSRF-protected cart quotation is at `POST /api/v1/cart/quote`; authenticated customer order placement and own-order confirmation are under `/api/v1/orders`.
 
 If another local service such as Jenkins already uses port 8080, override the backend for that run with `SERVER_PORT`, for example `SERVER_PORT=18080 ./mvnw spring-boot:run`.
 

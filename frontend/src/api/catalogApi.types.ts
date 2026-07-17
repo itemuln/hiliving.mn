@@ -65,7 +65,17 @@ export interface ProductImageDto {
 
 export interface ProductDetailDto extends Omit<ProductSummaryDto, 'primaryImageUrl'> {
   readonly description: string | null;
+  readonly sku: string;
+  readonly effectiveCustomerPrice: number;
+  readonly membershipDiscountPercentage: number;
+  readonly membershipSavings: number;
+  readonly membershipDiscountEligible: boolean;
+  readonly availableQuantity: number;
+  readonly inventoryStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+  readonly published: boolean;
+  readonly primaryImageUrl: string | null;
   readonly images: readonly ProductImageDto[];
+  readonly relatedProducts: readonly ProductSummaryDto[];
 }
 
 export interface PagedResponseDto<T> {

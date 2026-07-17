@@ -20,6 +20,9 @@ frontend/vite.config.d.ts
 
 # Backend build and runtime output
 backend/target/
+backend/.classpath
+backend/.project
+backend/.settings/
 *.log
 
 # Local persistent media (external to both application build trees)

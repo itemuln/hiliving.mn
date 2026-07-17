@@ -23,6 +23,15 @@ export const productSummaryDto: ProductSummaryDto = {
 export const productDetailDto: ProductDetailDto = {
   ...productSummaryDto,
   description: 'Local development sample used to verify catalog reads and filtering.',
+  sku: 'PLANT-001',
+  effectiveCustomerPrice: 45000,
+  membershipDiscountPercentage: 10,
+  membershipSavings: 5000,
+  membershipDiscountEligible: true,
+  availableQuantity: 8,
+  inventoryStatus: 'IN_STOCK',
+  published: true,
+  primaryImageUrl: '/product-cleaner.svg',
   images: [
     {
       id: 1,
@@ -32,6 +41,7 @@ export const productDetailDto: ProductDetailDto = {
       primaryImage: true,
     },
   ],
+  relatedProducts: [],
 };
 
 export function productPageEnvelope(

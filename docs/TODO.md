@@ -2,20 +2,21 @@
 
 ## Active
 
-- No active implementation task. Phase 5.1 media upload and local server storage are implemented.
+- No active implementation task. Phase 6 product detail, cart, checkout preparation, and safe unpaid order placement are implemented and validated.
 
 ## Planned
 
 - [ ] **P1 - Phase 4B:** design password-reset and email/phone verification tokens, expiry, one-time use, abuse protection, session invalidation, and the email/SMS delivery boundary. Do not add delivery providers before the boundary is reviewed.
-- [ ] **P1:** review and design the shopping-cart boundary: anonymous identity, persistence, line-item quantities, server-authoritative prices, expiration, API shape, and frontend state. Keep checkout, orders, payments, and inventory reservation separate.
-- [ ] **P1:** define membership discount stacking and final-price calculation in the pricing/cart phase; `membership_discount_eligible` currently grants permission only.
+- [ ] **P1 - Phase 7:** add ADMIN-only order list/detail workflows, validated fulfillment/status transitions, operational audit events, and customer order history before enabling the Orders navigation item.
+- [ ] **P1 - Phase 7:** define cancellation, rejection, and stock-restoration rules, including idempotent transitions and concurrency behavior, before allowing order cancellation.
+- [ ] **P1:** design the real payment-provider lifecycle, signed callbacks, reconciliation, settlement, refunds, failure recovery, and secret handling before implementing `PaymentProvider`; retain `UNPAID` cash-on-delivery until then.
 - [ ] **P1:** provision the production upload root and NGINX read-only `/media/` alias, then rehearse paired PostgreSQL/filesystem backup and restore before deployment.
 - [ ] **P2:** add reference-aware media deletion/orphan reporting after defining retention and recovery policy; do not delete shared or externally hosted URLs.
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
-- [ ] **P2:** design order management before enabling the disabled admin navigation item.
+- [ ] **P2:** decide whether browser-local carts need authenticated cross-device synchronization, expiry, abandoned-cart handling, or inventory reservation; do not add them without a concrete business requirement.
 - [ ] **P1:** decide whether password changes need shared session storage or a session registry before promising cross-session invalidation.
 - [ ] **P1:** define the catalog slug-change and redirect policy before management workflows can edit public slugs.
-- [ ] **P2:** decide and model currency explicitly before supporting more than the current implicit currency.
+- [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
 - [ ] **P3:** design production NGINX, systemd, HTTPS, restricted environment files, SPA fallback, `/api` proxying, and off-server backups in a later phase.
 
@@ -52,3 +53,11 @@
 - [x] Replace product, brand, banner, and news URL-entry fields with a reusable picker/drag-drop/progress/preview/retry upload control while retaining compatible existing external URLs.
 - [x] Verify 38 backend tests on Temurin Java 21, 35 frontend tests, lint/build, clean-build persistence, restart persistence, authorization/rejection paths, replacement immutability, public media rendering, and mobile admin layouts.
 - [x] Remove Starts at and Ends at from normal banner administration while preserving backward-compatible banner response fields.
+- [x] Add Flyway V6 orders, item snapshots, address snapshots, explicit MNT totals/states, customer-scoped idempotency, and supporting constraints/indexes.
+- [x] Centralize product purchasability and catalog-first/member-second pricing; add public authoritative cart quotation with configured standard-delivery totals.
+- [x] Extend public product detail with ordered images, SKU, membership savings, stock limits, and related public products.
+- [x] Add transactionally repriced order placement with owned addresses, sorted pessimistic inventory locks, all-or-nothing deduction, immutable snapshots, and secure own-order retrieval.
+- [x] Add the `PaymentProvider` extension boundary while keeping Phase 6 orders explicitly `UNPAID` and cash-on-delivery only.
+- [x] Add a versioned minimal browser cart, real header badges, complete product-detail UI, responsive cart, protected checkout/login return, address creation/selection, double-submit prevention, and order confirmation.
+- [x] Verify 44 backend tests on Java 21 with PostgreSQL/Flyway V1-V6/Hibernate/JAR packaging and 48 frontend tests with clean install, lint, TypeScript/Vite build, and Prettier checks.
+- [x] Live-verify the anonymous product/cart flow, refresh persistence, checkout login return, address creation, authoritative totals, order success, inventory deduction, idempotent replay, cross-customer denial, cleanup, and responsive no-overflow layouts.
