@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthContext, type AuthContextValue } from '../../auth/AuthContext';
 import { authenticatedUser } from '../../../test/accountFixtures';
@@ -7,36 +7,34 @@ import { AdminProductEditorPage } from './AdminProductEditorPage';
 import * as api from '../../../api/adminApi';
 
 vi.mock('../../../api/adminApi', () => ({
-  listCategories: vi
-    .fn()
-    .mockResolvedValue([
-      {
-        id: 1,
-        name: 'Home',
-        slug: 'home',
-        parentId: null,
-        parentName: null,
-        description: null,
-        sortOrder: 0,
-        active: true,
-        childCount: 0,
-        productCount: 0,
-      },
-    ]),
-  listBrands: vi.fn().mockResolvedValue([]),
-  createProduct: vi.fn().mockResolvedValue({}),
-  uploadMediaImage: vi
-    .fn()
-    .mockResolvedValue({
+  listCategories: vi.fn().mockResolvedValue([
+    {
       id: 1,
-      storageKey: 'products/generated.png',
-      url: '/media/products/generated.png',
-      originalFilename: 'photo.png',
-      contentType: 'image/png',
-      sizeBytes: 100,
-      width: 10,
-      height: 10,
-    }),
+      name: 'Home',
+      slug: 'home',
+      parentId: null,
+      parentName: null,
+      description: null,
+      sortOrder: 0,
+      active: true,
+      childCount: 0,
+      productCount: 0,
+    },
+  ]),
+  listBrands: vi.fn().mockResolvedValue([]),
+  getProduct: vi.fn(),
+  createProduct: vi.fn().mockResolvedValue({}),
+  updateProduct: vi.fn().mockResolvedValue({}),
+  uploadMediaImage: vi.fn().mockResolvedValue({
+    id: 1,
+    storageKey: 'products/generated.png',
+    url: '/media/products/generated.png',
+    originalFilename: 'photo.png',
+    contentType: 'image/png',
+    sizeBytes: 100,
+    width: 10,
+    height: 10,
+  }),
 }));
 
 const auth: AuthContextValue = {
@@ -49,9 +47,47 @@ const auth: AuthContextValue = {
   replaceUser: vi.fn(),
 };
 
+const existingProduct = {
+  id: 42,
+  name: 'Existing product',
+  slug: 'existing-product',
+  productCode: 'PRD-000042',
+  shortDescription: 'Existing summary',
+  description: 'Existing details',
+  basePrice: 100,
+  discountPrice: null,
+  category: { id: 1, name: 'Home', slug: 'home' },
+  brand: null,
+  lifecycle: 'DRAFT' as const,
+  stockQuantity: 2,
+  lowStockThreshold: 1,
+  inventoryState: 'IN_STOCK' as const,
+  featured: false,
+  newProduct: false,
+  active: true,
+  membershipDiscountEligible: true,
+  images: [],
+  createdAt: '2026-07-18T00:00:00Z',
+  updatedAt: '2026-07-18T00:00:00Z',
+};
+
+function page(path = '/admin/products/new') {
+  return (
+    <AuthContext.Provider value={auth}>
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/admin/products/new" element={<AdminProductEditorPage />} />
+          <Route path="/admin/products/:id/edit" element={<AdminProductEditorPage />} />
+        </Routes>
+      </MemoryRouter>
+    </AuthContext.Provider>
+  );
+}
+
 describe('admin product editor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(api.getProduct).mockResolvedValue(existingProduct);
     vi.stubGlobal('URL', {
       ...URL,
       createObjectURL: vi.fn(() => 'blob:preview'),
@@ -59,13 +95,7 @@ describe('admin product editor', () => {
     });
   });
   it('offers exactly four upload slots, persists returned URLs, and validates publishing', async () => {
-    render(
-      <AuthContext.Provider value={auth}>
-        <MemoryRouter>
-          <AdminProductEditorPage />
-        </MemoryRouter>
-      </AuthContext.Provider>
-    );
+    render(page());
     await waitFor(() => expect(screen.getByText('1. Product information')).toBeInTheDocument());
     expect(screen.getAllByText('Choose file')).toHaveLength(4);
     expect(screen.queryByPlaceholderText('https://…')).not.toBeInTheDocument();
@@ -89,5 +119,42 @@ describe('admin product editor', () => {
     expect(screen.getAllByText('Choose file')).toHaveLength(3);
     expect(screen.getByText('Replace')).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Primary image' })).toBeChecked();
+  });
+
+  it('creates a product without exposing or submitting slug and product code fields', async () => {
+    render(page());
+    await screen.findByText('1. Product information');
+
+    expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Product code')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Product name'), {
+      target: { value: 'Generated identifiers' },
+    });
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+
+    await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(api.createProduct).mock.calls[0][0];
+    expect(payload).toMatchObject({ name: 'Generated identifiers', categoryId: 1 });
+    expect(payload).not.toHaveProperty('slug');
+    expect(payload).not.toHaveProperty('productCode');
+  });
+
+  it('updates a renamed product without submitting its stable identifiers', async () => {
+    render(page('/admin/products/42/edit'));
+    expect(await screen.findByDisplayValue('Existing product')).toBeInTheDocument();
+
+    expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Product code')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Product name'), {
+      target: { value: 'Renamed product' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+
+    await waitFor(() => expect(api.updateProduct).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(api.updateProduct).mock.calls[0][1];
+    expect(payload.name).toBe('Renamed product');
+    expect(payload).not.toHaveProperty('slug');
+    expect(payload).not.toHaveProperty('productCode');
   });
 });

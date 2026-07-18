@@ -327,3 +327,11 @@
 **Decision:** Require an `Idempotency-Key` UUID on order placement and enforce uniqueness with the customer ID. Store a SHA-256 hash of the canonical request. Return the original order for an exact replay and reject the key when the request differs. Start orders as `PENDING_CONFIRMATION` and `UNPAID`, with only `CASH_ON_DELIVERY` and `STANDARD_DELIVERY`. Define a `PaymentProvider` interface extension point but provide no implementation or fake call.
 
 **Consequences:** Retrying the same request is safe and conflicting key reuse is visible. The browser disables an in-flight submission, retains the same key for the unchanged checkout fingerprint, and clears its cart only after success. No payment authorization, capture, callback, reconciliation, settlement, refund, or paid state is implemented; those require a reviewed provider/security lifecycle later.
+
+## 2026-07-18 - Backend-owned immutable product identifiers
+
+**Context:** Requiring administrators and browser clients to invent both a public slug and internal product code exposed implementation details, created avoidable validation errors, and made normal product renames capable of breaking public links.
+
+**Decision:** Remove `slug` and `productCode` from the admin product write DTO and editor. On creation, normalize the product name into the existing lowercase ASCII slug format, transliterating supported Mongolian Cyrillic and appending `-2`, `-3`, and later suffixes when needed. Serialize same-base slug allocation with a PostgreSQL transaction advisory lock. Generate product codes independently from the Flyway V7 `product_code_sequence` as `PRD-######`. Never assign either identifier during update.
+
+**Consequences:** Existing product columns, unique constraints, response contracts, public slug routes, and admin code search/display remain unchanged. Product renaming is URL-safe because the original slug and code persist. Sequence gaps after rolled-back transactions are accepted, and any future exceptional slug correction/import requires an explicit redirect/alias policy rather than an editable field in the normal form.

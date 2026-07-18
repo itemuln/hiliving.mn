@@ -53,21 +53,46 @@ class AdminPlatformApiIntegrationTests {
     void productRulesExposeInventoryMembershipAndArchiveVisibility() throws Exception {
         CategoryEntity category=categories.save(CategoryEntity.create("Admin Product","admin-product",null,0,true));
         String active="""
-                {"name":"Managed Product","slug":"managed-product","productCode":"MP-001","shortDescription":"Managed","description":"Details","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":5,"featured":true,"newProduct":true,"active":true,"membershipDiscountEligible":false,"images":[{"imageUrl":"https://example.com/product.jpg","altText":"Product","sortOrder":0,"primaryImage":true}]}
+                {"name":"Монгол Өргөө","description":"Managed product details","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":5,"featured":true,"newProduct":true,"active":true,"membershipDiscountEligible":false,"images":[{"imageUrl":"https://example.com/product.jpg","altText":"Product","sortOrder":0,"primaryImage":true}]}
                 """.formatted(category.getId());
         var result=mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(active))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.data.inventoryState").value("LOW_STOCK"))
-                .andExpect(jsonPath("$.data.membershipDiscountEligible").value(false)).andReturn();
+                .andExpect(jsonPath("$.data.membershipDiscountEligible").value(false))
+                .andExpect(jsonPath("$.data.slug").value("mongol-orgoo"))
+                .andExpect(jsonPath("$.data.productCode").value(org.hamcrest.Matchers.matchesPattern("PRD-[0-9]{6,}")))
+                .andExpect(jsonPath("$.data.shortDescription").value("Managed product details"))
+                .andExpect(jsonPath("$.data.description").value("Managed product details"))
+                .andReturn();
         long id=((Number)com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(),"$.data.id")).longValue();
-        org.assertj.core.api.Assertions.assertThat(products.findPublicBySlug("managed-product", ProductStatus.ACTIVE)).isPresent();
-        mvc.perform(get("/api/v1/products/managed-product")).andExpect(status().isOk());
-        mvc.perform(patch("/api/v1/admin/products/{id}",id).with(admin()).with(csrf()).contentType("application/json").content(active))
+        String productCode=com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(),"$.data.productCode");
+
+        mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(active))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.slug").value("mongol-orgoo-2"))
+                .andExpect(jsonPath("$.data.productCode").value(org.hamcrest.Matchers.matchesPattern("PRD-[0-9]{6,}")))
+                .andExpect(jsonPath("$.data.productCode").value(org.hamcrest.Matchers.not(productCode)));
+
+        org.assertj.core.api.Assertions.assertThat(products.findPublicBySlug("mongol-orgoo", ProductStatus.ACTIVE)).isPresent();
+        mvc.perform(get("/api/v1/products/mongol-orgoo")).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/admin/products").with(admin()).param("search",productCode))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(1))
+                .andExpect(jsonPath("$.data.items[0].productCode").value(productCode));
+
+        String renamed=active.replace("\"name\":\"Монгол Өргөө\"","\"name\":\"Шинэ Бүтээгдэхүүн\"");
+        mvc.perform(patch("/api/v1/admin/products/{id}",id).with(admin()).with(csrf()).contentType("application/json").content(renamed))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.name").value("Шинэ Бүтээгдэхүүн"))
+                .andExpect(jsonPath("$.data.slug").value("mongol-orgoo"))
+                .andExpect(jsonPath("$.data.productCode").value(productCode))
                 .andExpect(jsonPath("$.data.images[0].imageUrl").value("https://example.com/product.jpg"));
+        mvc.perform(get("/api/v1/products/mongol-orgoo")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.name").value("Шинэ Бүтээгдэхүүн"));
+        mvc.perform(get("/api/v1/products/shine-buteegdehuun")).andExpect(status().isNotFound());
+
         mvc.perform(post("/api/v1/admin/products/{id}/archive",id).with(admin()).with(csrf())).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.lifecycle").value("ARCHIVED"));
-        mvc.perform(get("/api/v1/products/managed-product")).andExpect(status().isNotFound());
-        String invalid=active.replace("managed-product","invalid-product").replace("MP-001","MP-002").replace("\"discountPrice\":80","\"discountPrice\":100");
+        mvc.perform(get("/api/v1/products/mongol-orgoo")).andExpect(status().isNotFound());
+        String invalid=active.replace("\"name\":\"Монгол Өргөө\"","\"name\":\"Invalid Product\"").replace("\"discountPrice\":80","\"discountPrice\":100");
         mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(invalid))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("INVALID_DISCOUNT_PRICE"));
     }

@@ -189,11 +189,11 @@ public class ProductEntity {
         this.active = active;
     }
 
-    public void update(String name, String slug, String productCode, String shortDescription, String description,
+    public void update(String name, String shortDescription, String description,
                        BigDecimal price, BigDecimal discountPrice, CategoryEntity category, BrandEntity brand,
                        ProductStatus status, boolean featured, boolean newProduct, boolean active,
                        int stockQuantity, int lowStockThreshold, boolean membershipDiscountEligible) {
-        this.name = name; this.slug = slug; this.productCode = productCode;
+        this.name = name;
         this.shortDescription = shortDescription; this.description = description; this.price = price;
         this.discountPrice = discountPrice; this.category = category; this.brand = brand; this.status = status;
         this.featured = featured; this.newProduct = newProduct; this.active = active;

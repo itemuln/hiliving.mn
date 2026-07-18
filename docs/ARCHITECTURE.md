@@ -81,6 +81,8 @@ Flyway migration `V2__create_catalog_schema.sql` creates Category, Brand, Produc
 
 Flyway V4 adds catalog descriptions/order fields, unique product codes, stock and low-stock thresholds, new/active flags, and `membership_discount_eligible`. Lifecycle status controls draft/published/archived workflow; `active` is the independent operational visibility switch. Public products require lifecycle `ACTIVE`, product `active=true`, an active category, and an active or absent brand. Inventory state is computed: zero is `OUT_OF_STOCK`, positive stock at or below the threshold is `LOW_STOCK`, and higher stock is `IN_STOCK`.
 
+Normal product create/update requests do not accept or require `slug` or `productCode`. On creation, the backend transliterates supported Mongolian Cyrillic, normalizes the name to the existing lowercase ASCII slug constraint, and holds a transaction-scoped PostgreSQL advisory lock for that base slug while selecting the first free value (`name`, `name-2`, `name-3`, and so on). Flyway V7 creates `product_code_sequence`; each new product receives the next concurrency-safe `PRD-######` value independently of its name. Updates never assign either field, so renaming preserves public URLs, cart identifiers, order references, and internal product codes. Responses, admin search/list display, public slug routing, and the existing unique database constraints retain both fields.
+
 Product, brand, banner, and news associations remain URL metadata, which preserves existing external URL compatibility. New administration uploads return same-origin `/media/...` URLs backed by managed media records. Product administration permits at most four images, unique order values, at most one primary image while drafting, and exactly one primary image for a publicly usable active product.
 
 Public product detail resolves the optional authenticated customer and returns ordered images, the primary image, SKU, effective price, membership savings/eligibility, available quantity, and up to four other public products from the same category. The current product is excluded. The server does not expose draft, archived, inactive, hidden-category/brand, or otherwise unpurchasable products through this route.
@@ -142,7 +144,7 @@ The `local` Spring profile adds a small sample catalog only when catalog tables 
 
 ## PostgreSQL and Flyway strategy
 
-Flyway is the only schema-management mechanism. Versioned SQL lives in `backend/src/main/resources/db/migration`; applied migrations are immutable. Hibernate uses `ddl-auto=validate`. Flyway V6 adds checkout/order persistence and its uniqueness, status, money, quantity, and lookup constraints without modifying V1-V5. PostgreSQL 17 is pinned for local and integration tests, and the production version must be compatibility-tested before deployment.
+Flyway is the only schema-management mechanism. Versioned SQL lives in `backend/src/main/resources/db/migration`; applied migrations are immutable. Hibernate uses `ddl-auto=validate`. Flyway V6 adds checkout/order persistence and Flyway V7 adds the product-code sequence without modifying the existing product columns or uniqueness constraints. PostgreSQL 17 is pinned for local and integration tests, and the production version must be compatibility-tested before deployment.
 
 ## API boundaries
 
@@ -150,11 +152,11 @@ Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/produ
 
 ## Validation strategy
 
-Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 48 tests preserve existing catalog, account, and administration coverage and add product gallery/quantity/cart behavior, malformed and duplicate cart persistence, authoritative quote/membership totals, stock-change recovery, CSRF/idempotency request shape, protected checkout returns, address selection, double-submit prevention, failure-safe cart retention, and order confirmation/error behavior.
+Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, and a Vite production build. The 50 tests preserve existing catalog, account, administration, and commerce coverage and also verify that product create/update forms expose and submit no slug or product-code fields.
 
 Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 6 verified product gallery selection, anonymous cart persistence after refresh, authoritative quotation, login return to checkout, address creation/selection, cash-on-delivery order placement, success details, inventory deduction, cart clearing only on success, exact idempotent replay, cross-customer order denial, and no horizontal overflow at mobile, tablet, and desktop widths. Temporary customers, address, order, product image, and stock changes were removed/restored immediately afterward. Existing Phase 5.1 media files were not modified.
 
-Backend validation uses Maven on Java 21 with PostgreSQL Testcontainers, Flyway through V6, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 44 tests preserve existing catalog, identity, administration, and media suites and add published product detail, image ordering, related products, anonymous/member/non-eligible pricing, invalid availability and quantity handling, monetary totals, address ownership/default behavior, order snapshots, rollback, CSRF/role/ownership checks, idempotent/conflicting retries, and a concurrent last-unit purchase that permits one order and leaves stock at zero.
+Backend validation uses Maven on Java 21 with PostgreSQL Testcontainers, Flyway through V7, Hibernate validation, repository/service/controller/security coverage, and JAR packaging. The 44 tests preserve existing catalog, identity, administration, media, and commerce coverage and now also verify identifier-free product writes, automatic slug/code creation, collision suffixes, code-based admin search, stable identifiers after renaming, and unchanged public routing by the original slug.
 
 ## Target Contabo deployment architecture
 

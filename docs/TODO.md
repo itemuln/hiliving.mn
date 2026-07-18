@@ -15,7 +15,7 @@
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
 - [ ] **P2:** decide whether browser-local carts need authenticated cross-device synchronization, expiry, abandoned-cart handling, or inventory reservation; do not add them without a concrete business requirement.
 - [ ] **P1:** decide whether password changes need shared session storage or a session registry before promising cross-session invalidation.
-- [ ] **P1:** define the catalog slug-change and redirect policy before management workflows can edit public slugs.
+- [ ] **P2:** define a redirect/alias and migration policy before ever introducing an exceptional product-slug correction or import tool; normal product editing keeps generated slugs immutable.
 - [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
 - [ ] **P3:** design production NGINX, systemd, HTTPS, restricted environment files, SPA fallback, `/api` proxying, and off-server backups in a later phase.
@@ -61,3 +61,5 @@
 - [x] Add a versioned minimal browser cart, real header badges, complete product-detail UI, responsive cart, protected checkout/login return, address creation/selection, double-submit prevention, and order confirmation.
 - [x] Verify 44 backend tests on Java 21 with PostgreSQL/Flyway V1-V6/Hibernate/JAR packaging and 48 frontend tests with clean install, lint, TypeScript/Vite build, and Prettier checks.
 - [x] Live-verify the anonymous product/cart flow, refresh persistence, checkout login return, address creation, authoritative totals, order success, inventory deduction, idempotent replay, cross-customer denial, cleanup, and responsive no-overflow layouts.
+- [x] Remove product slug/code inputs and write fields; generate collision-safe stable slugs and sequence-backed `PRD-######` codes on creation while preserving both identifiers on rename.
+- [x] Verify the product-identifier refactor with all 44 backend tests, PostgreSQL/Flyway V1-V7/Hibernate/JAR packaging, all 50 frontend tests, lint, TypeScript, and the production build.

@@ -34,14 +34,17 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Transactional order creation with immutable item/address/pricing snapshots, row-locked inventory deduction, per-customer idempotency keys, and ownership-scoped order confirmation
 - Explicit initial `PENDING_CONFIRMATION`/`UNPAID` order state plus a payment-provider interface boundary without a real payment integration
 - Spring Boot 4.1.0 catalog API compiled and tested on Temurin Java 21
-- PostgreSQL 17, Flyway through version 6, Hibernate schema validation, and Testcontainers integration coverage
+- PostgreSQL 17, Flyway through version 7, Hibernate schema validation, and Testcontainers integration coverage
 - GitHub Actions and Jenkins frontend test stages
 
 ## Current active task
 
-No implementation task is active. Phase 6 implementation, automated verification, concurrency checks, and the live product-to-order browser/API workflow are complete.
+No implementation task is active. Phase 6 and the focused backend-owned product-identifier refactor are implemented and verified.
 
 ## Latest meaningful changes
+
+- 2026-07-18: Removed editable product slug and product-code fields from normal administration. Product creation now generates a lowercase URL-safe slug with numeric collision suffixes and a sequence-backed `PRD-######` code; product renames preserve both identifiers.
+- 2026-07-18: Verified all 44 backend tests on Java 21 with PostgreSQL/Flyway V1-V7/Hibernate/JAR packaging and all 50 frontend tests with lint, TypeScript, and the production build.
 
 - 2026-07-17: Added Flyway V6 order, order-item, and delivery-address snapshot persistence with explicit lifecycle/payment states, idempotency constraints, and lookup indexes.
 - 2026-07-17: Centralized purchasability and MNT pricing, including catalog-first then membership discounting, authoritative cart quotation, configured standard delivery, and transactional inventory locking/deduction.
@@ -90,7 +93,7 @@ No implementation task is active. Phase 6 implementation, automated verification
 - EXIF orientation is not normalized, so phone photos must already have display-correct pixel orientation.
 - Existing external image URLs remain readable, but new administration uploads return same-origin `/media/...` URLs. There is no delete/reference-count endpoint yet, so replaced or removed files require a future safe orphan-maintenance job.
 - Local storage and PostgreSQL must be backed up together. Production backup automation and an S3-compatible provider are designed but not implemented.
-- Checkout and order amounts explicitly use MNT, but the older catalog tables still do not store a per-product currency. Public slug changes do not yet have a redirect or alias policy.
+- Checkout and order amounts explicitly use MNT, but the older catalog tables still do not store a per-product currency. Product slugs are now backend-generated and stable across normal edits; there is still no redirect or alias policy for a future exceptional slug migration.
 
 ## Next recommended step
 

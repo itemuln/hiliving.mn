@@ -137,7 +137,7 @@ class MediaApiIntegrationTests {
                 """)).andExpect(status().isCreated()).andReturn();
         long categoryId = ((Number) com.jayway.jsonpath.JsonPath.read(category.getResponse().getContentAsString(), "$.data.id")).longValue();
         mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"name":"Media product","slug":"media-product","productCode":"MEDIA-1","basePrice":10,"categoryId":%d,"lifecycle":"ACTIVE","stockQuantity":1,"lowStockThreshold":1,"featured":false,"newProduct":false,"active":true,"membershipDiscountEligible":true,"images":[{"imageUrl":"%s","sortOrder":0,"primaryImage":true}]}
+                {"name":"Media product","basePrice":10,"categoryId":%d,"lifecycle":"ACTIVE","stockQuantity":1,"lowStockThreshold":1,"featured":false,"newProduct":false,"active":true,"membershipDiscountEligible":true,"images":[{"imageUrl":"%s","sortOrder":0,"primaryImage":true}]}
                 """.formatted(categoryId, productUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.images[0].imageUrl").value(productUrl));
         mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"name":"Media brand","slug":"media-brand","logoUrl":"%s","sortOrder":0,"active":true}

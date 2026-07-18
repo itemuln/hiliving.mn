@@ -74,8 +74,6 @@ export interface Product {
 }
 export interface ProductInput {
   name: string;
-  slug: string;
-  productCode: string;
   shortDescription: string;
   description: string;
   basePrice: number;

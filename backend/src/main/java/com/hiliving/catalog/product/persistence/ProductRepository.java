@@ -78,9 +78,7 @@ public interface ProductRepository extends
             Pageable pageable
     );
 
-    boolean existsBySlugAndIdNot(String slug, Long id);
-
-    boolean existsByProductCodeAndIdNot(String productCode, Long id);
+    boolean existsBySlug(String slug);
 
     long countByCategoryId(Long categoryId);
 

@@ -18,8 +18,6 @@ import { ImageUploadControl } from '../components/ImageUploadControl';
 type ImageDraft = ProductInput['images'][number];
 const blank: ProductInput = {
   name: '',
-  slug: '',
-  productCode: '',
   shortDescription: '',
   description: '',
   basePrice: 0,
@@ -59,8 +57,6 @@ export function AdminProductEditorPage() {
         if (p)
           setForm({
             name: p.name,
-            slug: p.slug,
-            productCode: p.productCode,
             shortDescription: p.shortDescription ?? '',
             description: p.description ?? '',
             basePrice: p.basePrice,
@@ -174,9 +170,7 @@ export function AdminProductEditorPage() {
       else await api.createProduct(payload);
       navigate('/admin/products');
     } catch {
-      setError(
-        'The product could not be saved. Check unique slug/code, pricing, inventory, and image rules.'
-      );
+      setError('The product could not be saved. Check pricing, inventory, and image rules.');
     } finally {
       setSaving(false);
     }
@@ -253,23 +247,6 @@ export function AdminProductEditorPage() {
                 className={input}
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
-              />
-            </Field>
-            <Field label="Product code">
-              <input
-                required
-                className={input}
-                value={form.productCode}
-                onChange={(e) => set('productCode', e.target.value)}
-              />
-            </Field>
-            <Field label="Slug" wide>
-              <input
-                required
-                pattern="[a-z0-9]+(-[a-z0-9]+)*"
-                className={input}
-                value={form.slug}
-                onChange={(e) => set('slug', e.target.value)}
               />
             </Field>
             <Field label="Short description" wide>
