@@ -63,3 +63,4 @@
 - [x] Live-verify the anonymous product/cart flow, refresh persistence, checkout login return, address creation, authoritative totals, order success, inventory deduction, idempotent replay, cross-customer denial, cleanup, and responsive no-overflow layouts.
 - [x] Remove product slug/code inputs and write fields; generate collision-safe stable slugs and sequence-backed `PRD-######` codes on creation while preserving both identifiers on rename.
 - [x] Verify the product-identifier refactor with all 44 backend tests, PostgreSQL/Flyway V1-V7/Hibernate/JAR packaging, all 50 frontend tests, lint, TypeScript, and the production build.
+- [x] Replace separate short/full product-description inputs with one admin Description field and derive the compatible 500-character catalog summary on the backend.

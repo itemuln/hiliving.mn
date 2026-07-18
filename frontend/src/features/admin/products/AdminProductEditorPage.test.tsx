@@ -127,17 +127,27 @@ describe('admin product editor', () => {
 
     expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Product code')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Short description')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Full description')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Product name'), {
       target: { value: 'Generated identifiers' },
+    });
+    fireEvent.change(screen.getByLabelText('Description'), {
+      target: { value: 'One product description' },
     });
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
 
     await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
     const payload = vi.mocked(api.createProduct).mock.calls[0][0];
-    expect(payload).toMatchObject({ name: 'Generated identifiers', categoryId: 1 });
+    expect(payload).toMatchObject({
+      name: 'Generated identifiers',
+      description: 'One product description',
+      categoryId: 1,
+    });
     expect(payload).not.toHaveProperty('slug');
     expect(payload).not.toHaveProperty('productCode');
+    expect(payload).not.toHaveProperty('shortDescription');
   });
 
   it('updates a renamed product without submitting its stable identifiers', async () => {
@@ -146,6 +156,7 @@ describe('admin product editor', () => {
 
     expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Product code')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Description')).toHaveValue('Existing details');
     fireEvent.change(screen.getByLabelText('Product name'), {
       target: { value: 'Renamed product' },
     });
@@ -156,5 +167,6 @@ describe('admin product editor', () => {
     expect(payload.name).toBe('Renamed product');
     expect(payload).not.toHaveProperty('slug');
     expect(payload).not.toHaveProperty('productCode');
+    expect(payload).not.toHaveProperty('shortDescription');
   });
 });

@@ -44,6 +44,7 @@ No implementation task is active. Phase 6 and the focused backend-owned product-
 ## Latest meaningful changes
 
 - 2026-07-18: Removed editable product slug and product-code fields from normal administration. Product creation now generates a lowercase URL-safe slug with numeric collision suffixes and a sequence-backed `PRD-######` code; product renames preserve both identifiers.
+- 2026-07-18: Consolidated the product editor's Short description and Full description controls into one Description field while continuing to populate the compatible catalog summary and detail fields on the backend.
 - 2026-07-18: Verified all 44 backend tests on Java 21 with PostgreSQL/Flyway V1-V7/Hibernate/JAR packaging and all 50 frontend tests with lint, TypeScript, and the production build.
 
 - 2026-07-17: Added Flyway V6 order, order-item, and delivery-address snapshot persistence with explicit lifecycle/payment states, idempotency constraints, and lookup indexes.

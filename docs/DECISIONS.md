@@ -335,3 +335,11 @@
 **Decision:** Remove `slug` and `productCode` from the admin product write DTO and editor. On creation, normalize the product name into the existing lowercase ASCII slug format, transliterating supported Mongolian Cyrillic and appending `-2`, `-3`, and later suffixes when needed. Serialize same-base slug allocation with a PostgreSQL transaction advisory lock. Generate product codes independently from the Flyway V7 `product_code_sequence` as `PRD-######`. Never assign either identifier during update.
 
 **Consequences:** Existing product columns, unique constraints, response contracts, public slug routes, and admin code search/display remain unchanged. Product renaming is URL-safe because the original slug and code persist. Sequence gaps after rolled-back transactions are accepted, and any future exceptional slug correction/import requires an explicit redirect/alias policy rather than an editable field in the normal form.
+
+## 2026-07-18 - One product-description authoring field
+
+**Context:** Separate Short description and Full description controls made administrators maintain two versions of the same product copy, while existing catalog cards/search and detail pages still rely on their established read fields.
+
+**Decision:** Expose only one `description` field in normal product creation/editing and in the admin write DTO. Persist the complete normalized value as the product description and derive the compatible short description from its first 500 Unicode code points. Keep both database columns and read-response fields.
+
+**Consequences:** Administrators author product copy once without a schema migration or public contract break. Catalog summaries/search and detail pages remain compatible. Legacy records load the full description when present and otherwise fall back to the old short description.

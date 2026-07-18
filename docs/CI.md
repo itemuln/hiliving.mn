@@ -7,7 +7,7 @@
 - Frontend job: Node 24, `npm ci`, ESLint, Vitest, and Vite production build from `frontend/`
 - Backend job: Temurin Java 21 and Maven `verify` from `backend/`
 
-Frontend tests mock the HTTP boundary and cover existing catalog/account/commerce states plus admin guards, the responsive shell, multipart/CSRF behavior, media-backed forms, product identifier-free create/update payloads, and the absence of editable product slug/code controls. Backend tests use PostgreSQL 17 Testcontainers, apply Flyway V1–V7, start Hibernate with schema validation, and exercise catalog, identity, administration authorization, media, checkout/orders, automatic product identifiers, collision handling, and identifier stability.
+Frontend tests mock the HTTP boundary and cover existing catalog/account/commerce states plus admin guards, the responsive shell, multipart/CSRF behavior, media-backed forms, product identifier-free create/update payloads, and the single product-description control. Backend tests use PostgreSQL 17 Testcontainers, apply Flyway V1–V7, start Hibernate with schema validation, and exercise catalog, identity, administration authorization, media, checkout/orders, automatic product identifiers, collision handling, identifier stability, and compatible description derivation.
 
 The Phase 5.1 verification baseline is 38 backend tests and 35 frontend tests. The backend clean verification runs on Temurin Java 21 with PostgreSQL 17 Testcontainers and packages the JAR; the frontend starts with `npm ci`, then runs lint, tests, TypeScript compilation, and the production build.
 

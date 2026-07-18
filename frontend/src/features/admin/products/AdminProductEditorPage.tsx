@@ -18,7 +18,6 @@ import { ImageUploadControl } from '../components/ImageUploadControl';
 type ImageDraft = ProductInput['images'][number];
 const blank: ProductInput = {
   name: '',
-  shortDescription: '',
   description: '',
   basePrice: 0,
   discountPrice: null,
@@ -57,8 +56,7 @@ export function AdminProductEditorPage() {
         if (p)
           setForm({
             name: p.name,
-            shortDescription: p.shortDescription ?? '',
-            description: p.description ?? '',
+            description: p.description ?? p.shortDescription ?? '',
             basePrice: p.basePrice,
             discountPrice: p.discountPrice,
             categoryId: p.category.id,
@@ -249,15 +247,7 @@ export function AdminProductEditorPage() {
                 onChange={(e) => set('name', e.target.value)}
               />
             </Field>
-            <Field label="Short description" wide>
-              <textarea
-                rows={2}
-                className={input}
-                value={form.shortDescription}
-                onChange={(e) => set('shortDescription', e.target.value)}
-              />
-            </Field>
-            <Field label="Full description" wide>
+            <Field label="Description" wide>
               <textarea
                 rows={6}
                 className={input}
