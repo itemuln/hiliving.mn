@@ -99,18 +99,16 @@ describe('admin media forms', () => {
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Uploaded banner' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save banner' }));
     await waitFor(() =>
-      expect(api.createBanner).toHaveBeenCalledWith(
-        {
-          title: 'Uploaded banner',
-          subtitle: '',
-          imageUrl: '/media/banner/generated.png',
-          mobileImageUrl: '',
-          linkUrl: '',
-          linkLabel: '',
-          sortOrder: 0,
-          active: true,
-        }
-      )
+      expect(api.createBanner).toHaveBeenCalledWith({
+        title: 'Uploaded banner',
+        subtitle: '',
+        imageUrl: '/media/banner/generated.png',
+        mobileImageUrl: '',
+        linkUrl: '',
+        linkLabel: '',
+        sortOrder: 0,
+        active: true,
+      })
     );
   });
 

@@ -112,10 +112,7 @@ export interface Banner {
   createdAt: string;
   updatedAt: string;
 }
-export type BannerInput = Omit<
-  Banner,
-  'id' | 'startsAt' | 'endsAt' | 'createdAt' | 'updatedAt'
->;
+export type BannerInput = Omit<Banner, 'id' | 'startsAt' | 'endsAt' | 'createdAt' | 'updatedAt'>;
 export interface News {
   id: number;
   title: string;
