@@ -15,6 +15,7 @@ public record UserPrincipal(
         String displayName,
         String username,
         String role,
+        int sessionVersion,
         Collection<? extends GrantedAuthority> authorities
 ) implements UserDetails, Serializable {
 
@@ -27,6 +28,7 @@ public record UserPrincipal(
                 user.getFirstName() + " " + user.getLastName(),
                 user.getEmail(),
                 user.getRole().name(),
+                user.getSessionVersion(),
                 List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }

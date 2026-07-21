@@ -155,13 +155,17 @@ public class ApiExceptionHandler {
             ApiRequestException exception,
             HttpServletRequest request
     ) {
-        return response(
+        ResponseEntity<ApiErrorResponse> response = response(
                 exception.getStatus(),
                 exception.getCode(),
                 exception.getMessage(),
                 request,
                 List.of()
         );
+        if (exception.getRetryAfterSeconds() == null) return response;
+        return ResponseEntity.status(response.getStatusCode())
+                .header("Retry-After", String.valueOf(exception.getRetryAfterSeconds()))
+                .body(response.getBody());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

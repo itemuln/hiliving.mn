@@ -2,11 +2,11 @@
 
 ## Active
 
-- No active implementation task. Phase 6 product detail, cart, checkout preparation, and safe unpaid order placement are implemented and validated.
+- No active implementation task. Phase 7B/7C transactional email, verification, and password recovery are implemented and validated.
 
 ## Planned
 
-- [ ] **P1 - Phase 4B:** design password-reset and email/phone verification tokens, expiry, one-time use, abuse protection, session invalidation, and the email/SMS delivery boundary. Do not add delivery providers before the boundary is reviewed.
+- [x] **P1 - Phase 4B/7C:** implement email verification and password-reset tokens, expiry, one-time use, abuse protection, session invalidation, and transactional SMTP/outbox delivery. Phone/SMS verification remains out of scope.
 - [ ] **P1 - Phase 7:** add ADMIN-only order list/detail workflows, validated fulfillment/status transitions, operational audit events, and customer order history before enabling the Orders navigation item.
 - [ ] **P1 - Phase 7:** define cancellation, rejection, and stock-restoration rules, including idempotent transitions and concurrency behavior, before allowing order cancellation.
 - [ ] **P1:** design the real payment-provider lifecycle, signed callbacks, reconciliation, settlement, refunds, failure recovery, and secret handling before implementing `PaymentProvider`; retain `UNPAID` cash-on-delivery until then.
@@ -14,7 +14,7 @@
 - [ ] **P2:** add reference-aware media deletion/orphan reporting after defining retention and recovery policy; do not delete shared or externally hosted URLs.
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
 - [ ] **P2:** decide whether browser-local carts need authenticated cross-device synchronization, expiry, abandoned-cart handling, or inventory reservation; do not add them without a concrete business requirement.
-- [ ] **P1:** decide whether password changes need shared session storage or a session registry before promising cross-session invalidation.
+- [x] **P1:** invalidate prior sessions after password recovery through a database-backed per-user session version; ordinary authenticated password change keeps its current behavior.
 - [ ] **P2:** define a redirect/alias and migration policy before ever introducing an exceptional product-slug correction or import tool; normal product editing keeps generated slugs immutable.
 - [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.

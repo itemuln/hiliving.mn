@@ -16,12 +16,49 @@ spring:
       max-file-size: ${HILIVING_MEDIA_MULTIPART_MAX_FILE_SIZE:8MB}
       max-request-size: ${HILIVING_MEDIA_MULTIPART_MAX_REQUEST_SIZE:9MB}
       file-size-threshold: 0
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:25}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      "[mail.smtp.auth]": ${MAIL_SMTP_AUTH:true}
+      "[mail.smtp.starttls.enable]": ${MAIL_SMTP_STARTTLS_ENABLED:true}
+      "[mail.smtp.connectiontimeout]": ${MAIL_CONNECTION_TIMEOUT_MS:5000}
+      "[mail.smtp.timeout]": ${MAIL_READ_TIMEOUT_MS:10000}
+      "[mail.smtp.writetimeout]": ${MAIL_WRITE_TIMEOUT_MS:10000}
 
 hiliving:
   checkout:
     standard-shipping-fee: ${HILIVING_STANDARD_SHIPPING_FEE:5000.00}
   media:
     storage-path: ${HILIVING_MEDIA_STORAGE_PATH:../infrastructure/data/uploads}
+  email:
+    delivery-enabled: ${EMAIL_DELIVERY_ENABLED:false}
+    manual-test-enabled: ${EMAIL_MANUAL_TEST_ENABLED:false}
+    test-recipient: ${EMAIL_TEST_RECIPIENT:}
+    from-address: ${MAIL_FROM_ADDRESS:no-reply@hiliving.mn}
+    from-name: ${MAIL_FROM_NAME:HiLiving}
+    support-address: ${MAIL_SUPPORT_ADDRESS:support@hiliving.mn}
+    public-url: ${APP_PUBLIC_URL:http://localhost:5173}
+    token-protection-key: ${EMAIL_TOKEN_PROTECTION_KEY:}
+    verification-expiry: ${EMAIL_VERIFICATION_EXPIRY:24h}
+    password-reset-expiry: ${PASSWORD_RESET_EXPIRY:30m}
+    outbox:
+      batch-size: ${EMAIL_OUTBOX_BATCH_SIZE:20}
+      polling-interval: ${EMAIL_OUTBOX_POLLING_INTERVAL:10s}
+      max-attempts: ${EMAIL_OUTBOX_MAX_ATTEMPTS:5}
+      initial-retry-delay: ${EMAIL_OUTBOX_INITIAL_RETRY_DELAY:1m}
+      max-retry-delay: ${EMAIL_OUTBOX_MAX_RETRY_DELAY:1h}
+      processing-timeout: ${EMAIL_OUTBOX_PROCESSING_TIMEOUT:10m}
+    rate-limit:
+      max-entries: ${EMAIL_RATE_LIMIT_MAX_ENTRIES:10000}
+      verification-limit: ${EMAIL_VERIFICATION_RATE_LIMIT:3}
+      verification-window: ${EMAIL_VERIFICATION_RATE_WINDOW:1h}
+      reset-request-limit: ${PASSWORD_RESET_REQUEST_RATE_LIMIT:5}
+      reset-request-window: ${PASSWORD_RESET_REQUEST_RATE_WINDOW:1h}
+      reset-confirm-limit: ${PASSWORD_RESET_CONFIRM_RATE_LIMIT:10}
+      reset-confirm-window: ${PASSWORD_RESET_CONFIRM_RATE_WINDOW:15m}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -34,6 +71,9 @@ server:
         secure: ${SESSION_COOKIE_SECURE:false}
 
 management:
+  health:
+    mail:
+      enabled: ${EMAIL_DELIVERY_ENABLED:false}
   endpoints:
     web:
       exposure:

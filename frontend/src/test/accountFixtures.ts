@@ -9,6 +9,7 @@ export const authenticatedUser: AuthenticatedUser = {
   role: 'CUSTOMER',
   status: 'ACTIVE',
   emailVerified: false,
+  emailVerifiedAt: null,
   phoneVerified: false,
   membership: {
     code: 'SILVER',

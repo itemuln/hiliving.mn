@@ -33,6 +33,8 @@ npm run dev
 
 The storefront calls same-origin `/api/v1` paths. Vite proxies `/api` to `http://localhost:8080` by default. Set `VITE_DEV_API_PROXY_TARGET` in the ignored root `.env` when the backend uses another local port, or see `frontend/README.md` for the explicit base URL option.
 
+Transactional email, verification, password recovery, outbox operations, and the explicitly opt-in manual SMTP test are documented in [`docs/TRANSACTIONAL_EMAIL.md`](docs/TRANSACTIONAL_EMAIL.md).
+
 ## PostgreSQL
 
 From the repository root:

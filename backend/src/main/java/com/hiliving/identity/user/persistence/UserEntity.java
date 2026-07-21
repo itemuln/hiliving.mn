@@ -55,8 +55,11 @@ public class UserEntity {
     @Column(name = "discount_override_percentage", precision = 5, scale = 2)
     private BigDecimal discountOverridePercentage;
 
-    @Column(name = "email_verified", nullable = false)
-    private boolean emailVerified;
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+
+    @Column(name = "session_version", nullable = false)
+    private int sessionVersion;
 
     @Column(name = "phone_verified", nullable = false)
     private boolean phoneVerified;
@@ -123,6 +126,7 @@ public class UserEntity {
     }
 
     public void updateProfile(String firstName, String lastName, String email, String phoneNumber) {
+        if (!this.email.equals(email)) this.emailVerifiedAt = null;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -130,6 +134,8 @@ public class UserEntity {
     }
 
     public void changePassword(String passwordHash) { this.passwordHash = passwordHash; }
+    public void verifyEmail(Instant verifiedAt) { this.emailVerifiedAt = verifiedAt; }
+    public void invalidateSessions() { this.sessionVersion += 1; }
     public void changeStatus(UserStatus status) { this.status = status; }
     public void changeMembership(MembershipTierEntity membershipTier) { this.membershipTier = membershipTier; }
     public void changeDiscountOverride(BigDecimal discount) { this.discountOverridePercentage = discount; }
@@ -154,7 +160,9 @@ public class UserEntity {
     public UserStatus getStatus() { return status; }
     public MembershipTierEntity getMembershipTier() { return membershipTier; }
     public BigDecimal getDiscountOverridePercentage() { return discountOverridePercentage; }
-    public boolean isEmailVerified() { return emailVerified; }
+    public boolean isEmailVerified() { return emailVerifiedAt != null; }
+    public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
+    public int getSessionVersion() { return sessionVersion; }
     public boolean isPhoneVerified() { return phoneVerified; }
     public int getFailedLoginAttempts() { return failedLoginAttempts; }
     public Instant getLockedUntil() { return lockedUntil; }

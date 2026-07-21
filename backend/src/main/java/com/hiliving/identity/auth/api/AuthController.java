@@ -39,8 +39,9 @@ public class AuthController {
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<AccountResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ApiResponse.of(authService.register(request));
+    public ApiResponse<AccountResponse> register(@Valid @RequestBody RegisterRequest request,
+                                                 HttpServletRequest servletRequest) {
+        return ApiResponse.of(authService.register(request, clientIp(servletRequest)));
     }
 
     @PostMapping("/login")
@@ -61,5 +62,13 @@ public class AuthController {
         servletRequest.changeSessionId();
         securityContextRepository.saveContext(context, servletRequest, servletResponse);
         return ApiResponse.of(AccountResponse.from(user));
+    }
+
+    private String clientIp(HttpServletRequest request) {
+        String address = request.getRemoteAddr();
+        if (address == null || address.isBlank()) return "unknown";
+        int scope = address.indexOf('%');
+        String normalized = scope >= 0 ? address.substring(0, scope) : address;
+        return normalized.substring(0, Math.min(normalized.length(), 45));
     }
 }

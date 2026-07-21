@@ -1,10 +1,14 @@
 package com.hiliving.commerce.order;
 
 import com.hiliving.api.error.ApiRequestException;
+import com.hiliving.admin.audit.AuditService;
 import com.hiliving.catalog.product.persistence.ProductEntity;
 import com.hiliving.catalog.product.persistence.ProductRepository;
 import com.hiliving.commerce.cart.CartQuoteResponse;
 import com.hiliving.commerce.pricing.PricingService;
+import com.hiliving.email.EmailEventType;
+import com.hiliving.email.OrderEmailPayloadFactory;
+import com.hiliving.email.outbox.EmailOutboxService;
 import com.hiliving.identity.user.persistence.UserAddressEntity;
 import com.hiliving.identity.user.persistence.UserAddressRepository;
 import com.hiliving.identity.user.persistence.UserEntity;
@@ -26,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Set;
 
 @Service
 public class OrderService {
@@ -34,14 +39,21 @@ public class OrderService {
     private final UserAddressRepository addresses;
     private final ProductRepository products;
     private final PricingService pricing;
+    private final EmailOutboxService emailOutbox;
+    private final OrderEmailPayloadFactory emailPayloads;
+    private final AuditService audit;
 
     public OrderService(OrderRepository orders, UserRepository users, UserAddressRepository addresses,
-                        ProductRepository products, PricingService pricing) {
+                        ProductRepository products, PricingService pricing, EmailOutboxService emailOutbox,
+                        OrderEmailPayloadFactory emailPayloads, AuditService audit) {
         this.orders = orders;
         this.users = users;
         this.addresses = addresses;
         this.products = products;
         this.pricing = pricing;
+        this.emailOutbox = emailOutbox;
+        this.emailPayloads = emailPayloads;
+        this.audit = audit;
     }
 
     @Transactional
@@ -85,7 +97,11 @@ public class OrderService {
                 nextOrderNumber(), customer, idempotencyKey, requestHash, paymentMethod, deliveryMethod,
                 note, quote, address, lockedBySlug
         );
-        return OrderResponse.from(orders.saveAndFlush(order));
+        OrderEntity saved = orders.saveAndFlush(order);
+        emailOutbox.enqueue("order-confirmation:" + saved.getOrderNumber(), EmailEventType.ORDER_CONFIRMATION,
+                saved.getCustomerEmailSnapshot(), "HiLiving захиалга баталгаажлаа — " + saved.getOrderNumber(),
+                "order-confirmation", emailPayloads.from(saved));
+        return OrderResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +109,41 @@ public class OrderService {
         return orders.findByOrderNumberAndCustomerId(orderNumber, customerId)
                 .map(OrderResponse::from)
                 .orElseThrow(() -> error(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "Order was not found"));
+    }
+
+    @Transactional
+    public OrderResponse updateStatus(String orderNumber, String statusValue) {
+        OrderStatus requested;
+        try {
+            requested = OrderStatus.valueOf(statusValue);
+        } catch (RuntimeException exception) {
+            throw error(HttpStatus.BAD_REQUEST, "ORDER_STATUS_INVALID", "Order status is not supported");
+        }
+        OrderEntity order = orders.findByOrderNumberForUpdate(orderNumber)
+                .orElseThrow(() -> error(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "Order was not found"));
+        OrderStatus previous = order.getOrderStatus();
+        if (previous == requested) return OrderResponse.from(order);
+        if (!allowedNext(previous).contains(requested)) {
+            throw error(HttpStatus.CONFLICT, "ORDER_STATUS_TRANSITION_INVALID", "Order status transition is not allowed");
+        }
+        order.changeStatus(requested);
+        orders.flush();
+        emailOutbox.enqueue("order-status:" + order.getOrderNumber() + ":" + requested.name(),
+                EmailEventType.ORDER_STATUS_CHANGED, order.getCustomerEmailSnapshot(),
+                "HiLiving захиалгын төлөв шинэчлэгдлээ — " + order.getOrderNumber(),
+                "order-status-changed", emailPayloads.from(order));
+        audit.record("ORDER_STATUS_CHANGED", "ORDER", order.getId(), previous.name() + " -> " + requested.name());
+        return OrderResponse.from(order);
+    }
+
+    private Set<OrderStatus> allowedNext(OrderStatus current) {
+        return switch (current) {
+            case PENDING_CONFIRMATION -> Set.of(OrderStatus.CONFIRMED);
+            case CONFIRMED -> Set.of(OrderStatus.PROCESSING);
+            case PROCESSING -> Set.of(OrderStatus.SHIPPED);
+            case SHIPPED -> Set.of(OrderStatus.DELIVERED);
+            case DELIVERED, CANCELLED -> Set.of();
+        };
     }
 
     private DeliveryMethod parseDeliveryMethod(String value) {

@@ -13,6 +13,7 @@ public record AccountResponse(
         String role,
         String status,
         boolean emailVerified,
+        Instant emailVerifiedAt,
         boolean phoneVerified,
         MembershipResponse membership,
         Instant createdAt,
@@ -21,7 +22,7 @@ public record AccountResponse(
     public static AccountResponse from(UserEntity user) {
         return new AccountResponse(
                 user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoneNumber(),
-                user.getRole().name(), user.getStatus().name(), user.isEmailVerified(), user.isPhoneVerified(),
+                user.getRole().name(), user.getStatus().name(), user.isEmailVerified(), user.getEmailVerifiedAt(), user.isPhoneVerified(),
                 new MembershipResponse(
                         user.getMembershipTier().getCode(),
                         user.getMembershipTier().getDisplayName(),

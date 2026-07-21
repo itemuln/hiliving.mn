@@ -58,3 +58,9 @@ Order endpoints require an authenticated `CUSTOMER`; POST also requires CSRF. Pl
 `HILIVING_STANDARD_SHIPPING_FEE` configures the flat MNT standard-delivery amount and defaults to `5000.00`. Keep the production value in the restricted environment configuration; the committed `.env.example` contains only the non-secret default.
 
 Sample catalog data is created only when the `local` profile is active and the catalog is empty.
+
+## Transactional email and account recovery
+
+Registration queues email verification while preserving the existing login and checkout behavior for unverified customers. Password recovery is available only to active accounts with a verified email. Public recovery endpoints remain CSRF-protected, return generic request responses, and use the configured `APP_PUBLIC_URL` rather than request host headers. Email delivery is asynchronous through the PostgreSQL outbox and disabled by default.
+
+See [`../docs/TRANSACTIONAL_EMAIL.md`](../docs/TRANSACTIONAL_EMAIL.md) for SMTP configuration, retry operations, token/session security, endpoint details, and the manual test command.

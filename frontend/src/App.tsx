@@ -38,6 +38,15 @@ const LoginPage = lazy(() =>
 const RegisterPage = lazy(() =>
   import('./pages/RegisterPage').then((module) => ({ default: module.RegisterPage }))
 );
+const ForgotPasswordPage = lazy(() =>
+  import('./pages/ForgotPasswordPage').then((module) => ({ default: module.ForgotPasswordPage }))
+);
+const ResetPasswordPage = lazy(() =>
+  import('./pages/ResetPasswordPage').then((module) => ({ default: module.ResetPasswordPage }))
+);
+const VerifyEmailPage = lazy(() =>
+  import('./pages/VerifyEmailPage').then((module) => ({ default: module.VerifyEmailPage }))
+);
 const AccountPage = lazy(() =>
   import('./pages/AccountPage').then((module) => ({ default: module.AccountPage }))
 );
@@ -128,6 +137,9 @@ export function App() {
           <Route path="/news/:newsSlug" element={<NewsDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route
             path="/account"
             element={

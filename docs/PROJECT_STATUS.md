@@ -2,7 +2,7 @@
 
 ## Current project state
 
-HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot API in `backend/`. Phase 6 is implemented: complete product detail, a persistent anonymous cart, backend-authoritative quotation, authenticated checkout preparation, transactional order placement, and secure order confirmation now extend the existing catalog, account, administration, and managed-media features.
+HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot API in `backend/`. Phase 7B/7C is implemented: durable transactional email, email verification, verified-email password recovery, reset-driven session invalidation, and order confirmation/status notifications now extend the Phase 6 commerce foundation.
 
 ## Features currently working
 
@@ -33,15 +33,21 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Protected checkout with safe post-login return, ownership-scoped address selection/creation, cash-on-delivery confirmation, submission locking, and failure-safe cart retention
 - Transactional order creation with immutable item/address/pricing snapshots, row-locked inventory deduction, per-customer idempotency keys, and ownership-scoped order confirmation
 - Explicit initial `PENDING_CONFIRMATION`/`UNPAID` order state plus a payment-provider interface boundary without a real payment integration
+- PostgreSQL email outbox with idempotent event keys, concurrent claiming, processing leases, bounded retry, safe failures, and SMTP delivery disabled by default
+- Hashed, expiring, single-use, purpose-specific verification/reset tokens, protected token-bearing outbox data, and bounded rate limits
+- `/forgot-password`, `/reset-password`, and `/verify-email` routes plus authenticated verification status/resend controls
+- Password-reset session-version invalidation and immutable order email contact snapshots
 - Spring Boot 4.1.0 catalog API compiled and tested on Temurin Java 21
-- PostgreSQL 17, Flyway through version 7, Hibernate schema validation, and Testcontainers integration coverage
+- PostgreSQL 17, Flyway through version 10, Hibernate schema validation, and Testcontainers integration coverage
 - GitHub Actions and Jenkins frontend test stages
 
 ## Current active task
 
-No implementation task is active. Phase 6 and the focused backend-owned product-identifier refactor are implemented and verified.
+No implementation task is active. Phase 7B/7C implementation and validation are complete.
 
 ## Latest meaningful changes
+
+- 2026-07-19: Added transactional SMTP email through a durable outbox, verification/password recovery with hashed tokens, reset session invalidation, order notifications/status transitions, recovery UI, tests, and operational documentation.
 
 - 2026-07-18: Removed editable product slug and product-code fields from normal administration. Product creation now generates a lowercase URL-safe slug with numeric collision suffixes and a sequence-backed `PRD-######` code; product renames preserve both identifiers.
 - 2026-07-18: Consolidated the product editor's Short description and Full description controls into one Description field while continuing to populate the compatible catalog summary and detail fields on the backend.
@@ -87,7 +93,7 @@ No implementation task is active. Phase 6 and the focused backend-owned product-
 - Inventory is validated and deducted only during order placement; there is no cart-time reservation, reservation expiry, backorder, or cancellation-driven stock restoration yet.
 - Checkout currently supports one `STANDARD_DELIVERY` option with a configurable flat MNT 5,000 default and only `CASH_ON_DELIVERY`. Orders start `UNPAID`; no real payment provider, payment callback, refund, or settlement flow exists.
 - The cart is browser-local and anonymous-capable. It does not synchronize across devices or customer sessions, and server repricing can change or remove lines when stock/catalog state changes.
-- Customer order access is limited to the success/detail endpoint. Administration order lists, fulfillment/status transitions, cancellation policy, audit history, notifications, and customer order history are not implemented.
+- Customer order access is limited to the success/detail endpoint. A narrow ADMIN status-transition endpoint and notifications now exist, but administration order lists/details, cancellation stock restoration, and customer order history remain unimplemented.
 - Variants, reviews, password reset, and verification delivery are not implemented.
 - Password changes keep the current session valid and cannot invalidate other sessions until shared/session-registry infrastructure is deliberately added.
 - WEBP is deliberately rejected until the Java runtime has a verified decoder/encoder; supported uploads are JPEG and PNG only.

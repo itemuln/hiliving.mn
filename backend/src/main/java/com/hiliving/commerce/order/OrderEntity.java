@@ -38,6 +38,8 @@ public class OrderEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = "customer_id", nullable = false) private UserEntity customer;
     @Column(name = "idempotency_key", nullable = false) private UUID idempotencyKey;
     @Column(name = "request_hash", nullable = false, length = 64) private String requestHash;
+    @Column(name = "customer_email_snapshot", nullable = false, length = 254) private String customerEmailSnapshot;
+    @Column(name = "customer_first_name_snapshot", nullable = false, length = 100) private String customerFirstNameSnapshot;
     @Enumerated(EnumType.STRING) @Column(name = "order_status", nullable = false, length = 32) private OrderStatus orderStatus;
     @Enumerated(EnumType.STRING) @Column(name = "payment_status", nullable = false, length = 20) private PaymentStatus paymentStatus;
     @Enumerated(EnumType.STRING) @Column(name = "payment_method", nullable = false, length = 32) private PaymentMethod paymentMethod;
@@ -65,6 +67,8 @@ public class OrderEntity {
         order.customer = customer;
         order.idempotencyKey = idempotencyKey;
         order.requestHash = requestHash;
+        order.customerEmailSnapshot = customer.getEmail();
+        order.customerFirstNameSnapshot = customer.getFirstName();
         order.orderStatus = OrderStatus.PENDING_CONFIRMATION;
         order.paymentStatus = PaymentStatus.UNPAID;
         order.paymentMethod = paymentMethod;
@@ -92,6 +96,8 @@ public class OrderEntity {
     public UserEntity getCustomer() { return customer; }
     public UUID getIdempotencyKey() { return idempotencyKey; }
     public String getRequestHash() { return requestHash; }
+    public String getCustomerEmailSnapshot() { return customerEmailSnapshot; }
+    public String getCustomerFirstNameSnapshot() { return customerFirstNameSnapshot; }
     public OrderStatus getOrderStatus() { return orderStatus; }
     public PaymentStatus getPaymentStatus() { return paymentStatus; }
     public PaymentMethod getPaymentMethod() { return paymentMethod; }
@@ -106,4 +112,5 @@ public class OrderEntity {
     public Instant getPlacedAt() { return placedAt; }
     public List<OrderItemEntity> getItems() { return Collections.unmodifiableList(items); }
     public OrderAddressSnapshotEntity getAddressSnapshot() { return addressSnapshot; }
+    public void changeStatus(OrderStatus status) { this.orderStatus = status; }
 }

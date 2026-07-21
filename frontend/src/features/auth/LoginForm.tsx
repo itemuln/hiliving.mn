@@ -60,6 +60,11 @@ export function LoginForm() {
       <button className={primaryButtonClass} disabled={submitting}>
         {submitting ? 'Нэвтэрч байна…' : 'Нэвтрэх'}
       </button>
+      <p className="text-center text-sm">
+        <Link className="font-medium text-brand-600 hover:underline" to="/forgot-password">
+          Нууц үгээ мартсан уу?
+        </Link>
+      </p>
       <p className="text-center text-sm text-neutral-500">
         Бүртгэлгүй юу?{' '}
         <Link className="font-medium text-brand-600 hover:underline" to="/register">

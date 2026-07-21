@@ -65,6 +65,8 @@ The backend uses Java 21, Maven, and Spring Boot 4.1.0. `com.hiliving` is the co
 
 Spring Security uses server-side sessions. The session cookie is HttpOnly and `SameSite=Lax`; `SESSION_COOKIE_SECURE` must be true behind production HTTPS. Login explicitly rotates the session identifier. The browser never stores an auth token. A readable `XSRF-TOKEN` cookie is mirrored into `X-XSRF-TOKEN` for state-changing requests; the cookie exists only for CSRF defense and is not an authentication credential.
 
+Phase 7B/7C adds a PostgreSQL transactional-email outbox, SMTP provider boundary, purpose-specific hashed email verification/password reset tokens, bounded rate limiting, and per-user session versions for password-reset invalidation. Unverified password accounts retain login/checkout compatibility, but password recovery requires a verified email. Full operational details are in `docs/TRANSACTIONAL_EMAIL.md`.
+
 Public catalog GETs, public cart quotation, registration, login, CSRF initialization, and health are permitted. `/api/v1/account/**` requires authentication, `/api/v1/orders/**` requires `CUSTOMER`, `/api/v1/admin/**` requires `ADMIN`, and unmatched routes are denied. CSRF remains required for anonymous quote POSTs and authenticated order POSTs. No broad CORS policy is enabled because Vite and future NGINX preserve same-origin requests.
 
 ## Identity and account data model

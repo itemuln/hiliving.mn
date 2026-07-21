@@ -5,7 +5,13 @@ import type {
   PasswordInput,
   ProfileInput,
 } from '../features/account/account.types';
-import type { AuthenticatedUser, LoginInput, RegisterInput } from '../features/auth/auth.types';
+import type {
+  AuthenticatedUser,
+  LoginInput,
+  MessageResponse,
+  PasswordResetConfirmInput,
+  RegisterInput,
+} from '../features/auth/auth.types';
 
 interface DataEnvelope<T> {
   data: T;
@@ -170,6 +176,23 @@ export const login = (input: LoginInput) =>
   });
 export const register = (input: RegisterInput) =>
   apiRequest<AuthenticatedUser>('/api/v1/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+export const requestEmailVerification = () =>
+  apiRequest<MessageResponse>('/api/v1/auth/email-verification/request', { method: 'POST' });
+export const confirmEmailVerification = (token: string) =>
+  apiRequest<MessageResponse>('/api/v1/auth/email-verification/confirm', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
+export const requestPasswordReset = (email: string) =>
+  apiRequest<MessageResponse>('/api/v1/auth/password-reset/request', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  });
+export const confirmPasswordReset = (input: PasswordResetConfirmInput) =>
+  apiRequest<MessageResponse>('/api/v1/auth/password-reset/confirm', {
     method: 'POST',
     body: JSON.stringify(input),
   });

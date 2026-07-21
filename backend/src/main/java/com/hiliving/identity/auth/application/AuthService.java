@@ -29,6 +29,7 @@ public class AuthService {
     private final IdentityNormalizer normalizer;
     private final PasswordPolicy passwordPolicy;
     private final PasswordEncoder passwordEncoder;
+    private final EmailVerificationService emailVerification;
     private final Clock clock;
     private final String dummyPasswordHash;
 
@@ -37,19 +38,26 @@ public class AuthService {
             MembershipTierRepository memberships,
             IdentityNormalizer normalizer,
             PasswordPolicy passwordPolicy,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            EmailVerificationService emailVerification
     ) {
         this.users = users;
         this.memberships = memberships;
         this.normalizer = normalizer;
         this.passwordPolicy = passwordPolicy;
         this.passwordEncoder = passwordEncoder;
+        this.emailVerification = emailVerification;
         this.clock = Clock.systemUTC();
         this.dummyPasswordHash = passwordEncoder.encode("non-user timing comparison 9274");
     }
 
     @Transactional
     public AccountResponse register(RegisterRequest request) {
+        return register(request, "unknown");
+    }
+
+    @Transactional
+    public AccountResponse register(RegisterRequest request, String requestedIp) {
         String email = normalizer.email(request.email());
         String phone = normalizer.phone(request.phoneNumber());
         passwordPolicy.validate(request.password());
@@ -62,7 +70,9 @@ public class AuthService {
                 request.firstName().trim(), request.lastName().trim(), email, phone,
                 passwordEncoder.encode(request.password()), regular
         );
-        return AccountResponse.from(users.save(user));
+        UserEntity saved = users.saveAndFlush(user);
+        emailVerification.issueForRegistration(saved, requestedIp);
+        return AccountResponse.from(saved);
     }
 
     @Transactional(noRollbackFor = ApiRequestException.class)

@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @EntityGraph(attributePaths = "membershipTier")
     Optional<UserEntity> findByPhoneNumber(String phoneNumber);
 
+    @Query("select user.sessionVersion from UserEntity user where user.id = :id")
+    Optional<Integer> findSessionVersionById(@Param("id") Long id);
+
     @Override
     @EntityGraph(attributePaths = "membershipTier")
     Optional<UserEntity> findById(Long id);

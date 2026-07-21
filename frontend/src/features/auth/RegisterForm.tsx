@@ -34,7 +34,7 @@ export function RegisterForm() {
   if (success)
     return (
       <div role="status" className="rounded-xl bg-green-50 p-5 text-sm leading-6 text-green-800">
-        Бүртгэл амжилттай үүслээ.{' '}
+        Бүртгэл амжилттай үүслээ. Имэйлээ баталгаажуулах зааврыг шалгана уу.{' '}
         <Link to="/login" className="font-semibold underline">
           Одоо нэвтрэх
         </Link>

@@ -15,6 +15,7 @@ export interface AuthenticatedUser {
   role: 'CUSTOMER' | 'ADMIN';
   status: 'ACTIVE' | 'DISABLED' | 'LOCKED';
   emailVerified: boolean;
+  emailVerifiedAt: string | null;
   phoneVerified: boolean;
   membership: Membership;
   createdAt: string;
@@ -36,4 +37,14 @@ export interface RegisterInput {
   phoneNumber: string;
   email: string;
   password: string;
+}
+
+export interface PasswordResetConfirmInput {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+export interface MessageResponse {
+  message: string;
 }

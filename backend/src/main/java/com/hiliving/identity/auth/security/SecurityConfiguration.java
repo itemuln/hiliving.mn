@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import com.hiliving.identity.user.persistence.UserRepository;
 
 @Configuration
@@ -46,6 +47,7 @@ public class SecurityConfiguration {
             HttpSecurity http,
             ApiSecurityErrorWriter errors,
             SecurityContextRepository securityContextRepository,
+            SessionVersionFilter sessionVersionFilter,
             @Value("${server.servlet.session.cookie.secure:false}") boolean secureCookies
     ) throws Exception {
         CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
@@ -62,6 +64,7 @@ public class SecurityConfiguration {
                         .securityContextRepository(securityContextRepository)
                 )
                 .sessionManagement(session -> session.sessionFixation(fixation -> fixation.migrateSession()))
+                .addFilterBefore(sessionVersionFilter, AuthorizationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/categories/**", "/api/v1/brands/**", "/api/v1/products/**",
@@ -70,7 +73,12 @@ public class SecurityConfiguration {
                                 "/api/v1/auth/csrf", "/actuator/health", "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.HEAD, "/media/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/v1/auth/register", "/api/v1/auth/login",
+                                "/api/v1/auth/email-verification/confirm",
+                                "/api/v1/auth/password-reset/request", "/api/v1/auth/password-reset/confirm"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/email-verification/request").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/v1/cart/quote").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/logout").authenticated()
                         .requestMatchers("/api/v1/account/**").authenticated()

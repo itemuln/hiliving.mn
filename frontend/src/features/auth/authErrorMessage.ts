@@ -10,6 +10,11 @@ const messages: Record<string, string> = {
   PASSWORD_POLICY_VIOLATION: 'Нууц үг 10-аас дээш тэмдэгттэй, үсэг болон тоо агуулсан байна.',
   VALIDATION_ERROR: 'Оруулсан мэдээллээ шалгана уу.',
   SERVICE_UNAVAILABLE: 'Үйлчилгээтэй холбогдож чадсангүй. Дахин оролдоно уу.',
+  RATE_LIMITED: 'Хэт олон удаа оролдлоо. Түр хүлээгээд дахин оролдоно уу.',
+  PASSWORD_CONFIRMATION_MISMATCH: 'Шинэ нууц үгнүүд хоорондоо таарахгүй байна.',
+  PASSWORD_RESET_TOKEN_INVALID: 'Энэ холбоос хүчингүй, хугацаа дууссан эсвэл өмнө ашиглагдсан байна.',
+  EMAIL_VERIFICATION_TOKEN_INVALID: 'Баталгаажуулах холбоос хүчингүй эсвэл өмнө ашиглагдсан байна.',
+  EMAIL_VERIFICATION_TOKEN_EXPIRED: 'Баталгаажуулах холбоосын хугацаа дууссан байна.',
 };
 
 export function authErrorMessage(error: unknown) {

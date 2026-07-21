@@ -10,6 +10,8 @@ import com.hiliving.catalog.product.persistence.ProductEntity;
 import com.hiliving.catalog.product.persistence.ProductRepository;
 import com.hiliving.catalog.product.persistence.ProductStatus;
 import com.hiliving.commerce.order.OrderRepository;
+import com.hiliving.email.EmailEventType;
+import com.hiliving.email.outbox.EmailOutboxRepository;
 import com.hiliving.identity.user.persistence.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,6 +46,7 @@ class CheckoutApiIntegrationTests {
     @Autowired ProductRepository products;
     @Autowired UserRepository users;
     @Autowired OrderRepository orders;
+    @Autowired EmailOutboxRepository emailOutbox;
 
     private ProductEntity eligible;
     private ProductEntity ineligible;
@@ -155,14 +159,38 @@ class CheckoutApiIntegrationTests {
 
         assertThat(products.findById(eligible.getId()).orElseThrow().getStockQuantity()).isEqualTo(3);
         assertThat(orders.count()).isEqualTo(1);
+        var confirmation = emailOutbox.findAll().stream()
+                .filter(email -> email.getEventType() == EmailEventType.ORDER_CONFIRMATION).toList();
+        assertThat(confirmation).hasSize(1);
+        assertThat(confirmation.getFirst().getRecipient()).isEqualTo("buyer@example.com");
+        assertThat(confirmation.getFirst().getPayload())
+                .contains("Eligible", "Original address", "8100.00", orderNumber)
+                .doesNotContain("passwordHash");
         mockMvc.perform(post("/api/v1/orders").with(csrf()).session(buyer)
                         .header("Idempotency-Key", key).contentType("application/json").content(orderBody))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.data.orderNumber").value(orderNumber));
         assertThat(orders.count()).isEqualTo(1);
+        assertThat(emailOutbox.findAll().stream()
+                .filter(email -> email.getEventType() == EmailEventType.ORDER_CONFIRMATION).toList()).hasSize(1);
         assertThat(products.findById(eligible.getId()).orElseThrow().getStockQuantity()).isEqualTo(3);
 
         mockMvc.perform(get("/api/v1/orders/{orderNumber}", orderNumber).session(buyer))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.customerNote").value("Door code 12"));
+
+        register("order-admin@example.com", "99112209");
+        var admin = users.findByEmail("order-admin@example.com").orElseThrow();
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                admin, "role", com.hiliving.identity.user.persistence.UserRole.ADMIN);
+        users.saveAndFlush(admin);
+        MockHttpSession adminSession = login("order-admin@example.com");
+        for (int attempt = 0; attempt < 2; attempt++) {
+            mockMvc.perform(patch("/api/v1/admin/orders/{orderNumber}/status", orderNumber)
+                            .with(csrf()).session(adminSession).contentType("application/json")
+                            .content("{\"status\":\"CONFIRMED\"}"))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.data.orderStatus").value("CONFIRMED"));
+        }
+        assertThat(emailOutbox.findAll().stream()
+                .filter(email -> email.getEventType() == EmailEventType.ORDER_STATUS_CHANGED).toList()).hasSize(1);
     }
 
     @Test
