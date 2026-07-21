@@ -23,8 +23,8 @@ const links = [
     label: 'Products',
     icon: ShoppingBag,
     children: [
-      { to: '/admin/products/new', label: 'Add product', icon: PackagePlus },
-      { to: '/admin/products', label: 'All products', icon: Boxes },
+      { to: '/admin/products/new', label: 'Add product', icon: PackagePlus, end: true },
+      { to: '/admin/products', label: 'All products', icon: Boxes, end: true },
     ],
   },
   { label: 'Orders', icon: BarChart3, disabled: true },
@@ -83,6 +83,7 @@ export function AdminShell({
                     <NavLink
                       key={child.to}
                       to={child.to}
+                      end={child.end}
                       onClick={() => setOpen(false)}
                       className={({ isActive }) =>
                         `ml-3 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${

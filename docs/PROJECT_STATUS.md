@@ -24,10 +24,12 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Permanent `REGULAR`, `BRONZE`, `SILVER`, and `GOLD` tiers with default, override, and effective discount display
 - Responsive separate admin shell, dashboard counts, catalog CRUD, managed image upload, inventory, users, banners, and news
 - Permanent membership tiers with admin-only assignment, nullable override management, account status control, and address viewing
-- Product lifecycle, operational active flag, computed inventory state, four-image limit, and membership-discount eligibility controls
+- Product lifecycle, operational active flag, computed inventory state, six-image limit, and membership-discount eligibility controls
 - Reusable safe admin audit logging for catalog, price, inventory, membership, status, banner, and news changes
 - JPEG/PNG decode-and-reencode processing with purpose-specific limits, safe UUID keys, external filesystem storage, and public read-only `/media/**` delivery
 - Reusable upload controls with picker, drag/drop, progress, preview, replacement, removal, retry, and save blocking while uploads are pending
+- Product administration supports selecting up to six photos in one file-picker action and renders cards only for selected photos while retaining per-image replacement, primary selection, ordering, and removal
+- Admin numeric inputs normalize leading zeros, preserve native step controls, clamp configured bounds on blur, and keep nullable values empty; invalid product discount combinations no longer render negative percentages
 - Versioned browser cart persistence containing only product slugs and quantities, with duplicate merging, malformed-data recovery, live item counts, and server reconciliation
 - Public backend-authoritative cart quotation in MNT, including catalog discounts, eligible customer membership discounts, configured standard delivery, stock validation, and final totals
 - Protected checkout with safe post-login return, ownership-scoped address selection/creation, cash-on-delivery confirmation, submission locking, and failure-safe cart retention
@@ -46,6 +48,10 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 No implementation task is active. Phase 7B/7C implementation and validation are complete.
 
 ## Latest meaningful changes
+
+- 2026-07-22: Standardized numeric input behavior across product, news, banner, category, brand, and user-discount administration; leading zeros are normalized, native increment/decrement remains active, bounds are enforced on blur, and invalid product discounts show an explicit invalid state.
+- 2026-07-22: Added dynamic multi-select product photo upload so one Add photos action can populate up to six images without showing empty image cards; the first image remains primary by default.
+- 2026-07-22: Corrected product sidebar matching so Add product and All products are not highlighted simultaneously.
 
 - 2026-07-19: Added transactional SMTP email through a durable outbox, verification/password recovery with hashed tokens, reset session invalidation, order notifications/status transitions, recovery UI, tests, and operational documentation.
 

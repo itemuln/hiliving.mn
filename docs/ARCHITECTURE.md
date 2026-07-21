@@ -87,7 +87,7 @@ Normal product create/update requests do not accept or require `slug` or `produc
 
 The normal product editor and admin write DTO expose one `description` value. The backend stores that complete value in `description` and derives the compatible `short_description` summary from its first 500 Unicode code points. Existing read DTOs keep both fields because catalog cards/search and product detail consume different representations; editing a legacy product prefers its full description and falls back to the old short value when no full value exists.
 
-Product, brand, banner, and news associations remain URL metadata, which preserves existing external URL compatibility. New administration uploads return same-origin `/media/...` URLs backed by managed media records. Product administration permits at most four images, unique order values, at most one primary image while drafting, and exactly one primary image for a publicly usable active product.
+Product, brand, banner, and news associations remain URL metadata, which preserves existing external URL compatibility. New administration uploads return same-origin `/media/...` URLs backed by managed media records. Product administration permits at most six images, unique order values, at most one primary image while drafting, and exactly one primary image for a publicly usable active product.
 
 Public product detail resolves the optional authenticated customer and returns ordered images, the primary image, SKU, effective price, membership savings/eligibility, available quantity, and up to four other public products from the same category. The current product is excluded. The server does not expose draft, archived, inactive, hidden-category/brand, or otherwise unpurchasable products through this route.
 
@@ -108,6 +108,8 @@ New orders start `PENDING_CONFIRMATION` and `UNPAID`, with `CASH_ON_DELIVERY` an
 ## Media upload, processing, and storage
 
 `POST /api/v1/admin/media/images` accepts `multipart/form-data` with `file` and a `purpose` of `PRODUCT`, `BRAND`, `BANNER`, or `NEWS`. It uses the existing session, ADMIN authorization, and CSRF boundary. Multipart requests must not set their own `Content-Type` boundary. Successful responses contain the public URL and authoritative media metadata; editor forms persist only that returned URL after the upload completes.
+
+The product editor uses one batch picker and renders image cards only for selected photos. It accepts only enough JPEG/PNG files to stay within the six-image limit, uploads them through the same endpoint, appends successful uploads in selection order, and makes the first product image primary. Completed uploads remain attached if a later file in the same selection fails; individual cards still handle replacement, removal, primary selection, and ordering. Banner desktop/mobile images and news thumbnails remain separate single-image controls because each has a distinct semantic role.
 
 The processor never trusts the supplied name, extension, or MIME type. It checks upload size before decode, uses ImageIO readers to inspect source dimensions, rejects dimension bombs, decodes the image, requires the claimed MIME type and filename extension to match the detected format, and accepts only JPEG and PNG. The decoded pixels are resized proportionally without upscaling and re-encoded to strip embedded metadata and untrusted payloads. JPEG output is RGB; PNG preserves alpha. EXIF orientation is not normalized. WEBP remains rejected because this Java baseline has no verified built-in decode-and-encode path.
 
@@ -134,7 +136,11 @@ PostgreSQL and the upload root form one recoverable dataset and must be snapshot
 
 All `/api/v1/admin/**` endpoints require `ADMIN`; anonymous requests receive 401 and authenticated customers receive 403. The React admin routes use the same session/CSRF authentication but render a separate sidebar/header workspace. Orders and Pages remain disabled administration navigation labels; Phase 6 adds customer order placement/confirmation, not administration order management or fake CRUD.
 
+The Add product and All products sidebar links use exact route matching, preventing the `/admin/products` parent path from appearing active while the dedicated `/admin/products/new` editor is selected.
+
 Categories are hierarchical. Services prevent self-parenting and indirect cycles, and deletion is blocked while children or products reference a category. Brand deletion preserves products through the existing nullable foreign-key rule. Normal banner administration has no start/end scheduling controls and sends no scheduling dates. The existing nullable fields remain in backend responses and the public filter for backward compatibility with older rows. News public reads require published state and a reached optional publication time.
+
+Admin numeric fields use one controlled input boundary across product, news, banner, category, brand, and user-discount forms. It keeps an editable text representation while focused, normalizes integer-leading zeros, preserves decimal prefixes, keeps browser-native step controls, restores required empty values to zero, retains nullable empty values, and clamps configured minimum/maximum bounds on blur. Product discount previewing only calculates when the discount price is nonnegative and lower than a positive base price; otherwise it renders an explicit invalid state and save validation rejects the combination.
 
 `admin_audit_log` stores actor email, action, entity type/id, a short non-sensitive detail, and timestamp for administration mutations. It never stores credentials, passwords, sessions, CSRF tokens, or secrets.
 

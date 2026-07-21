@@ -94,31 +94,116 @@ describe('admin product editor', () => {
       revokeObjectURL: vi.fn(),
     });
   });
-  it('offers exactly four upload slots, persists returned URLs, and validates publishing', async () => {
+  it('shows image cards only after batch selection and validates publishing', async () => {
     render(page());
     await waitFor(() => expect(screen.getByText('1. Product information')).toBeInTheDocument());
-    expect(screen.getAllByText('Choose file')).toHaveLength(4);
+    expect(screen.queryByLabelText('Product image 1')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Add product photos')).toHaveAttribute('multiple');
     expect(screen.queryByPlaceholderText('https://…')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'Publishing requires exactly one primary image'
     );
     const file = new File(['png'], 'photo.png', { type: 'image/png' });
-    fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
+    fireEvent.change(screen.getByLabelText('Add product photos'), {
       target: { files: [file] },
     });
-    await waitFor(() =>
-      expect(api.uploadMediaImage).toHaveBeenCalledWith(file, 'PRODUCT', expect.any(Object))
-    );
+    await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledWith(file, 'PRODUCT'));
     await waitFor(() =>
       expect(screen.getByAltText('Product image 1 preview')).toHaveAttribute(
         'src',
         '/media/products/generated.png'
       )
     );
-    expect(screen.getAllByText('Choose file')).toHaveLength(3);
     expect(screen.getByText('Replace')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Product image 2')).not.toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Primary image' })).toBeChecked();
+  });
+
+  it('renders selected product photos dynamically up to the six-image limit', async () => {
+    vi.mocked(api.uploadMediaImage).mockImplementation(async (file) => ({
+      id: 1,
+      storageKey: `products/${file.name}`,
+      url: `/media/products/${file.name}`,
+      originalFilename: file.name,
+      contentType: file.type as 'image/jpeg' | 'image/png',
+      sizeBytes: file.size,
+      width: 10,
+      height: 10,
+    }));
+    render(page());
+    await screen.findByText('1. Product information');
+    const files = [
+      new File(['one'], 'one.png', { type: 'image/png' }),
+      new File(['two'], 'two.jpg', { type: 'image/jpeg' }),
+      new File(['three'], 'three.png', { type: 'image/png' }),
+    ];
+
+    fireEvent.change(screen.getByLabelText('Add product photos'), {
+      target: { files },
+    });
+
+    await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledTimes(3));
+    expect(await screen.findByAltText('Product image 1 preview')).toHaveAttribute(
+      'src',
+      '/media/products/one.png'
+    );
+    expect(screen.getByAltText('Product image 2 preview')).toHaveAttribute(
+      'src',
+      '/media/products/two.jpg'
+    );
+    expect(screen.getByAltText('Product image 3 preview')).toHaveAttribute(
+      'src',
+      '/media/products/three.png'
+    );
+    expect(screen.queryByLabelText('Product image 4')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('radio', { name: 'Primary image' })[0]).toBeChecked();
+
+    const moreFiles = [
+      new File(['four'], 'four.png', { type: 'image/png' }),
+      new File(['five'], 'five.jpg', { type: 'image/jpeg' }),
+      new File(['six'], 'six.png', { type: 'image/png' }),
+    ];
+    fireEvent.change(screen.getByLabelText('Add product photos'), {
+      target: { files: moreFiles },
+    });
+
+    await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledTimes(6));
+    expect(await screen.findByAltText('Product image 6 preview')).toHaveAttribute(
+      'src',
+      '/media/products/six.png'
+    );
+    expect(screen.queryByLabelText('Add product photos')).not.toBeInTheDocument();
+  });
+
+  it('normalizes product number inputs without breaking decimal prices', async () => {
+    render(page());
+    await screen.findByText('1. Product information');
+    const basePrice = screen.getByRole('spinbutton', { name: 'Base price' });
+    const stockQuantity = screen.getByRole('spinbutton', { name: 'Stock quantity' });
+
+    fireEvent.change(basePrice, { target: { value: '023' } });
+    fireEvent.change(stockQuantity, { target: { value: '01' } });
+    expect(basePrice).toHaveValue(23);
+    expect(stockQuantity).toHaveValue(1);
+
+    fireEvent.change(basePrice, { target: { value: '0.25' } });
+    expect(basePrice).toHaveValue(0.25);
+  });
+
+  it('shows an invalid state instead of a negative discount percentage', async () => {
+    render(page());
+    await screen.findByText('1. Product information');
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
+      target: { value: '100' },
+    });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discount price' }), {
+      target: { value: '14930' },
+    });
+
+    expect(screen.getByText('Invalid price')).toBeInTheDocument();
+    expect(screen.queryByText('-14830%')).not.toBeInTheDocument();
   });
 
   it('creates a product without exposing or submitting slug and product code fields', async () => {

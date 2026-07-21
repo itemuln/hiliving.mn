@@ -98,6 +98,16 @@ class AdminPlatformApiIntegrationTests {
     }
 
     @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
+    void productsAcceptSixImagesAndRejectSeven() throws Exception {
+        CategoryEntity category=categories.save(CategoryEntity.create("Image Limit","image-limit",null,0,true));
+        mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(productWithImages(category.getId(),6)))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.data.images.length()").value(6));
+        mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(productWithImages(category.getId(),7)))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.error.fieldErrors[0].field").value("images"));
+    }
+
+    @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
     void bannersAndNewsRespectPublicSchedulingAndPublication() throws Exception {
         mvc.perform(post("/api/v1/admin/banners").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"title":"Public banner","imageUrl":"https://example.com/banner.jpg","sortOrder":1,"active":true}
@@ -115,5 +125,15 @@ class AdminPlatformApiIntegrationTests {
 
     private static org.springframework.test.web.servlet.request.RequestPostProcessor admin() {
         return user("admin@example.com").roles("ADMIN");
+    }
+
+    private static String productWithImages(long categoryId,int count) {
+        String images=java.util.stream.IntStream.range(0,count)
+                .mapToObj(index->"{\"imageUrl\":\"https://example.com/product-%d.jpg\",\"altText\":\"Product %d\",\"sortOrder\":%d,\"primaryImage\":%s}"
+                        .formatted(index,index,index,index==0))
+                .collect(java.util.stream.Collectors.joining(","));
+        return """
+                {"name":"Image limit %d","description":"Image limit test","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":1,"featured":false,"newProduct":false,"active":true,"membershipDiscountEligible":true,"images":[%s]}
+                """.formatted(count,categoryId,images);
     }
 }

@@ -1,0 +1,89 @@
+- generic [ref=f8e4]:
+  - complementary [ref=f8e5]:
+    - generic [ref=f8e6]:
+      - generic [ref=f8e8]:
+        - generic [ref=f8e9]: HiLiving
+        - generic [ref=f8e10]: Administration
+      - navigation "Admin navigation" [ref=f8e11]:
+        - link "Dashboard" [ref=f8e12] [cursor=pointer]:
+          - /url: /admin
+        - generic [ref=f8e18]:
+          - generic [ref=f8e19]: Products
+          - link "Add product" [ref=f8e23] [cursor=pointer]:
+            - /url: /admin/products/new
+          - link "All products" [ref=f8e28] [cursor=pointer]:
+            - /url: /admin/products
+        - generic [ref=f8e39]:
+          - generic [ref=f8e40]: Orders
+          - generic [ref=f8e43]: Later
+        - link "News" [ref=f8e44] [cursor=pointer]:
+          - /url: /admin/news
+        - link "Users" [ref=f8e48] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Banners" [ref=f8e54] [cursor=pointer]:
+          - /url: /admin/banners
+        - link "Categories" [ref=f8e59] [cursor=pointer]:
+          - /url: /admin/categories
+        - link "Brands" [ref=f8e64] [cursor=pointer]:
+          - /url: /admin/brands
+        - generic [ref=f8e69]:
+          - generic [ref=f8e70]: Pages
+          - generic [ref=f8e74]: Later
+      - generic [ref=f8e75]: Phase 5 · secure admin workspace
+  - generic [ref=f8e76]:
+    - banner [ref=f8e77]:
+      - paragraph [ref=f8e80]: Admin / banners
+      - generic [ref=f8e81]:
+        - generic [ref=f8e82]:
+          - generic [ref=f8e83]: UI Tester
+          - generic [ref=f8e84]: Administrator
+        - button "Log out" [ref=f8e85] [cursor=pointer]
+    - main [ref=f8e86]:
+      - generic [ref=f8e87]:
+        - generic [ref=f8e88]:
+          - heading "Banners" [level=1] [ref=f8e89]
+          - paragraph [ref=f8e90]: Upload desktop and optional mobile hero images; destination links remain text fields.
+        - button "Add banner" [active] [ref=f8e91] [cursor=pointer]
+      - generic [ref=f8e93]: No banners yet
+      - generic [ref=f8e94]:
+        - button "Close dialog" [ref=f8e95] [cursor=pointer]
+        - dialog "Add banner" [ref=f8e96]:
+          - generic [ref=f8e97]:
+            - heading "Add banner" [level=2] [ref=f8e98]
+            - button "Close" [ref=f8e99] [cursor=pointer]
+          - generic [ref=f8e103]:
+            - generic [ref=f8e104]:
+              - generic [ref=f8e105]: Title
+              - textbox "Title" [ref=f8e106]
+            - generic [ref=f8e107]:
+              - generic [ref=f8e108]: Link label
+              - textbox "Link label" [ref=f8e109]
+            - generic [ref=f8e110]:
+              - generic [ref=f8e111]: Subtitle
+              - textbox "Subtitle" [ref=f8e112]
+            - generic [ref=f8e113]:
+              - generic [ref=f8e114]:
+                - paragraph [ref=f8e118]: Drop image here
+                - paragraph [ref=f8e119]: JPEG or PNG
+              - button "Desktop banner" [ref=f8e120]
+              - generic [ref=f8e121]: Choose file
+              - paragraph [ref=f8e127]: An uploaded image is required before saving.
+            - generic [ref=f8e128]:
+              - generic [ref=f8e129]:
+                - paragraph [ref=f8e133]: Drop image here
+                - paragraph [ref=f8e134]: JPEG or PNG
+              - button "Mobile banner" [ref=f8e135]
+              - generic [ref=f8e136]: Choose file
+            - generic [ref=f8e142]:
+              - generic [ref=f8e143]: Destination URL
+              - textbox "Destination URL Use an internal /path or an https:// URL." [ref=f8e144]
+              - generic [ref=f8e145]: Use an internal /path or an https:// URL.
+            - generic [ref=f8e146]:
+              - generic [ref=f8e147]: Sort order
+              - spinbutton "Sort order" [ref=f8e148]: "0"
+            - generic [ref=f8e149]:
+              - checkbox "Active" [checked] [ref=f8e150]
+              - text: Active
+            - generic [ref=f8e151]:
+              - button "Cancel" [ref=f8e152] [cursor=pointer]
+              - button "Save banner" [ref=f8e153] [cursor=pointer]

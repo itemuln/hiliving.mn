@@ -72,10 +72,13 @@ describe('admin media forms', () => {
     );
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Uploaded brand' } });
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'uploaded-brand' } });
+    const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
+    fireEvent.change(sortOrder, { target: { value: '01' } });
+    expect(sortOrder).toHaveValue(1);
     fireEvent.click(screen.getByRole('button', { name: 'Save brand' }));
     await waitFor(() =>
       expect(api.createBrand).toHaveBeenCalledWith(
-        expect.objectContaining({ logoUrl: '/media/brand/generated.png' })
+        expect.objectContaining({ logoUrl: '/media/brand/generated.png', sortOrder: 1 })
       )
     );
   });
@@ -87,6 +90,9 @@ describe('admin media forms', () => {
     expect(screen.queryByText('Desktop image URL')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Starts at')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Ends at')).not.toBeInTheDocument();
+    const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
+    fireEvent.change(sortOrder, { target: { value: '023' } });
+    expect(sortOrder).toHaveValue(23);
     fireEvent.change(document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement, {
       target: { files: [file] },
     });
@@ -106,7 +112,7 @@ describe('admin media forms', () => {
         mobileImageUrl: '',
         linkUrl: '',
         linkLabel: '',
-        sortOrder: 0,
+        sortOrder: 23,
         active: true,
       })
     );
@@ -116,6 +122,9 @@ describe('admin media forms', () => {
     render(page(<AdminNewsEditorPage />));
     expect(document.querySelectorAll('input[type="file"]')).toHaveLength(1);
     expect(screen.getByLabelText('Content')).toHaveAttribute('rows', '12');
+    const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
+    fireEvent.change(sortOrder, { target: { value: '01' } });
+    expect(sortOrder).toHaveValue(1);
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
     });

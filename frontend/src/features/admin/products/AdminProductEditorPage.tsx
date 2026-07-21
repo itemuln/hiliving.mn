@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ArrowDown, ArrowUp, Trash2 } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react';
+import { ArrowDown, ArrowUp, ImagePlus, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
 import type { Brand, Category, ProductInput, ProductLifecycle } from '../admin.types';
@@ -14,8 +14,10 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
+import { AdminNumberInput } from '../components/AdminNumberInput';
 
 type ImageDraft = ProductInput['images'][number];
+const MAX_PRODUCT_IMAGES = 6;
 const blank: ProductInput = {
   name: '',
   description: '',
@@ -43,7 +45,10 @@ export function AdminProductEditorPage() {
   const [loading, setLoading] = useState(Boolean(editId));
   const [saving, setSaving] = useState(false);
   const [pendingUploads, setPendingUploads] = useState(0);
+  const [batchUploading, setBatchUploading] = useState(false);
   const [error, setError] = useState('');
+  const batchInput = useRef<HTMLInputElement>(null);
+  const batchInputId = useId();
   useEffect(() => {
     void Promise.all([
       api.listCategories(),
@@ -82,13 +87,15 @@ export function AdminProductEditorPage() {
         setLoading(false);
       });
   }, [editId]);
-  const discount = useMemo(
-    () =>
-      form.discountPrice !== null && form.basePrice > 0
-        ? Math.round((1 - form.discountPrice / form.basePrice) * 100)
-        : 0,
-    [form.basePrice, form.discountPrice]
-  );
+  const discount = useMemo(() => {
+    if (form.discountPrice === null) return { percentage: 0, invalid: false };
+    if (form.basePrice <= 0 || form.discountPrice < 0 || form.discountPrice >= form.basePrice)
+      return { percentage: 0, invalid: true };
+    return {
+      percentage: Math.round((1 - form.discountPrice / form.basePrice) * 100),
+      invalid: false,
+    };
+  }, [form.basePrice, form.discountPrice]);
   const set = <K extends keyof ProductInput>(key: K, value: ProductInput[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
   const setImages = (images: ImageDraft[]) =>
@@ -107,27 +114,16 @@ export function AdminProductEditorPage() {
       )
     );
   const setSlot = (index: number, url: string) => {
-    if (index < form.images.length) {
-      if (url) updateImage(index, { imageUrl: url });
-      else
-        setImages(
-          form.images
-            .filter((_, i) => i !== index)
-            .map((image, i) => ({
-              ...image,
-              primaryImage: image.primaryImage || (i === 0 && form.images[index].primaryImage),
-            }))
-        );
-    } else if (url && form.images.length < 4)
-      setImages([
-        ...form.images,
-        {
-          imageUrl: url,
-          altText: '',
-          sortOrder: form.images.length,
-          primaryImage: form.images.length === 0,
-        },
-      ]);
+    if (url) updateImage(index, { imageUrl: url });
+    else
+      setImages(
+        form.images
+          .filter((_, i) => i !== index)
+          .map((image, i) => ({
+            ...image,
+            primaryImage: image.primaryImage || (i === 0 && form.images[index].primaryImage),
+          }))
+      );
   };
   const move = (index: number, direction: number) => {
     const next = [...form.images];
@@ -135,6 +131,49 @@ export function AdminProductEditorPage() {
     if (target < 0 || target >= next.length) return;
     [next[index], next[target]] = [next[target], next[index]];
     setImages(next);
+  };
+  const addPhotos = async (files: FileList | null) => {
+    const selected = Array.from(files ?? []);
+    if (batchInput.current) batchInput.current.value = '';
+    if (selected.length === 0) return;
+    const available = MAX_PRODUCT_IMAGES - form.images.length;
+    if (selected.length > available) {
+      setError(`You can add ${available} more product photo${available === 1 ? '' : 's'}.`);
+      return;
+    }
+    if (selected.some((file) => !['image/jpeg', 'image/png'].includes(file.type))) {
+      setError('Choose only JPEG or PNG product photos.');
+      return;
+    }
+    setError('');
+    setBatchUploading(true);
+    setPendingUploads((value) => value + 1);
+    try {
+      for (const file of selected) {
+        const asset = await api.uploadMediaImage(file, 'PRODUCT');
+        setForm((current) => {
+          if (current.images.length >= MAX_PRODUCT_IMAGES) return current;
+          const nextIndex = current.images.length;
+          return {
+            ...current,
+            images: [
+              ...current.images,
+              {
+                imageUrl: asset.url,
+                altText: '',
+                sortOrder: nextIndex,
+                primaryImage: nextIndex === 0,
+              },
+            ],
+          };
+        });
+      }
+    } catch {
+      setError('Some product photos could not be uploaded. Completed photos are kept.');
+    } finally {
+      setBatchUploading(false);
+      setPendingUploads((value) => Math.max(0, value - 1));
+    }
   };
   const save = async (lifecycle: ProductLifecycle) => {
     setError('');
@@ -144,6 +183,11 @@ export function AdminProductEditorPage() {
     }
     setSaving(true);
     const payload = { ...form, lifecycle };
+    if (payload.basePrice < 0 || (payload.discountPrice !== null && payload.discountPrice < 0)) {
+      setError('Prices cannot be negative.');
+      setSaving(false);
+      return;
+    }
     if (payload.discountPrice !== null && payload.discountPrice >= payload.basePrice) {
       setError('Discount price must be lower than base price.');
       setSaving(false);
@@ -198,7 +242,7 @@ export function AdminProductEditorPage() {
   return (
     <AdminShell
       title={editId ? 'Edit product' : 'Add product'}
-      description="Upload up to four JPEG or PNG images. Publishing requires one primary image."
+      description="Upload up to six JPEG or PNG images. Publishing requires one primary image."
       actions={
         <button className={secondaryButton} onClick={() => navigate('/admin/products')}>
           Cancel
@@ -261,31 +305,30 @@ export function AdminProductEditorPage() {
           <h2 className="mb-5 text-lg font-black">2. Price information</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Base price">
-              <input
+              <AdminNumberInput
                 required
-                type="number"
                 min="0"
                 step="0.01"
                 className={input}
                 value={form.basePrice}
-                onChange={(e) => set('basePrice', Number(e.target.value))}
+                onValueChange={(basePrice) => set('basePrice', basePrice ?? 0)}
               />
             </Field>
             <Field label="Discount price">
-              <input
-                type="number"
+              <AdminNumberInput
                 min="0"
                 step="0.01"
                 className={input}
-                value={form.discountPrice ?? ''}
-                onChange={(e) =>
-                  set('discountPrice', e.target.value === '' ? null : Number(e.target.value))
-                }
+                value={form.discountPrice}
+                nullable
+                onValueChange={(discountPrice) => set('discountPrice', discountPrice)}
               />
             </Field>
             <div className="rounded-xl bg-slate-50 p-4 text-sm">
               <span className="text-slate-500">Product discount</span>
-              <strong className="float-right">{discount}%</strong>
+              <strong className={`float-right ${discount.invalid ? 'text-rose-600' : ''}`}>
+                {discount.invalid ? 'Invalid price' : `${discount.percentage}%`}
+              </strong>
             </div>
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold">
               <input
@@ -301,21 +344,21 @@ export function AdminProductEditorPage() {
           <h2 className="mb-5 text-lg font-black">3. Inventory and visibility</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Stock quantity">
-              <input
-                type="number"
+              <AdminNumberInput
                 min="0"
                 className={input}
                 value={form.stockQuantity}
-                onChange={(e) => set('stockQuantity', Number(e.target.value))}
+                onValueChange={(stockQuantity) => set('stockQuantity', stockQuantity ?? 0)}
               />
             </Field>
             <Field label="Low-stock threshold">
-              <input
-                type="number"
+              <AdminNumberInput
                 min="0"
                 className={input}
                 value={form.lowStockThreshold}
-                onChange={(e) => set('lowStockThreshold', Number(e.target.value))}
+                onValueChange={(lowStockThreshold) =>
+                  set('lowStockThreshold', lowStockThreshold ?? 0)
+                }
               />
             </Field>
             <Field label="Lifecycle">
@@ -347,77 +390,94 @@ export function AdminProductEditorPage() {
           <div className="mb-5">
             <h2 className="text-lg font-black">4. Product images</h2>
             <p className="text-xs text-slate-500">
-              Four upload slots. Existing external images remain visible until replaced.
+              Add up to six photos at once, then choose the primary image or change their order.
             </p>
+            {form.images.length < MAX_PRODUCT_IMAGES && (
+              <div className="mt-3">
+                <input
+                  ref={batchInput}
+                  id={batchInputId}
+                  aria-label="Add product photos"
+                  type="file"
+                  multiple
+                  className="sr-only"
+                  accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                  disabled={saving || batchUploading}
+                  onChange={(event) => void addPhotos(event.currentTarget.files)}
+                />
+                <label
+                  htmlFor={batchInputId}
+                  className={`${secondaryButton} cursor-pointer ${
+                    saving || batchUploading ? 'pointer-events-none opacity-50' : ''
+                  }`}
+                >
+                  <ImagePlus size={16} className="mr-2" />
+                  {batchUploading ? 'Uploading photos…' : 'Add photos'}
+                </label>
+              </div>
+            )}
           </div>
           <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-            {Array.from({ length: 4 }, (_, index) => {
-              const image = form.images[index];
-              return (
-                <div key={index} className="min-w-0">
-                  <ImageUploadControl
-                    label={`Product image ${index + 1}`}
-                    purpose="PRODUCT"
-                    value={image?.imageUrl ?? ''}
-                    onChange={(url) => setSlot(index, url)}
-                    onPendingChange={(pending) =>
-                      setPendingUploads((value) => Math.max(0, value + (pending ? 1 : -1)))
-                    }
-                    disabled={saving}
-                  />
-                  {image && (
-                    <>
-                      <input
-                        aria-label={`Alt text ${index + 1}`}
-                        placeholder="Alt text"
-                        className={`${input} mt-2`}
-                        value={image.altText ?? ''}
-                        onChange={(e) => updateImage(index, { altText: e.target.value })}
-                      />
-                      <div className="mt-2 flex items-center justify-between">
-                        <label className="text-xs font-bold">
-                          <input
-                            type="radio"
-                            name="primary"
-                            checked={image.primaryImage}
-                            onChange={() => updateImage(index, { primaryImage: true })}
-                          />{' '}
-                          Primary image
-                        </label>
-                        <div>
-                          <button
-                            type="button"
-                            className="p-2"
-                            disabled={index === 0}
-                            onClick={() => move(index, -1)}
-                            aria-label="Move image up"
-                          >
-                            <ArrowUp size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            className="p-2"
-                            disabled={index === form.images.length - 1}
-                            onClick={() => move(index, 1)}
-                            aria-label="Move image down"
-                          >
-                            <ArrowDown size={16} />
-                          </button>
-                          <button
-                            type="button"
-                            className="p-2 text-rose-500"
-                            onClick={() => setSlot(index, '')}
-                            aria-label="Remove image reference"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    </>
-                  )}
+            {form.images.map((image, index) => (
+              <div key={`${image.imageUrl}-${index}`} className="min-w-0">
+                <ImageUploadControl
+                  label={`Product image ${index + 1}`}
+                  purpose="PRODUCT"
+                  value={image.imageUrl}
+                  onChange={(url) => setSlot(index, url)}
+                  onPendingChange={(pending) =>
+                    setPendingUploads((value) => Math.max(0, value + (pending ? 1 : -1)))
+                  }
+                  disabled={saving}
+                />
+                <input
+                  aria-label={`Alt text ${index + 1}`}
+                  placeholder="Alt text"
+                  className={`${input} mt-2`}
+                  value={image.altText ?? ''}
+                  onChange={(e) => updateImage(index, { altText: e.target.value })}
+                />
+                <div className="mt-2 flex items-center justify-between">
+                  <label className="text-xs font-bold">
+                    <input
+                      type="radio"
+                      name="primary"
+                      checked={image.primaryImage}
+                      onChange={() => updateImage(index, { primaryImage: true })}
+                    />{' '}
+                    Primary image
+                  </label>
+                  <div>
+                    <button
+                      type="button"
+                      className="p-2"
+                      disabled={index === 0}
+                      onClick={() => move(index, -1)}
+                      aria-label="Move image up"
+                    >
+                      <ArrowUp size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-2"
+                      disabled={index === form.images.length - 1}
+                      onClick={() => move(index, 1)}
+                      aria-label="Move image down"
+                    >
+                      <ArrowDown size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-2 text-rose-500"
+                      onClick={() => setSlot(index, '')}
+                      aria-label="Remove image reference"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </section>
         <section className={`${panel} flex flex-wrap justify-end gap-3 p-5`}>

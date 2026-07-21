@@ -343,3 +343,11 @@
 **Decision:** Expose only one `description` field in normal product creation/editing and in the admin write DTO. Persist the complete normalized value as the product description and derive the compatible short description from its first 500 Unicode code points. Keep both database columns and read-response fields.
 
 **Consequences:** Administrators author product copy once without a schema migration or public contract break. Catalog summaries/search and detail pages remain compatible. Legacy records load the full description when present and otherwise fall back to the old short description.
+
+## 2026-07-22 - Consistent admin numbers and dynamic batch product photos
+
+**Context:** Numeric admin fields initialized to zero could retain typed leading zeros such as `01` or `023`, invalid product price combinations produced misleading negative percentages, and fixed empty product-image slots required repeated picker actions.
+
+**Decision:** Use one controlled numeric-input component across all admin number fields. Normalize integer-leading zeros, preserve decimals and native step controls, clamp declared bounds on blur, and distinguish required zero from nullable empty values. Render product discount percentages only for a nonnegative discount price below a positive base price. Replace fixed empty product-image slots with one multi-file picker and dynamic cards for selected photos, and raise the frontend and backend product-image limit from four to six.
+
+**Consequences:** Product, news, banner, category, brand, and user-discount inputs behave consistently without API or database changes. Product requests with up to six unique ordered images are accepted; seven are rejected. A failed later batch upload keeps earlier completed photos, and banner/news controls remain single-image because their slots have different meanings. This supersedes the four-image limit in the 2026-07-16 product administration decision.

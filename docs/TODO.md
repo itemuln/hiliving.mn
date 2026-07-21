@@ -64,3 +64,5 @@
 - [x] Remove product slug/code inputs and write fields; generate collision-safe stable slugs and sequence-backed `PRD-######` codes on creation while preserving both identifiers on rename.
 - [x] Verify the product-identifier refactor with all 44 backend tests, PostgreSQL/Flyway V1-V7/Hibernate/JAR packaging, all 50 frontend tests, lint, TypeScript, and the production build.
 - [x] Replace separate short/full product-description inputs with one admin Description field and derive the compatible 500-character catalog summary on the backend.
+- [x] Normalize and bound admin numeric inputs, prevent misleading negative product-discount previews, and replace fixed image slots with dynamic batch upload supporting up to six product photos.
+- [x] Use exact product-sidebar route matching so Add product does not also highlight All products.

@@ -14,20 +14,21 @@ import {
   primaryButton,
   secondaryButton,
 } from '../components/AdminUi';
+import { AdminNumberInput } from '../components/AdminNumberInput';
 export function AdminUserDetailPage() {
   const { id } = useParams();
   const userId = Number(id);
   const navigate = useNavigate();
   const [user, setUser] = useState<AdminUser | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
-  const [discount, setDiscount] = useState('');
+  const [discount, setDiscount] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   useEffect(() => {
     void Promise.all([api.getUser(userId), api.getUserAddresses(userId)])
       .then(([u, a]) => {
         setUser(u);
-        setDiscount(u.membership.discountOverridePercentage?.toString() ?? '');
+        setDiscount(u.membership.discountOverridePercentage);
         setAddresses(a);
       })
       .catch(() => setError('The user could not be loaded.'));
@@ -118,23 +119,19 @@ export function AdminUserDetailPage() {
               hint="Leave blank and clear to use the membership default."
             >
               <div className="flex gap-2">
-                <input
-                  type="number"
+                <AdminNumberInput
                   min="0"
                   max="100"
                   step="0.01"
                   className={input}
                   value={discount}
-                  onChange={(e) => setDiscount(e.target.value)}
+                  nullable
+                  onValueChange={setDiscount}
                 />
                 <button
                   className={primaryButton}
                   disabled={saving}
-                  onClick={() =>
-                    void mutate(() =>
-                      api.updateUserDiscount(userId, discount === '' ? null : Number(discount))
-                    )
-                  }
+                  onClick={() => void mutate(() => api.updateUserDiscount(userId, discount))}
                 >
                   Set
                 </button>
@@ -142,7 +139,7 @@ export function AdminUserDetailPage() {
                   className={secondaryButton}
                   disabled={saving}
                   onClick={() => {
-                    setDiscount('');
+                    setDiscount(null);
                     void mutate(() => api.updateUserDiscount(userId, null));
                   }}
                 >

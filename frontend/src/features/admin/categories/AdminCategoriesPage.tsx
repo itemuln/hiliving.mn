@@ -15,6 +15,7 @@ import {
   primaryButton,
   secondaryButton,
 } from '../components/AdminUi';
+import { AdminNumberInput } from '../components/AdminNumberInput';
 const blank: CategoryInput = {
   name: '',
   slug: '',
@@ -221,12 +222,11 @@ export function AdminCategoriesPage() {
               </select>
             </Field>
             <Field label="Sort order">
-              <input
-                type="number"
+              <AdminNumberInput
                 min="0"
                 className={input}
                 value={form.sortOrder}
-                onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
+                onValueChange={(sortOrder) => setForm({ ...form, sortOrder: sortOrder ?? 0 })}
               />
             </Field>
             <Field label="Description" wide>

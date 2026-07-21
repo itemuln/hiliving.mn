@@ -1,0 +1,75 @@
+- generic [ref=f7e4]:
+  - complementary [ref=f7e5]:
+    - generic [ref=f7e6]:
+      - generic [ref=f7e8]:
+        - generic [ref=f7e9]: HiLiving
+        - generic [ref=f7e10]: Administration
+      - navigation "Admin navigation" [ref=f7e11]:
+        - link "Dashboard" [ref=f7e12] [cursor=pointer]:
+          - /url: /admin
+        - generic [ref=f7e18]:
+          - generic [ref=f7e19]: Products
+          - link "Add product" [ref=f7e23] [cursor=pointer]:
+            - /url: /admin/products/new
+          - link "All products" [ref=f7e28] [cursor=pointer]:
+            - /url: /admin/products
+        - generic [ref=f7e39]:
+          - generic [ref=f7e40]: Orders
+          - generic [ref=f7e43]: Later
+        - link "News" [ref=f7e44] [cursor=pointer]:
+          - /url: /admin/news
+        - link "Users" [ref=f7e48] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Banners" [ref=f7e54] [cursor=pointer]:
+          - /url: /admin/banners
+        - link "Categories" [ref=f7e59] [cursor=pointer]:
+          - /url: /admin/categories
+        - link "Brands" [ref=f7e64] [cursor=pointer]:
+          - /url: /admin/brands
+        - generic [ref=f7e69]:
+          - generic [ref=f7e70]: Pages
+          - generic [ref=f7e74]: Later
+      - generic [ref=f7e75]: Phase 5 · secure admin workspace
+  - generic [ref=f7e76]:
+    - banner [ref=f7e77]:
+      - paragraph [ref=f7e80]: Admin / news / new
+      - generic [ref=f7e81]:
+        - generic [ref=f7e82]:
+          - generic [ref=f7e83]: UI Tester
+          - generic [ref=f7e84]: Administrator
+        - button "Log out" [ref=f7e85] [cursor=pointer]
+    - main [ref=f7e86]:
+      - generic [ref=f7e87]:
+        - generic [ref=f7e88]:
+          - heading "Add news" [level=1] [ref=f7e89]
+          - paragraph [ref=f7e90]: News content remains plain text; thumbnails use secure image upload.
+        - button "Cancel" [ref=f7e91] [cursor=pointer]
+      - generic [ref=f7e92]:
+        - generic [ref=f7e93]:
+          - generic [ref=f7e94]: Title
+          - textbox "Title" [ref=f7e95]
+        - generic [ref=f7e96]:
+          - generic [ref=f7e97]: Slug
+          - textbox "Slug" [ref=f7e98]
+        - generic [ref=f7e99]:
+          - generic [ref=f7e100]: Summary
+          - textbox "Summary" [ref=f7e101]
+        - generic [ref=f7e102]:
+          - generic [ref=f7e103]: Content
+          - textbox "Content" [ref=f7e104]
+        - generic [ref=f7e106]:
+          - generic [ref=f7e107]:
+            - paragraph [ref=f7e111]: Drop image here
+            - paragraph [ref=f7e112]: JPEG or PNG
+          - button "News thumbnail" [ref=f7e113]
+          - generic [ref=f7e114]: Choose file
+        - generic [ref=f7e120]:
+          - generic [ref=f7e121]: Sort order
+          - spinbutton "Sort order" [active] [ref=f7e122]: "0"
+        - generic [ref=f7e123]:
+          - generic [ref=f7e124]: Publish at
+          - textbox "Publish at" [ref=f7e125]
+        - generic [ref=f7e126]:
+          - button "Cancel" [ref=f7e127] [cursor=pointer]
+          - button "Save draft" [ref=f7e128] [cursor=pointer]
+          - button "Publish" [ref=f7e129] [cursor=pointer]

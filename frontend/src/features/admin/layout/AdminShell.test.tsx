@@ -31,4 +31,19 @@ describe('admin shell', () => {
     expect(screen.getByRole('button', { name: 'Close navigation overlay' })).toBeInTheDocument();
     expect(screen.getByText('Counts')).toBeInTheDocument();
   });
+
+  it('highlights only Add product on the new-product route', () => {
+    render(
+      <AuthContext.Provider value={context}>
+        <MemoryRouter initialEntries={['/admin/products/new']}>
+          <AdminShell title="Add product">
+            <p>Editor</p>
+          </AdminShell>
+        </MemoryRouter>
+      </AuthContext.Provider>
+    );
+
+    expect(screen.getByRole('link', { name: 'Add product' })).toHaveClass('bg-brand-500');
+    expect(screen.getByRole('link', { name: 'All products' })).not.toHaveClass('bg-brand-500');
+  });
 });

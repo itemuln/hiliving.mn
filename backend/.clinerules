@@ -1,0 +1,37 @@
+# sqz — Token-Optimized CLI Output
+
+Pipe verbose shell command output through `sqz compress` to save tokens.
+`sqz` reads from stdin and writes the compressed output to stdout — it is
+NOT a command wrapper, so `/opt/homebrew/bin/sqz git status` is not valid.
+
+```bash
+# Instead of:     Use:
+git status        git status 2>&1 | /opt/homebrew/bin/sqz compress
+cargo test        cargo test 2>&1 | /opt/homebrew/bin/sqz compress
+git log -10       git log -10 2>&1 | /opt/homebrew/bin/sqz compress
+docker ps         docker ps 2>&1 | /opt/homebrew/bin/sqz compress
+```
+
+sqz filters and compresses command outputs while preserving filenames,
+paths, and identifiers (typically 60-90% token reduction on verbose
+commands). Skip short commands, interactive commands (vim, ssh, python),
+and commands with shell operators (`&&`, `||`, `;`, `>`, `<`). If sqz is
+not on PATH, run commands normally.
+
+## Escape hatch — when sqz output confuses the agent
+
+If you see a `§ref:HASH§` token in tool output and can't parse it, or if
+compressed output is making it harder to work (loops, repeated tiny
+requests), you have three ways out:
+
+- **`/opt/homebrew/bin/sqz expand <prefix>`** — resolve a ref back to the
+  original bytes. Accepts the bare hex prefix (`sqz expand a1b2c3d4`)
+  or the full token pasted verbatim (`sqz expand §ref:a1b2c3d4§`).
+- **`SQZ_NO_DEDUP=1`** — set this env var (e.g. `SQZ_NO_DEDUP=1 git
+  status 2>&1 | sqz compress`) to disable dedup for that one command.
+  Strictly more tokens, strictly less ambiguous.
+- **`--no-cache`** — the same opt-out as a CLI flag:
+  `git status 2>&1 | sqz compress --no-cache`.
+
+Use these when you genuinely need raw data. The default compressed
+path is still what you want for most output.

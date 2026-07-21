@@ -16,5 +16,5 @@ public record AdminProductRequest(
         @Min(0) int lowStockThreshold,
         boolean featured, boolean newProduct, boolean active,
         @NotNull Boolean membershipDiscountEligible,
-        @NotNull @Size(max=4) List<@Valid AdminProductImageRequest> images
+        @NotNull @Size(max=6) List<@Valid AdminProductImageRequest> images
 ) {}

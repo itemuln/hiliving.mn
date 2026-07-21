@@ -156,6 +156,7 @@ export function ImageUploadControl({
       <input
         ref={input}
         id={inputId}
+        aria-label={label}
         type="file"
         className="sr-only"
         accept="image/jpeg,image/png,.jpg,.jpeg,.png"

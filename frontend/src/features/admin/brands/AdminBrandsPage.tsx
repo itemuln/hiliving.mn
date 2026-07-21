@@ -15,6 +15,7 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
+import { AdminNumberInput } from '../components/AdminNumberInput';
 const blank: BrandInput = {
   name: '',
   slug: '',
@@ -227,12 +228,11 @@ export function AdminBrandsPage() {
               />
             </Field>
             <Field label="Sort order">
-              <input
-                type="number"
+              <AdminNumberInput
                 min="0"
                 className={input}
                 value={form.sortOrder}
-                onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })}
+                onValueChange={(sortOrder) => setForm({ ...form, sortOrder: sortOrder ?? 0 })}
               />
             </Field>
             <label className="flex items-center gap-3 text-sm font-semibold">

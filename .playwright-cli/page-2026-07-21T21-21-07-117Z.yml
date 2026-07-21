@@ -1,0 +1,140 @@
+- generic [ref=f6e3]:
+  - complementary [ref=f6e4]:
+    - generic [ref=f6e5]:
+      - generic [ref=f6e7]:
+        - generic [ref=f6e8]: HiLiving
+        - generic [ref=f6e9]: Administration
+      - navigation "Admin navigation" [ref=f6e10]:
+        - link "Dashboard" [ref=f6e11] [cursor=pointer]:
+          - /url: /admin
+        - generic [ref=f6e17]:
+          - generic [ref=f6e18]: Products
+          - link "Add product" [ref=f6e22] [cursor=pointer]:
+            - /url: /admin/products/new
+          - link "All products" [ref=f6e27] [cursor=pointer]:
+            - /url: /admin/products
+        - generic [ref=f6e38]:
+          - generic [ref=f6e39]: Orders
+          - generic [ref=f6e42]: Later
+        - link "News" [ref=f6e43] [cursor=pointer]:
+          - /url: /admin/news
+        - link "Users" [ref=f6e47] [cursor=pointer]:
+          - /url: /admin/users
+        - link "Banners" [ref=f6e53] [cursor=pointer]:
+          - /url: /admin/banners
+        - link "Categories" [ref=f6e58] [cursor=pointer]:
+          - /url: /admin/categories
+        - link "Brands" [ref=f6e63] [cursor=pointer]:
+          - /url: /admin/brands
+        - generic [ref=f6e68]:
+          - generic [ref=f6e69]: Pages
+          - generic [ref=f6e73]: Later
+      - generic [ref=f6e74]: Phase 5 · secure admin workspace
+  - generic [ref=f6e75]:
+    - banner [ref=f6e76]:
+      - paragraph [ref=f6e79]: Admin / products / new
+      - generic [ref=f6e80]:
+        - generic [ref=f6e81]:
+          - generic [ref=f6e82]: UI Tester
+          - generic [ref=f6e83]: Administrator
+        - button "Log out" [ref=f6e84] [cursor=pointer]
+    - main [ref=f6e85]:
+      - generic [ref=f6e86]:
+        - generic [ref=f6e87]:
+          - heading "Add product" [level=1] [ref=f6e88]
+          - paragraph [ref=f6e89]: Upload up to four JPEG or PNG images. Publishing requires one primary image.
+        - button "Cancel" [ref=f6e90] [cursor=pointer]
+      - generic [ref=f6e91]:
+        - generic [ref=f6e92]:
+          - heading "1. Product information" [level=2] [ref=f6e93]
+          - generic [ref=f6e94]:
+            - generic [ref=f6e95]:
+              - generic [ref=f6e96]: Category
+              - combobox "Category" [ref=f6e97]:
+                - option "Select category" [selected]
+            - generic [ref=f6e98]:
+              - generic [ref=f6e99]: Brand
+              - combobox "Brand" [ref=f6e100]:
+                - option "No brand" [selected]
+            - generic [ref=f6e101]:
+              - generic [ref=f6e102]: Product name
+              - textbox "Product name" [ref=f6e103]
+            - generic [ref=f6e104]:
+              - generic [ref=f6e105]: Description
+              - textbox "Description" [ref=f6e106]
+        - generic [ref=f6e107]:
+          - heading "2. Price information" [level=2] [ref=f6e108]
+          - generic [ref=f6e109]:
+            - generic [ref=f6e110]:
+              - generic [ref=f6e111]: Base price
+              - spinbutton "Base price" [active] [ref=f6e112]: "0"
+            - generic [ref=f6e113]:
+              - generic [ref=f6e114]: Discount price
+              - spinbutton "Discount price" [ref=f6e115]
+            - generic [ref=f6e116]:
+              - text: Product discount
+              - strong [ref=f6e117]: 0%
+            - generic [ref=f6e118]:
+              - checkbox "Membership discount eligible" [checked] [ref=f6e119]
+              - text: Membership discount eligible
+        - generic [ref=f6e120]:
+          - heading "3. Inventory and visibility" [level=2] [ref=f6e121]
+          - generic [ref=f6e122]:
+            - generic [ref=f6e123]:
+              - generic [ref=f6e124]: Stock quantity
+              - spinbutton "Stock quantity" [ref=f6e125]: "0"
+            - generic [ref=f6e126]:
+              - generic [ref=f6e127]: Low-stock threshold
+              - spinbutton "Low-stock threshold" [ref=f6e128]: "5"
+            - generic [ref=f6e129]:
+              - generic [ref=f6e130]: Lifecycle
+              - combobox "Lifecycle" [ref=f6e131]:
+                - option "DRAFT" [selected]
+                - option "ACTIVE"
+                - option "ARCHIVED"
+            - generic [ref=f6e132]:
+              - generic [ref=f6e133]:
+                - checkbox "Active" [checked] [ref=f6e134]
+                - text: Active
+              - generic [ref=f6e135]:
+                - checkbox "Featured" [ref=f6e136]
+                - text: Featured
+              - generic [ref=f6e137]:
+                - checkbox "New product" [ref=f6e138]
+                - text: New product
+        - generic [ref=f6e139]:
+          - generic [ref=f6e140]:
+            - heading "4. Product images" [level=2] [ref=f6e141]
+            - paragraph [ref=f6e142]: Add up to four photos at once, then choose the primary image or change their order.
+            - generic [ref=f6e143]:
+              - button "Add product photos" [ref=f6e144]
+              - generic [ref=f6e145] [cursor=pointer]: Add photos
+          - generic [ref=f6e150]:
+            - generic [ref=f6e152]:
+              - generic [ref=f6e153]:
+                - paragraph [ref=f6e157]: Drop image here
+                - paragraph [ref=f6e158]: JPEG or PNG
+              - button "Product image 1" [ref=f6e159]
+              - generic [ref=f6e160]: Choose file
+            - generic [ref=f6e167]:
+              - generic [ref=f6e168]:
+                - paragraph [ref=f6e172]: Drop image here
+                - paragraph [ref=f6e173]: JPEG or PNG
+              - button "Product image 2" [ref=f6e174]
+              - generic [ref=f6e175]: Choose file
+            - generic [ref=f6e182]:
+              - generic [ref=f6e183]:
+                - paragraph [ref=f6e187]: Drop image here
+                - paragraph [ref=f6e188]: JPEG or PNG
+              - button "Product image 3" [ref=f6e189]
+              - generic [ref=f6e190]: Choose file
+            - generic [ref=f6e197]:
+              - generic [ref=f6e198]:
+                - paragraph [ref=f6e202]: Drop image here
+                - paragraph [ref=f6e203]: JPEG or PNG
+              - button "Product image 4" [ref=f6e204]
+              - generic [ref=f6e205]: Choose file
+        - generic [ref=f6e211]:
+          - button "Cancel" [ref=f6e212] [cursor=pointer]
+          - button "Save draft" [ref=f6e213] [cursor=pointer]
+          - button "Publish" [ref=f6e214] [cursor=pointer]
