@@ -351,3 +351,19 @@
 **Decision:** Use one controlled numeric-input component across all admin number fields. Normalize integer-leading zeros, preserve decimals and native step controls, clamp declared bounds on blur, and distinguish required zero from nullable empty values. Render product discount percentages only for a nonnegative discount price below a positive base price. Replace fixed empty product-image slots with one multi-file picker and dynamic cards for selected photos, and raise the frontend and backend product-image limit from four to six.
 
 **Consequences:** Product, news, banner, category, brand, and user-discount inputs behave consistently without API or database changes. Product requests with up to six unique ordered images are accepted; seven are rejected. A failed later batch upload keeps earlier completed photos, and banner/news controls remain single-image because their slots have different meanings. This supersedes the four-image limit in the 2026-07-16 product administration decision.
+
+## 2026-07-22 - Explicit optional catalog discount authoring
+
+**Context:** A permanently visible discounted-price input did not clearly distinguish products with no catalog discount, and administrators needed to author a discount using either the business percentage or the final customer-facing price.
+
+**Decision:** Keep base price mandatory and place catalog discounting behind an explicit checkbox. When enabled, let the administrator choose percentage or discounted-price entry. Convert percentage entry to a two-decimal discounted price for the existing write contract, derive a display percentage from direct price entry, and submit `discountPrice=null` when discounting is disabled.
+
+**Consequences:** The create and edit forms communicate non-discounted products clearly without a schema or API change. Existing discounted products open with discounting enabled, clearing the checkbox removes their catalog discount, and backend-authoritative quotation continues consuming the same nullable discounted price.
+
+## 2026-07-22 - Automatic content ordering and simpler taxonomy/banner authoring
+
+**Context:** News and brand sort numbers, category parent/children controls, and unused banner click-through fields exposed implementation details without helping the current storefront. Banner desktop/mobile images also required separate file-picker actions.
+
+**Decision:** Remove news sort order from the write contract and order public news by effective publication time descending, with the admin list ordered by most recent update. Remove brand sort order from the write contract and order brands alphabetically. Hide category parent selection and parent/children table columns in normal administration while retaining existing backend integrity constraints. Replace separate empty banner upload slots with one dynamic two-file batch where selection order maps to desktop then mobile, and omit destination URL/link label from normal banner payloads because the carousel does not render click-through content.
+
+**Consequences:** Administrators no longer manage technical ordering or unused relationships/links. Existing catalog/category persistence remains valid, news and brand ordering is deterministic, and banner upload requires one picker action while retaining per-image replacement/removal. The media service still supplies secure stored URLs; client filenames are never trusted as storage paths.

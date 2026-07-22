@@ -1,5 +1,5 @@
-import { useEffect, useState, type FormEvent } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { ImagePlus, Pencil, Plus, Trash2 } from 'lucide-react';
 import * as api from '../../../api/adminApi';
 import type { Banner, BannerInput } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
@@ -22,8 +22,6 @@ const blank: BannerInput = {
   subtitle: '',
   imageUrl: '',
   mobileImageUrl: '',
-  linkUrl: '',
-  linkLabel: '',
   sortOrder: 0,
   active: true,
 };
@@ -34,6 +32,9 @@ export function AdminBannersPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(0);
+  const [batchUploading, setBatchUploading] = useState(false);
+  const batchInput = useRef<HTMLInputElement>(null);
+  const batchInputId = useId();
   const load = () =>
     api
       .listBanners()
@@ -51,8 +52,6 @@ export function AdminBannersPage() {
             subtitle: b.subtitle ?? '',
             imageUrl: b.imageUrl,
             mobileImageUrl: b.mobileImageUrl ?? '',
-            linkUrl: b.linkUrl ?? '',
-            linkLabel: b.linkLabel ?? '',
             sortOrder: b.sortOrder,
             active: b.active,
           }
@@ -92,10 +91,52 @@ export function AdminBannersPage() {
   };
   const uploadState = (value: boolean) =>
     setPending((current) => Math.max(0, current + (value ? 1 : -1)));
+  const imageCount = Number(Boolean(form.imageUrl)) + Number(Boolean(form.mobileImageUrl));
+  const setBannerImage = (slot: 'desktop' | 'mobile', imageUrl: string) => {
+    setForm((current) => {
+      if (slot === 'mobile') return { ...current, mobileImageUrl: imageUrl };
+      if (imageUrl) return { ...current, imageUrl };
+      if (current.mobileImageUrl)
+        return { ...current, imageUrl: current.mobileImageUrl, mobileImageUrl: '' };
+      return { ...current, imageUrl: '' };
+    });
+  };
+  const addPhotos = async (files: FileList | null) => {
+    const selected = Array.from(files ?? []);
+    if (batchInput.current) batchInput.current.value = '';
+    if (selected.length === 0) return;
+    const available = 2 - imageCount;
+    if (selected.length > available) {
+      setError(`You can add ${available} more banner photo${available === 1 ? '' : 's'}.`);
+      return;
+    }
+    if (selected.some((file) => !['image/jpeg', 'image/png'].includes(file.type))) {
+      setError('Choose only JPEG or PNG banner photos.');
+      return;
+    }
+    setError('');
+    setBatchUploading(true);
+    setPending((current) => current + 1);
+    try {
+      for (const file of selected) {
+        const asset = await api.uploadMediaImage(file, 'BANNER');
+        setForm((current) => {
+          if (!current.imageUrl) return { ...current, imageUrl: asset.url };
+          if (!current.mobileImageUrl) return { ...current, mobileImageUrl: asset.url };
+          return current;
+        });
+      }
+    } catch {
+      setError('Some banner photos could not be uploaded. Completed photos are kept.');
+    } finally {
+      setBatchUploading(false);
+      setPending((current) => Math.max(0, current - 1));
+    }
+  };
   return (
     <AdminShell
       title="Banners"
-      description="Upload desktop and optional mobile hero images; destination links remain text fields."
+      description="Upload up to two hero images at once; the first is desktop and the second is mobile."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
@@ -161,13 +202,6 @@ export function AdminBannersPage() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
               />
             </Field>
-            <Field label="Link label">
-              <input
-                className={input}
-                value={form.linkLabel ?? ''}
-                onChange={(e) => setForm({ ...form, linkLabel: e.target.value })}
-              />
-            </Field>
             <Field label="Subtitle" wide>
               <textarea
                 className={input}
@@ -176,30 +210,62 @@ export function AdminBannersPage() {
                 onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
               />
             </Field>
-            <ImageUploadControl
-              label="Desktop banner"
-              purpose="BANNER"
-              value={form.imageUrl}
-              onChange={(imageUrl) => setForm({ ...form, imageUrl })}
-              onPendingChange={uploadState}
-              required
-              disabled={saving}
-            />
-            <ImageUploadControl
-              label="Mobile banner"
-              purpose="BANNER"
-              value={form.mobileImageUrl ?? ''}
-              onChange={(mobileImageUrl) => setForm({ ...form, mobileImageUrl })}
-              onPendingChange={uploadState}
-              disabled={saving}
-            />
-            <Field label="Destination URL" wide hint="Use an internal /path or an https:// URL.">
-              <input
-                className={input}
-                value={form.linkUrl ?? ''}
-                onChange={(e) => setForm({ ...form, linkUrl: e.target.value })}
-              />
-            </Field>
+            <div className="space-y-4 sm:col-span-2">
+              <div>
+                <p className="text-sm font-bold text-slate-700">Banner photos</p>
+                <p className="text-xs text-slate-500">
+                  Select one desktop image or select desktop and mobile images together. Upload URLs
+                  are filled automatically.
+                </p>
+                {imageCount < 2 && (
+                  <div className="mt-3">
+                    <input
+                      ref={batchInput}
+                      id={batchInputId}
+                      aria-label="Add banner photos"
+                      type="file"
+                      multiple
+                      className="sr-only"
+                      accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                      disabled={saving || batchUploading}
+                      onChange={(event) => void addPhotos(event.currentTarget.files)}
+                    />
+                    <label
+                      htmlFor={batchInputId}
+                      className={`${secondaryButton} cursor-pointer ${
+                        saving || batchUploading ? 'pointer-events-none opacity-50' : ''
+                      }`}
+                    >
+                      <ImagePlus size={16} className="mr-2" />
+                      {batchUploading ? 'Uploading photos…' : 'Add photos'}
+                    </label>
+                  </div>
+                )}
+              </div>
+              <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+                {form.imageUrl && (
+                  <ImageUploadControl
+                    label="Desktop banner"
+                    purpose="BANNER"
+                    value={form.imageUrl}
+                    onChange={(imageUrl) => setBannerImage('desktop', imageUrl)}
+                    onPendingChange={uploadState}
+                    required
+                    disabled={saving}
+                  />
+                )}
+                {form.mobileImageUrl && (
+                  <ImageUploadControl
+                    label="Mobile banner"
+                    purpose="BANNER"
+                    value={form.mobileImageUrl}
+                    onChange={(imageUrl) => setBannerImage('mobile', imageUrl)}
+                    onPendingChange={uploadState}
+                    disabled={saving}
+                  />
+                )}
+              </div>
+            </div>
             <Field label="Sort order">
               <AdminNumberInput
                 min="0"

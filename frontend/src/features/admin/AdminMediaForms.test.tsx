@@ -72,46 +72,56 @@ describe('admin media forms', () => {
     );
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Uploaded brand' } });
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'uploaded-brand' } });
-    const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
-    fireEvent.change(sortOrder, { target: { value: '01' } });
-    expect(sortOrder).toHaveValue(1);
+    expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Save brand' }));
     await waitFor(() =>
       expect(api.createBrand).toHaveBeenCalledWith(
-        expect.objectContaining({ logoUrl: '/media/brand/generated.png', sortOrder: 1 })
+        expect.objectContaining({ logoUrl: '/media/brand/generated.png' })
       )
     );
+    expect(vi.mocked(api.createBrand).mock.calls[0][0]).not.toHaveProperty('sortOrder');
   });
 
-  it('uses required desktop and optional mobile banner upload controls', async () => {
+  it('uploads desktop and mobile banner photos in one two-file batch', async () => {
+    vi.mocked(api.uploadMediaImage).mockImplementation(async (selectedFile, purpose) => ({
+      ...asset(purpose.toLowerCase()),
+      url: `/media/banner/${selectedFile.name}`,
+      originalFilename: selectedFile.name,
+    }));
     render(page(<AdminBannersPage />));
     fireEvent.click(screen.getByRole('button', { name: 'Add banner' }));
-    expect(document.querySelectorAll('input[type="file"]')).toHaveLength(2);
-    expect(screen.queryByText('Desktop image URL')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Add banner photos')).toHaveAttribute('multiple');
+    expect(screen.queryByLabelText('Desktop banner')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Destination URL')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Link label')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Starts at')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Ends at')).not.toBeInTheDocument();
     const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
     fireEvent.change(sortOrder, { target: { value: '023' } });
     expect(sortOrder).toHaveValue(23);
-    fireEvent.change(document.querySelectorAll('input[type="file"]')[0] as HTMLInputElement, {
-      target: { files: [file] },
+    const desktop = new File(['desktop'], 'desktop.png', { type: 'image/png' });
+    const mobile = new File(['mobile'], 'mobile.jpg', { type: 'image/jpeg' });
+    fireEvent.change(screen.getByLabelText('Add banner photos'), {
+      target: { files: [desktop, mobile] },
     });
-    await waitFor(() =>
-      expect(screen.getByAltText('Desktop banner preview')).toHaveAttribute(
-        'src',
-        '/media/banner/generated.png'
-      )
+    await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledTimes(2));
+    expect(await screen.findByAltText('Desktop banner preview')).toHaveAttribute(
+      'src',
+      '/media/banner/desktop.png'
     );
+    expect(screen.getByAltText('Mobile banner preview')).toHaveAttribute(
+      'src',
+      '/media/banner/mobile.jpg'
+    );
+    expect(screen.queryByLabelText('Add banner photos')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Uploaded banner' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save banner' }));
     await waitFor(() =>
       expect(api.createBanner).toHaveBeenCalledWith({
         title: 'Uploaded banner',
         subtitle: '',
-        imageUrl: '/media/banner/generated.png',
-        mobileImageUrl: '',
-        linkUrl: '',
-        linkLabel: '',
+        imageUrl: '/media/banner/desktop.png',
+        mobileImageUrl: '/media/banner/mobile.jpg',
         sortOrder: 23,
         active: true,
       })
@@ -122,9 +132,7 @@ describe('admin media forms', () => {
     render(page(<AdminNewsEditorPage />));
     expect(document.querySelectorAll('input[type="file"]')).toHaveLength(1);
     expect(screen.getByLabelText('Content')).toHaveAttribute('rows', '12');
-    const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
-    fireEvent.change(sortOrder, { target: { value: '01' } });
-    expect(sortOrder).toHaveValue(1);
+    expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
     });
@@ -144,5 +152,6 @@ describe('admin media forms', () => {
         expect.objectContaining({ thumbnailUrl: '/media/news/generated.png', published: true })
       )
     );
+    expect(vi.mocked(api.createNews).mock.calls[0][0]).not.toHaveProperty('sortOrder');
   });
 });

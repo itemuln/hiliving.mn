@@ -66,3 +66,5 @@
 - [x] Replace separate short/full product-description inputs with one admin Description field and derive the compatible 500-character catalog summary on the backend.
 - [x] Normalize and bound admin numeric inputs, prevent misleading negative product-discount previews, and replace fixed image slots with dynamic batch upload supporting up to six product photos.
 - [x] Use exact product-sidebar route matching so Add product does not also highlight All products.
+- [x] Make catalog discounts opt-in in product administration and support entering either a percentage or final discounted price with live conversion.
+- [x] Remove manual news/brand ordering, simplify category parent/children UI, and add dynamic two-photo banner batch upload without unused click-through inputs.

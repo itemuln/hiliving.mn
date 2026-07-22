@@ -76,7 +76,6 @@ export function AdminNewsPage() {
                 <tr>
                   <th className="p-4">Article</th>
                   <th>Publication</th>
-                  <th>Sort</th>
                   <th>Updated</th>
                   <th className="pr-4 text-right">Actions</th>
                 </tr>
@@ -93,7 +92,6 @@ export function AdminNewsPage() {
                         {n.published ? 'Published' : 'Draft'}
                       </StatusBadge>
                     </td>
-                    <td>{n.sortOrder}</td>
                     <td>{new Date(n.updatedAt).toLocaleDateString()}</td>
                     <td className="pr-4 text-right">
                       <Link

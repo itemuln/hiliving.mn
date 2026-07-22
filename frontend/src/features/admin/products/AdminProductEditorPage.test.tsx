@@ -198,12 +198,89 @@ describe('admin product editor', () => {
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
       target: { value: '100' },
     });
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discount price' }), {
+    fireEvent.click(screen.getByRole('checkbox', { name: 'This product has a discount' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Discounted price' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discounted price' }), {
       target: { value: '14930' },
     });
 
-    expect(screen.getByText('Invalid price')).toBeInTheDocument();
+    expect(screen.getByText('Enter a valid discount')).toBeInTheDocument();
     expect(screen.queryByText('-14830%')).not.toBeInTheDocument();
+  });
+
+  it('keeps discount fields hidden until enabled and accepts a percentage', async () => {
+    render(page());
+    await screen.findByText('1. Product information');
+
+    const discountToggle = screen.getByRole('checkbox', {
+      name: 'This product has a discount',
+    });
+    expect(discountToggle).not.toBeChecked();
+    expect(
+      screen.queryByRole('spinbutton', { name: 'Discount percentage' })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: 'Discounted price' })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
+      target: { value: '1000' },
+    });
+    fireEvent.click(discountToggle);
+    expect(screen.getByRole('radio', { name: 'Percentage' })).toBeChecked();
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discount percentage' }), {
+      target: { value: '25' },
+    });
+
+    expect(screen.getByText('₮ 750')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+
+    await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBe(750);
+  });
+
+  it('accepts a final discounted price and calculates its percentage', async () => {
+    render(page());
+    await screen.findByText('1. Product information');
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
+      target: { value: '200' },
+    });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'This product has a discount' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Discounted price' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discounted price' }), {
+      target: { value: '150' },
+    });
+
+    expect(screen.getByText('25%')).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+
+    await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBe(150);
+  });
+
+  it('loads an existing discount and removes it when the checkbox is cleared', async () => {
+    vi.mocked(api.getProduct).mockResolvedValue({
+      ...existingProduct,
+      discountPrice: 80,
+    });
+    render(page('/admin/products/42/edit'));
+
+    expect(await screen.findByDisplayValue('Existing product')).toBeInTheDocument();
+    const discountToggle = screen.getByRole('checkbox', {
+      name: 'This product has a discount',
+    });
+    expect(discountToggle).toBeChecked();
+    expect(screen.getByRole('radio', { name: 'Discounted price' })).toBeChecked();
+    expect(screen.getByRole('spinbutton', { name: 'Discounted price' })).toHaveValue(80);
+    expect(screen.getByText('20%')).toBeInTheDocument();
+
+    fireEvent.click(discountToggle);
+    expect(screen.queryByRole('spinbutton', { name: 'Discounted price' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+
+    await waitFor(() => expect(api.updateProduct).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(api.updateProduct).mock.calls[0][1].discountPrice).toBeNull();
   });
 
   it('creates a product without exposing or submitting slug and product code fields', async () => {

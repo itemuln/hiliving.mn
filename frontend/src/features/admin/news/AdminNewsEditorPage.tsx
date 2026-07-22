@@ -13,7 +13,6 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
-import { AdminNumberInput } from '../components/AdminNumberInput';
 const blank: NewsInput = {
   title: '',
   slug: '',
@@ -22,7 +21,6 @@ const blank: NewsInput = {
   thumbnailUrl: '',
   published: false,
   publishedAt: null,
-  sortOrder: 0,
 };
 export function AdminNewsEditorPage() {
   const { id } = useParams();
@@ -46,7 +44,6 @@ export function AdminNewsEditorPage() {
           thumbnailUrl: n.thumbnailUrl ?? '',
           published: n.published,
           publishedAt: n.publishedAt,
-          sortOrder: n.sortOrder,
         });
         setLoading(false);
       })
@@ -148,14 +145,6 @@ export function AdminNewsEditorPage() {
             disabled={saving}
           />
         </div>
-        <Field label="Sort order">
-          <AdminNumberInput
-            min="0"
-            className={input}
-            value={form.sortOrder}
-            onValueChange={(sortOrder) => setForm({ ...form, sortOrder: sortOrder ?? 0 })}
-          />
-        </Field>
         <Field label="Publish at">
           <input
             type="datetime-local"

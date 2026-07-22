@@ -71,7 +71,7 @@ export function AdminCategoriesPage() {
     } catch (err) {
       setError(
         err instanceof Error
-          ? 'The category could not be saved. Check for duplicate slugs or circular parents.'
+          ? 'The category could not be saved. Check for a duplicate slug.'
           : 'Save failed'
       );
     } finally {
@@ -85,16 +85,14 @@ export function AdminCategoriesPage() {
       setRemove(null);
       await load();
     } catch {
-      setError(
-        'This category cannot be deleted while it has child categories or products. Deactivate it instead.'
-      );
+      setError('This category cannot be deleted while it is still in use. Deactivate it instead.');
       setRemove(null);
     }
   };
   return (
     <AdminShell
       title="Categories"
-      description="Manage the public catalog hierarchy. Unsafe deletion is blocked."
+      description="Manage public catalog categories. Unsafe deletion is blocked."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
@@ -126,13 +124,11 @@ export function AdminCategoriesPage() {
       ) : (
         <div className={`${panel} overflow-hidden`}>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[620px] text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="p-4">Category</th>
-                  <th>Parent</th>
                   <th>Products</th>
-                  <th>Children</th>
                   <th>Status</th>
                   <th className="pr-4 text-right">Actions</th>
                 </tr>
@@ -144,9 +140,7 @@ export function AdminCategoriesPage() {
                       <div className="font-bold text-slate-900">{item.name}</div>
                       <div className="text-xs text-slate-400">/{item.slug}</div>
                     </td>
-                    <td>{item.parentName ?? '—'}</td>
                     <td>{item.productCount}</td>
-                    <td>{item.childCount}</td>
                     <td>
                       <StatusBadge tone={item.active ? 'success' : 'neutral'}>
                         {item.active ? 'Active' : 'Inactive'}
@@ -203,24 +197,6 @@ export function AdminCategoriesPage() {
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
               />
             </Field>
-            <Field label="Parent">
-              <select
-                className={input}
-                value={form.parentId ?? ''}
-                onChange={(e) =>
-                  setForm({ ...form, parentId: e.target.value ? Number(e.target.value) : null })
-                }
-              >
-                <option value="">No parent</option>
-                {items
-                  ?.filter((x) => x.id !== editing?.id)
-                  .map((x) => (
-                    <option key={x.id} value={x.id}>
-                      {x.name}
-                    </option>
-                  ))}
-              </select>
-            </Field>
             <Field label="Sort order">
               <AdminNumberInput
                 min="0"
@@ -263,8 +239,7 @@ export function AdminCategoriesPage() {
       {remove && (
         <Dialog title="Delete category?" onClose={() => setRemove(null)}>
           <p className="text-sm text-slate-600">
-            Delete <strong>{remove.name}</strong>? This works only when no children or products
-            reference it.
+            Delete <strong>{remove.name}</strong>? This works only when the category is unused.
           </p>
           <div className="mt-6 flex justify-end gap-2">
             <button className={secondaryButton} onClick={() => setRemove(null)}>

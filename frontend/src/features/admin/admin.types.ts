@@ -34,7 +34,7 @@ export interface Brand {
   active: boolean;
   productCount: number;
 }
-export type BrandInput = Omit<Brand, 'id' | 'productCount'>;
+export type BrandInput = Omit<Brand, 'id' | 'sortOrder' | 'productCount'>;
 export interface Reference {
   id: number;
   name: string;
@@ -112,7 +112,10 @@ export interface Banner {
   createdAt: string;
   updatedAt: string;
 }
-export type BannerInput = Omit<Banner, 'id' | 'startsAt' | 'endsAt' | 'createdAt' | 'updatedAt'>;
+export type BannerInput = Omit<
+  Banner,
+  'id' | 'linkUrl' | 'linkLabel' | 'startsAt' | 'endsAt' | 'createdAt' | 'updatedAt'
+>;
 export interface News {
   id: number;
   title: string;
@@ -126,7 +129,7 @@ export interface News {
   createdAt: string;
   updatedAt: string;
 }
-export type NewsInput = Omit<News, 'id' | 'createdAt' | 'updatedAt'>;
+export type NewsInput = Omit<News, 'id' | 'sortOrder' | 'createdAt' | 'updatedAt'>;
 export type AdminUser = AuthenticatedUser;
 export type MediaPurpose = 'PRODUCT' | 'BRAND' | 'BANNER' | 'NEWS';
 export interface MediaUpload {

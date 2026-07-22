@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { ArrowDown, ArrowUp, ImagePlus, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
@@ -17,7 +17,20 @@ import { ImageUploadControl } from '../components/ImageUploadControl';
 import { AdminNumberInput } from '../components/AdminNumberInput';
 
 type ImageDraft = ProductInput['images'][number];
+type DiscountMode = 'PERCENTAGE' | 'PRICE';
 const MAX_PRODUCT_IMAGES = 6;
+
+function discountedPriceFromPercentage(basePrice: number, percentage: number | null) {
+  if (basePrice <= 0 || percentage === null || percentage <= 0 || percentage > 100) return null;
+  return Math.round(basePrice * (1 - percentage / 100) * 100) / 100;
+}
+
+function percentageFromDiscountedPrice(basePrice: number, discountPrice: number | null) {
+  if (basePrice <= 0 || discountPrice === null || discountPrice < 0 || discountPrice >= basePrice)
+    return null;
+  return Math.round((1 - discountPrice / basePrice) * 10_000) / 100;
+}
+
 const blank: ProductInput = {
   name: '',
   description: '',
@@ -44,6 +57,9 @@ export function AdminProductEditorPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(Boolean(editId));
   const [saving, setSaving] = useState(false);
+  const [discountEnabled, setDiscountEnabled] = useState(false);
+  const [discountMode, setDiscountMode] = useState<DiscountMode>('PERCENTAGE');
+  const [discountPercentage, setDiscountPercentage] = useState<number | null>(null);
   const [pendingUploads, setPendingUploads] = useState(0);
   const [batchUploading, setBatchUploading] = useState(false);
   const [error, setError] = useState('');
@@ -58,7 +74,7 @@ export function AdminProductEditorPage() {
       .then(([c, b, p]) => {
         setCategories(c);
         setBrands(b);
-        if (p)
+        if (p) {
           setForm({
             name: p.name,
             description: p.description ?? p.shortDescription ?? '',
@@ -80,6 +96,10 @@ export function AdminProductEditorPage() {
               primaryImage: i.primaryImage,
             })),
           });
+          setDiscountEnabled(p.discountPrice !== null);
+          setDiscountMode('PRICE');
+          setDiscountPercentage(percentageFromDiscountedPrice(p.basePrice, p.discountPrice));
+        }
         setLoading(false);
       })
       .catch(() => {
@@ -87,17 +107,38 @@ export function AdminProductEditorPage() {
         setLoading(false);
       });
   }, [editId]);
-  const discount = useMemo(() => {
-    if (form.discountPrice === null) return { percentage: 0, invalid: false };
-    if (form.basePrice <= 0 || form.discountPrice < 0 || form.discountPrice >= form.basePrice)
-      return { percentage: 0, invalid: true };
-    return {
-      percentage: Math.round((1 - form.discountPrice / form.basePrice) * 100),
-      invalid: false,
-    };
-  }, [form.basePrice, form.discountPrice]);
+  const calculatedPercentage = percentageFromDiscountedPrice(form.basePrice, form.discountPrice);
+  const discount = {
+    percentage: calculatedPercentage,
+    invalid: discountEnabled && calculatedPercentage === null,
+  };
   const set = <K extends keyof ProductInput>(key: K, value: ProductInput[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
+  const setBasePrice = (basePrice: number) =>
+    setForm((current) => ({
+      ...current,
+      basePrice,
+      discountPrice:
+        discountEnabled && discountMode === 'PERCENTAGE'
+          ? discountedPriceFromPercentage(basePrice, discountPercentage)
+          : current.discountPrice,
+    }));
+  const toggleDiscount = (enabled: boolean) => {
+    setDiscountEnabled(enabled);
+    setDiscountMode('PERCENTAGE');
+    setDiscountPercentage(null);
+    set('discountPrice', null);
+  };
+  const selectDiscountMode = (mode: DiscountMode) => {
+    if (mode === 'PERCENTAGE') {
+      setDiscountPercentage(percentageFromDiscountedPrice(form.basePrice, form.discountPrice));
+    }
+    setDiscountMode(mode);
+  };
+  const setDiscountFromPercentage = (percentage: number | null) => {
+    setDiscountPercentage(percentage);
+    set('discountPrice', discountedPriceFromPercentage(form.basePrice, percentage));
+  };
   const setImages = (images: ImageDraft[]) =>
     set(
       'images',
@@ -182,7 +223,16 @@ export function AdminProductEditorPage() {
       return;
     }
     setSaving(true);
-    const payload = { ...form, lifecycle };
+    const payload = {
+      ...form,
+      lifecycle,
+      discountPrice: discountEnabled ? form.discountPrice : null,
+    };
+    if (discountEnabled && payload.discountPrice === null) {
+      setError('Enter a valid discount percentage or discounted price.');
+      setSaving(false);
+      return;
+    }
     if (payload.basePrice < 0 || (payload.discountPrice !== null && payload.discountPrice < 0)) {
       setError('Prices cannot be negative.');
       setSaving(false);
@@ -311,25 +361,84 @@ export function AdminProductEditorPage() {
                 step="0.01"
                 className={input}
                 value={form.basePrice}
-                onValueChange={(basePrice) => set('basePrice', basePrice ?? 0)}
+                onValueChange={(basePrice) => setBasePrice(basePrice ?? 0)}
               />
             </Field>
-            <Field label="Discount price">
-              <AdminNumberInput
-                min="0"
-                step="0.01"
-                className={input}
-                value={form.discountPrice}
-                nullable
-                onValueChange={(discountPrice) => set('discountPrice', discountPrice)}
+            <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={discountEnabled}
+                onChange={(e) => toggleDiscount(e.target.checked)}
               />
-            </Field>
-            <div className="rounded-xl bg-slate-50 p-4 text-sm">
-              <span className="text-slate-500">Product discount</span>
-              <strong className={`float-right ${discount.invalid ? 'text-rose-600' : ''}`}>
-                {discount.invalid ? 'Invalid price' : `${discount.percentage}%`}
-              </strong>
-            </div>
+              This product has a discount
+            </label>
+            {discountEnabled && (
+              <div className="space-y-4 rounded-xl border border-slate-200 p-4 sm:col-span-2">
+                <fieldset>
+                  <legend className="mb-2 text-sm font-bold text-slate-700">
+                    Enter discount as
+                  </legend>
+                  <div className="flex flex-wrap gap-4 text-sm font-semibold">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="discountMode"
+                        checked={discountMode === 'PERCENTAGE'}
+                        onChange={() => selectDiscountMode('PERCENTAGE')}
+                      />
+                      Percentage
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="discountMode"
+                        checked={discountMode === 'PRICE'}
+                        onChange={() => selectDiscountMode('PRICE')}
+                      />
+                      Discounted price
+                    </label>
+                  </div>
+                </fieldset>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {discountMode === 'PERCENTAGE' ? (
+                    <Field label="Discount percentage">
+                      <AdminNumberInput
+                        min="0.01"
+                        max="100"
+                        step="0.01"
+                        className={input}
+                        value={discountPercentage}
+                        nullable
+                        onValueChange={setDiscountFromPercentage}
+                      />
+                    </Field>
+                  ) : (
+                    <Field label="Discounted price">
+                      <AdminNumberInput
+                        min="0"
+                        step="0.01"
+                        className={input}
+                        value={form.discountPrice}
+                        nullable
+                        onValueChange={(discountPrice) => set('discountPrice', discountPrice)}
+                      />
+                    </Field>
+                  )}
+                  <div className="rounded-xl bg-slate-50 p-4 text-sm">
+                    <span className="text-slate-500">
+                      {discountMode === 'PERCENTAGE' ? 'Discounted price' : 'Product discount'}
+                    </span>
+                    <strong className={`float-right ${discount.invalid ? 'text-rose-600' : ''}`}>
+                      {discount.invalid
+                        ? 'Enter a valid discount'
+                        : discountMode === 'PERCENTAGE'
+                        ? `₮ ${form.discountPrice?.toLocaleString()}`
+                        : `${discount.percentage}%`}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            )}
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold">
               <input
                 type="checkbox"

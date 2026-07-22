@@ -15,13 +15,11 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
-import { AdminNumberInput } from '../components/AdminNumberInput';
 const blank: BrandInput = {
   name: '',
   slug: '',
   logoUrl: '',
   description: '',
-  sortOrder: 0,
   active: true,
 };
 export function AdminBrandsPage() {
@@ -52,7 +50,6 @@ export function AdminBrandsPage() {
             slug: item.slug,
             logoUrl: item.logoUrl ?? '',
             description: item.description ?? '',
-            sortOrder: item.sortOrder,
             active: item.active,
           }
         : blank
@@ -124,7 +121,6 @@ export function AdminBrandsPage() {
                 <tr>
                   <th className="p-4">Brand</th>
                   <th>Products</th>
-                  <th>Sort</th>
                   <th>Status</th>
                   <th className="pr-4 text-right">Actions</th>
                 </tr>
@@ -150,7 +146,6 @@ export function AdminBrandsPage() {
                       </div>
                     </td>
                     <td>{item.productCount}</td>
-                    <td>{item.sortOrder}</td>
                     <td>
                       <StatusBadge tone={item.active ? 'success' : 'neutral'}>
                         {item.active ? 'Active' : 'Inactive'}
@@ -225,14 +220,6 @@ export function AdminBrandsPage() {
                 className={input}
                 value={form.description ?? ''}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </Field>
-            <Field label="Sort order">
-              <AdminNumberInput
-                min="0"
-                className={input}
-                value={form.sortOrder}
-                onValueChange={(sortOrder) => setForm({ ...form, sortOrder: sortOrder ?? 0 })}
               />
             </Field>
             <label className="flex items-center gap-3 text-sm font-semibold">
