@@ -16,17 +16,17 @@ public class AdminBrandService {
     @Transactional(readOnly=true) public List<AdminBrandResponse> list(String search) {
         String needle=search==null?"":search.trim().toLowerCase(Locale.ROOT);
         return brands.findAll().stream().filter(b->needle.isEmpty()||b.getName().toLowerCase(Locale.ROOT).contains(needle)||b.getSlug().contains(needle))
-                .sorted(Comparator.comparingInt(BrandEntity::getDisplayOrder).thenComparing(BrandEntity::getName)).map(this::response).toList();
+                .sorted(Comparator.comparing(BrandEntity::getName,String.CASE_INSENSITIVE_ORDER).thenComparing(BrandEntity::getId)).map(this::response).toList();
     }
     @Transactional(readOnly=true) public AdminBrandResponse find(Long id) { return response(require(id)); }
     @Transactional public AdminBrandResponse create(AdminBrandRequest r) {
         ensureSlug(r.slug(),null); BrandEntity b=BrandEntity.create(r.name().trim(),r.slug(),clean(r.logoUrl()),r.active());
-        b.update(r.name().trim(),r.slug(),clean(r.logoUrl()),clean(r.description()),r.sortOrder(),r.active()); brands.saveAndFlush(b);
+        b.update(r.name().trim(),r.slug(),clean(r.logoUrl()),clean(r.description()),r.active()); brands.saveAndFlush(b);
         audit.record("BRAND_CREATED","BRAND",b.getId(),b.getSlug()); return response(b);
     }
     @Transactional public AdminBrandResponse update(Long id, AdminBrandRequest r) {
         BrandEntity b=require(id); ensureSlug(r.slug(),id); boolean wasActive=b.isActive(); boolean logoChanged=!Objects.equals(b.getLogoUrl(),clean(r.logoUrl()));
-        b.update(r.name().trim(),r.slug(),clean(r.logoUrl()),clean(r.description()),r.sortOrder(),r.active()); brands.flush();
+        b.update(r.name().trim(),r.slug(),clean(r.logoUrl()),clean(r.description()),r.active()); brands.flush();
         audit.record(wasActive&&!r.active()?"BRAND_DEACTIVATED":"BRAND_UPDATED","BRAND",id,r.slug()); if(logoChanged)audit.record("BRAND_LOGO_CHANGED","BRAND",id,null); return response(b);
     }
     @Transactional public void delete(Long id) { BrandEntity b=require(id); brands.delete(b); brands.flush(); audit.record("BRAND_DELETED","BRAND",id,b.getSlug()); }

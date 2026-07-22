@@ -70,12 +70,11 @@ public class BrandEntity {
         return new BrandEntity(name, slug, logoUrl, active);
     }
 
-    public void update(String name, String slug, String logoUrl, String description, int displayOrder, boolean active) {
+    public void update(String name, String slug, String logoUrl, String description, boolean active) {
         this.name = name;
         this.slug = slug;
         this.logoUrl = logoUrl;
         this.description = description;
-        this.displayOrder = displayOrder;
         this.active = active;
     }
 

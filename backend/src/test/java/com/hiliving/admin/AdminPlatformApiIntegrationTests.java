@@ -50,6 +50,20 @@ class AdminPlatformApiIntegrationTests {
     }
 
     @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
+    void brandsUseAutomaticNameOrderingWithoutManualSort() throws Exception {
+        mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"name":"Zebra","slug":"zebra","description":"Last alphabetically","active":true}
+                """)).andExpect(status().isCreated());
+        mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"name":"Alpha","slug":"alpha","description":"First alphabetically","active":true}
+                """)).andExpect(status().isCreated());
+        mvc.perform(get("/api/v1/admin/brands").with(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].name").value("Alpha"))
+                .andExpect(jsonPath("$.data[1].name").value("Zebra"));
+    }
+
+    @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
     void productRulesExposeInventoryMembershipAndArchiveVisibility() throws Exception {
         CategoryEntity category=categories.save(CategoryEntity.create("Admin Product","admin-product",null,0,true));
         String active="""
@@ -114,13 +128,19 @@ class AdminPlatformApiIntegrationTests {
                 """)).andExpect(status().isCreated());
         mvc.perform(get("/api/v1/banners")).andExpect(status().isOk()).andExpect(jsonPath("$.data[0].title").value("Public banner"));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Draft","slug":"draft-news","summary":"Summary","content":"Content","published":false,"sortOrder":0}
+                {"title":"Draft","slug":"draft-news","summary":"Summary","content":"Content","published":false}
                 """)).andExpect(status().isCreated());
         mvc.perform(get("/api/v1/news")).andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Published","slug":"published-news","summary":"Summary","content":"Content","published":true,"sortOrder":0}
+                {"title":"Older","slug":"older-news","summary":"Summary","content":"Content","published":true,"publishedAt":"2020-01-01T00:00:00Z"}
                 """)).andExpect(status().isCreated());
-        mvc.perform(get("/api/v1/news/published-news")).andExpect(status().isOk()).andExpect(jsonPath("$.data.title").value("Published"));
+        mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"title":"Newer","slug":"newer-news","summary":"Summary","content":"Content","published":true,"publishedAt":"2021-01-01T00:00:00Z"}
+                """)).andExpect(status().isCreated());
+        mvc.perform(get("/api/v1/news")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data[0].title").value("Newer"))
+                .andExpect(jsonPath("$.data[1].title").value("Older"));
+        mvc.perform(get("/api/v1/news/newer-news")).andExpect(status().isOk()).andExpect(jsonPath("$.data.title").value("Newer"));
     }
 
     private static org.springframework.test.web.servlet.request.RequestPostProcessor admin() {
