@@ -17,12 +17,11 @@ interface Props {
 }
 
 function safeMessage(error: unknown) {
-  if (!(error instanceof AccountApiError))
-    return 'The image could not be uploaded. Please try again.';
+  if (!(error instanceof AccountApiError)) return 'Зургийг байршуулж чадсангүй. Дахин оролдоно уу.';
   if (error.code === 'MEDIA_FILE_TOO_LARGE' || error.code === 'MEDIA_MULTIPART_LIMIT_EXCEEDED')
-    return 'This image is larger than the allowed upload size.';
+    return 'Зургийн хэмжээ зөвшөөрөгдөх хэмжээнээс их байна.';
   if (error.code === 'MEDIA_DIMENSIONS_EXCEEDED')
-    return 'This image has dimensions that are too large.';
+    return 'Зургийн өргөн эсвэл өндөр зөвшөөрөгдөх хэмжээнээс их байна.';
   if (
     [
       'MEDIA_FORMAT_UNSUPPORTED',
@@ -32,9 +31,9 @@ function safeMessage(error: unknown) {
       'MEDIA_IMAGE_MALFORMED',
     ].includes(error.code)
   )
-    return 'Choose a valid JPEG or PNG image.';
-  if (error.status === 403) return 'Your account is not allowed to upload images.';
-  return 'The image could not be uploaded. Please try again.';
+    return 'Зөв JPEG эсвэл PNG зураг сонгоно уу.';
+  if (error.status === 403) return 'Таны эрхээр зураг байршуулах боломжгүй байна.';
+  return 'Зургийг байршуулж чадсангүй. Дахин оролдоно уу.';
 }
 
 export function ImageUploadControl({
@@ -72,10 +71,11 @@ export function ImageUploadControl({
   const upload = async (next: File) => {
     if (!['image/jpeg', 'image/png'].includes(next.type)) {
       setFile(next);
-      setError('Choose a JPEG or PNG image.');
+      setError('JPEG эсвэл PNG зураг сонгоно уу.');
       setStatus('error');
       return;
     }
+    const uploadAlreadyPending = controller.current !== null;
     controller.current?.abort();
     const abort = new AbortController();
     controller.current = abort;
@@ -85,7 +85,7 @@ export function ImageUploadControl({
     setProgress(0);
     setError('');
     setStatus('uploading');
-    onPendingChange?.(true);
+    if (!uploadAlreadyPending) onPendingChange?.(true);
     try {
       const asset = await uploadMediaImage(next, purpose, {
         signal: abort.signal,
@@ -114,7 +114,7 @@ export function ImageUploadControl({
   };
   const drop = (event: DragEvent) => {
     event.preventDefault();
-    if (!disabled) pick(event.dataTransfer.files);
+    if (!disabled && status !== 'uploading') pick(event.dataTransfer.files);
   };
   const image = preview ?? value;
   return (
@@ -131,19 +131,19 @@ export function ImageUploadControl({
         {image ? (
           <img
             src={image}
-            alt={`${label} preview`}
+            alt={`${label} харагдац`}
             className="absolute inset-0 h-full w-full object-contain"
           />
         ) : (
           <>
             <UploadCloud size={28} className="text-slate-400" />
-            <p className="mt-2 text-sm font-bold text-slate-600">Drop image here</p>
-            <p className="mt-1 text-xs text-slate-400">JPEG or PNG</p>
+            <p className="mt-2 text-sm font-bold text-slate-600">Зургаа энд чирж оруулна уу</p>
+            <p className="mt-1 text-xs text-slate-400">JPEG эсвэл PNG</p>
           </>
         )}
         {status === 'uploading' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/65 px-5 text-white">
-            <span className="text-sm font-bold">Uploading… {progress}%</span>
+            <span className="text-sm font-bold">Байршуулж байна… {progress}%</span>
             <div className="mt-3 h-2 w-full overflow-hidden rounded bg-white/30">
               <div
                 className="h-full bg-brand-500 transition-all"
@@ -171,7 +171,7 @@ export function ImageUploadControl({
           }`}
         >
           <ImagePlus size={16} className="mr-2" />
-          {value ? 'Replace' : 'Choose file'}
+          {value ? 'Солих' : 'Зураг сонгох'}
         </label>
         {value && (
           <button
@@ -181,19 +181,19 @@ export function ImageUploadControl({
             onClick={() => onChange('')}
           >
             <Trash2 size={16} className="mr-2 inline" />
-            Remove
+            Устгах
           </button>
         )}
         {status === 'error' && file && (
           <button type="button" className={secondaryButton} onClick={() => void upload(file)}>
             <RefreshCw size={16} className="mr-2" />
-            Retry
+            Дахин оролдох
           </button>
         )}
       </div>
       {required && !value && status !== 'uploading' && (
         <p className="mt-2 text-xs font-semibold text-amber-700">
-          An uploaded image is required before saving.
+          Хадгалахын өмнө зураг байршуулна уу.
         </p>
       )}
       {error && (

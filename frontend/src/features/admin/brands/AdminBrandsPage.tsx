@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import * as api from '../../../api/adminApi';
 import type { Brand, BrandInput } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
@@ -8,6 +8,7 @@ import {
   ErrorNotice,
   Field,
   LoadingPanel,
+  SearchInput,
   StatusBadge,
   input,
   panel,
@@ -15,6 +16,7 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
+import { useDebouncedValue } from '../components/useDebouncedValue';
 const blank: BrandInput = {
   name: '',
   slug: '',
@@ -30,17 +32,24 @@ export function AdminBrandsPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const load = () =>
-    api
-      .listBrands(search)
-      .then(setItems)
-      .catch(() => setItems([]));
+  const [removing, setRemoving] = useState<Brand | null>(null);
+  const debouncedSearch = useDebouncedValue(search);
+  const load = async () => setItems(await api.listBrands(debouncedSearch));
   useEffect(() => {
-    void api
-      .listBrands(search)
-      .then(setItems)
-      .catch(() => setItems([]));
-  }, [search]);
+    let active = true;
+    setError('');
+    void api.listBrands(debouncedSearch).then(
+      (brands) => {
+        if (active) setItems(brands);
+      },
+      () => {
+        if (active) setError('Брэндийн мэдээллийг уншиж чадсангүй.');
+      }
+    );
+    return () => {
+      active = false;
+    };
+  }, [debouncedSearch]);
   const open = (item?: Brand) => {
     setEditing(item ?? null);
     setForm(
@@ -59,7 +68,7 @@ export function AdminBrandsPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (uploading) {
-      setError('Wait for the logo upload to finish.');
+      setError('Лого байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     setSaving(true);
@@ -70,41 +79,42 @@ export function AdminBrandsPage() {
       setEditing(undefined);
       await load();
     } catch {
-      setError('The brand could not be saved. Check the slug and required fields.');
+      setError('Брэндийг хадгалж чадсангүй. Slug болон заавал бөглөх талбаруудыг шалгана уу.');
     } finally {
       setSaving(false);
     }
   };
-  const remove = async (item: Brand) => {
+  const remove = async () => {
+    if (!removing) return;
     try {
-      await api.deleteBrand(item.id);
+      await api.deleteBrand(removing.id);
+      setRemoving(null);
       await load();
     } catch {
-      setError('The brand could not be deleted.');
+      setError('Брэндийг устгаж чадсангүй. Ашиглагдаж байгаа эсэхийг шалгана уу.');
+      setRemoving(null);
     }
   };
   return (
     <AdminShell
-      title="Brands"
-      description="Manage brands and upload logos. Existing external logos remain compatible."
+      title="Брэнд"
+      description="Брэндийн мэдээлэл, лого болон каталогт харагдах төлөвийг удирдана."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
-          Add brand
+          Брэнд нэмэх
         </button>
       }
     >
       <div className={`${panel} mb-4 p-4`}>
-        <label className="relative block max-w-md">
-          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-          <input
-            className={`${input} pl-10`}
-            aria-label="Search brands"
+        <div className="max-w-md">
+          <SearchInput
+            label="Брэнд хайх"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name or slug"
+            onChange={setSearch}
+            placeholder="Нэр эсвэл slug-аар хайх"
           />
-        </label>
+        </div>
       </div>
       {error && (
         <div className="mb-4">
@@ -119,15 +129,18 @@ export function AdminBrandsPage() {
             <table className="w-full min-w-[680px] text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="p-4">Brand</th>
-                  <th>Products</th>
-                  <th>Status</th>
-                  <th className="pr-4 text-right">Actions</th>
+                  <th className="p-4">Брэнд</th>
+                  <th>Бүтээгдэхүүн</th>
+                  <th>Төлөв</th>
+                  <th className="pr-4 text-right">Үйлдэл</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr className="border-t border-slate-100" key={item.id}>
+                  <tr
+                    className="border-t border-slate-100 transition hover:bg-slate-50/70"
+                    key={item.id}
+                  >
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         {item.logoUrl ? (
@@ -148,21 +161,21 @@ export function AdminBrandsPage() {
                     <td>{item.productCount}</td>
                     <td>
                       <StatusBadge tone={item.active ? 'success' : 'neutral'}>
-                        {item.active ? 'Active' : 'Inactive'}
+                        {item.active ? 'Идэвхтэй' : 'Идэвхгүй'}
                       </StatusBadge>
                     </td>
                     <td className="pr-4 text-right">
                       <button
                         onClick={() => open(item)}
                         className="p-2"
-                        aria-label={`Edit ${item.name}`}
+                        aria-label={`${item.name} засах`}
                       >
                         <Pencil size={17} />
                       </button>
                       <button
-                        onClick={() => void remove(item)}
+                        onClick={() => setRemoving(item)}
                         className="p-2 hover:text-rose-600"
-                        aria-label={`Delete ${item.name}`}
+                        aria-label={`${item.name} устгах`}
                       >
                         <Trash2 size={17} />
                       </button>
@@ -173,21 +186,24 @@ export function AdminBrandsPage() {
             </table>
             {items.length === 0 && (
               <div className="p-8 text-center text-sm text-slate-500">
-                No brands match this search
+                Хайлтад тохирох брэнд олдсонгүй
               </div>
             )}
           </div>
         </div>
       )}
       {editing !== undefined && (
-        <Dialog title={editing ? 'Edit brand' : 'Add brand'} onClose={() => setEditing(undefined)}>
+        <Dialog
+          title={editing ? 'Брэнд засах' : 'Брэнд нэмэх'}
+          onClose={() => setEditing(undefined)}
+        >
           <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
             {error && (
               <div className="sm:col-span-2">
                 <ErrorNotice message={error} />
               </div>
             )}
-            <Field label="Name">
+            <Field label="Нэр">
               <input
                 required
                 className={input}
@@ -206,7 +222,7 @@ export function AdminBrandsPage() {
             </Field>
             <div className="sm:col-span-2">
               <ImageUploadControl
-                label="Brand logo"
+                label="Брэндийн лого"
                 purpose="BRAND"
                 value={form.logoUrl ?? ''}
                 onChange={(logoUrl) => setForm({ ...form, logoUrl })}
@@ -214,7 +230,7 @@ export function AdminBrandsPage() {
                 disabled={saving}
               />
             </div>
-            <Field label="Description" wide>
+            <Field label="Тайлбар" wide>
               <textarea
                 rows={3}
                 className={input}
@@ -228,7 +244,7 @@ export function AdminBrandsPage() {
                 checked={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
               />
-              Active
+              Каталогт идэвхтэй
             </label>
             <div className="flex justify-end gap-2 sm:col-span-2">
               <button
@@ -236,13 +252,31 @@ export function AdminBrandsPage() {
                 className={secondaryButton}
                 onClick={() => setEditing(undefined)}
               >
-                Cancel
+                Цуцлах
               </button>
               <button disabled={saving || uploading} className={primaryButton}>
-                {uploading ? 'Uploading…' : saving ? 'Saving…' : 'Save brand'}
+                {uploading ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Брэнд хадгалах'}
               </button>
             </div>
           </form>
+        </Dialog>
+      )}
+      {removing && (
+        <Dialog title="Брэнд устгах уу?" onClose={() => setRemoving(null)}>
+          <p className="text-sm text-slate-600">
+            <strong>{removing.name}</strong> брэндийг бүрмөсөн устгах гэж байна.
+          </p>
+          <div className="mt-6 flex justify-end gap-2">
+            <button className={secondaryButton} onClick={() => setRemoving(null)}>
+              Цуцлах
+            </button>
+            <button
+              className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white"
+              onClick={() => void remove()}
+            >
+              Устгах
+            </button>
+          </div>
         </Dialog>
       )}
     </AdminShell>

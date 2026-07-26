@@ -55,11 +55,11 @@ describe('admin taxonomy forms', () => {
     expect(screen.queryByRole('columnheader', { name: 'Parent' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Children' })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Add category' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ангилал нэмэх' }));
     expect(screen.queryByLabelText('Parent')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Cleaning' } });
+    fireEvent.change(screen.getByLabelText('Нэр'), { target: { value: 'Cleaning' } });
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'cleaning' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save category' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ангилал хадгалах' }));
 
     await waitFor(() => expect(api.createCategory).toHaveBeenCalledTimes(1));
     expect(vi.mocked(api.createCategory).mock.calls[0][0].parentId).toBeNull();

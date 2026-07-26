@@ -46,7 +46,7 @@ describe('ImageUploadControl', () => {
         onPendingChange={pending}
       />
     );
-    expect(screen.getByAltText('Brand logo preview')).toHaveAttribute(
+    expect(screen.getByAltText('Brand logo харагдац')).toHaveAttribute(
       'src',
       'https://legacy.example/logo.png'
     );
@@ -54,7 +54,7 @@ describe('ImageUploadControl', () => {
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
     });
-    expect(await screen.findByText('Uploading… 55%')).toBeInTheDocument();
+    expect(await screen.findByText('Байршуулж байна… 55%')).toBeInTheDocument();
     await act(async () => complete());
     await waitFor(() => expect(change).toHaveBeenCalledWith('/media/brands/generated.png'));
     expect(change).not.toHaveBeenCalledWith('blob:temporary');
@@ -89,10 +89,12 @@ describe('ImageUploadControl', () => {
     fireEvent.drop(container.querySelector('.border-dashed') as HTMLElement, {
       dataTransfer: { files: [file] },
     });
-    expect(await screen.findByRole('alert')).toHaveTextContent('Choose a valid JPEG or PNG image');
-    fireEvent.click(screen.getByRole('button', { name: /Retry/ }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Зөв JPEG эсвэл PNG зураг сонгоно уу'
+    );
+    fireEvent.click(screen.getByRole('button', { name: /Дахин оролдох/ }));
     await waitFor(() => expect(change).toHaveBeenCalledWith('/media/news/retry.jpg'));
-    fireEvent.click(screen.getByRole('button', { name: /Remove/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Устгах/ }));
     expect(change).toHaveBeenCalledWith('');
   });
 });

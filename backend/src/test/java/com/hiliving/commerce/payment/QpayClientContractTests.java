@@ -15,13 +15,14 @@ class QpayClientContractTests {
     void simpleInvoiceRequestAndResponseMatchTheQpayV2Contract() throws Exception {
         QpayClient.InvoiceRequest request = new QpayClient.InvoiceRequest(
                 "TEST_INVOICE", "HL20260725ABC123P1", "42", "HiLiving order HL20260725ABC123",
-                true, false, false, new BigDecimal("14000.00"),
+                false, false, false, new BigDecimal("14000.00"),
                 "https://shop.example/api/v1/payments/qpay/callback/token"
         );
 
         JsonNode serialized = json.valueToTree(request);
         assertThat(serialized.get("invoice_code").asText()).isEqualTo("TEST_INVOICE");
         assertThat(serialized.get("sender_invoice_no").asText()).isEqualTo("HL20260725ABC123P1");
+        assertThat(serialized.get("enable_expiry").asBoolean()).isFalse();
         assertThat(serialized.get("allow_partial").asBoolean()).isFalse();
         assertThat(serialized.get("allow_exceed").asBoolean()).isFalse();
         assertThat(serialized.get("callback_url").asText()).startsWith("https://shop.example/");

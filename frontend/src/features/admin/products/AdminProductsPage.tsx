@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Archive, Edit3, Plus, RotateCcw, Search } from 'lucide-react';
+import { Archive, Edit3, Plus, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
 import type { Brand, Category, Page, Product } from '../admin.types';
@@ -8,12 +8,15 @@ import {
   EmptyPanel,
   ErrorNotice,
   LoadingPanel,
+  Pagination,
+  SearchInput,
   StatusBadge,
   input,
   panel,
   primaryButton,
-  secondaryButton,
 } from '../components/AdminUi';
+import { inventoryLabel, lifecycleLabel } from '../adminLocale';
+import { useDebouncedValue } from '../components/useDebouncedValue';
 export function AdminProductsPage() {
   const [data, setData] = useState<Page<Product> | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -29,25 +32,64 @@ export function AdminProductsPage() {
     size: 20,
   });
   const [error, setError] = useState('');
+  const debouncedSearch = useDebouncedValue(filters.search);
   const load = () => {
     setError('');
     api
-      .listProducts(filters)
+      .listProducts({ ...filters, search: debouncedSearch })
       .then(setData)
-      .catch(() => setError('Products could not be loaded.'));
+      .catch(() => setError('Бүтээгдэхүүний мэдээллийг уншиж чадсангүй.'));
   };
   useEffect(() => {
+    let active = true;
     setError('');
     void api
-      .listProducts(filters)
-      .then(setData)
-      .catch(() => setError('Products could not be loaded.'));
-  }, [filters]);
+      .listProducts({
+        search: debouncedSearch,
+        lifecycle: filters.lifecycle,
+        categoryId: filters.categoryId,
+        brandId: filters.brandId,
+        inventoryState: filters.inventoryState,
+        sort: filters.sort,
+        page: filters.page,
+        size: filters.size,
+      })
+      .then(
+        (products) => {
+          if (active) setData(products);
+        },
+        () => {
+          if (active) setError('Бүтээгдэхүүний мэдээллийг уншиж чадсангүй.');
+        }
+      );
+    return () => {
+      active = false;
+    };
+  }, [
+    debouncedSearch,
+    filters.brandId,
+    filters.categoryId,
+    filters.inventoryState,
+    filters.lifecycle,
+    filters.page,
+    filters.size,
+    filters.sort,
+  ]);
   useEffect(() => {
-    void Promise.all([api.listCategories(), api.listBrands()]).then(([c, b]) => {
-      setCategories(c);
-      setBrands(b);
-    });
+    let active = true;
+    void Promise.all([api.listCategories(), api.listBrands()]).then(
+      ([c, b]) => {
+        if (!active) return;
+        setCategories(c);
+        setBrands(b);
+      },
+      () => {
+        if (active) setError('Шүүлтүүрийн мэдээллийг уншиж чадсангүй.');
+      }
+    );
+    return () => {
+      active = false;
+    };
   }, []);
   const change = (name: string, value: string) =>
     setFilters((current) => ({ ...current, [name]: value, page: 0 }));
@@ -57,49 +99,47 @@ export function AdminProductsPage() {
       else await api.archiveProduct(p.id);
       load();
     } catch {
-      setError('The lifecycle change could not be completed.');
+      setError('Бүтээгдэхүүний төлөвийг өөрчилж чадсангүй.');
     }
   };
   return (
     <AdminShell
-      title="Products"
-      description="Search, filter, publish, archive, and monitor inventory."
+      title="Бүтээгдэхүүн"
+      description="Бүтээгдэхүүн хайх, шүүх, нийтлэх, архивлах болон нөөцийг хянах."
       actions={
         <Link to="/admin/products/new" className={primaryButton}>
           <Plus size={17} className="mr-2" />
-          Add product
+          Бүтээгдэхүүн нэмэх
         </Link>
       }
     >
       <div className={`${panel} mb-4 grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-6`}>
-        <label className="relative sm:col-span-2">
-          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-          <input
-            className={`${input} pl-10`}
+        <div className="sm:col-span-2">
+          <SearchInput
             value={filters.search}
-            onChange={(e) => change('search', e.target.value)}
-            placeholder="Name, code, or slug"
-            aria-label="Search products"
+            onChange={(value) => change('search', value)}
+            placeholder="Нэр, код эсвэл slug"
+            label="Бүтээгдэхүүн хайх"
           />
-        </label>
+        </div>
         <select
           className={input}
-          aria-label="Lifecycle"
+          aria-label="Нийтлэлийн төлөв"
           value={filters.lifecycle}
           onChange={(e) => change('lifecycle', e.target.value)}
         >
-          <option value="">All lifecycles</option>
-          <option>DRAFT</option>
-          <option>ACTIVE</option>
-          <option>ARCHIVED</option>
+          <option value="">Бүх төлөв</option>
+          <option value="DRAFT">Ноорог</option>
+          <option value="ACTIVE">Нийтэлсэн</option>
+          <option value="ARCHIVED">Архивласан</option>
         </select>
         <select
           className={input}
-          aria-label="Category"
+          aria-label="Ангилал"
           value={filters.categoryId}
           onChange={(e) => change('categoryId', e.target.value)}
         >
-          <option value="">All categories</option>
+          <option value="">Бүх ангилал</option>
           {categories.map((c) => (
             <option value={c.id} key={c.id}>
               {c.name}
@@ -108,11 +148,11 @@ export function AdminProductsPage() {
         </select>
         <select
           className={input}
-          aria-label="Brand"
+          aria-label="Брэнд"
           value={filters.brandId}
           onChange={(e) => change('brandId', e.target.value)}
         >
-          <option value="">All brands</option>
+          <option value="">Бүх брэнд</option>
           {brands.map((b) => (
             <option value={b.id} key={b.id}>
               {b.name}
@@ -121,29 +161,29 @@ export function AdminProductsPage() {
         </select>
         <select
           className={input}
-          aria-label="Inventory"
+          aria-label="Нөөц"
           value={filters.inventoryState}
           onChange={(e) => change('inventoryState', e.target.value)}
         >
-          <option value="">All inventory</option>
-          <option value="IN_STOCK">In stock</option>
-          <option value="LOW_STOCK">Low stock</option>
-          <option value="OUT_OF_STOCK">Out of stock</option>
+          <option value="">Бүх нөөц</option>
+          <option value="IN_STOCK">Нөөцтэй</option>
+          <option value="LOW_STOCK">Нөөц багассан</option>
+          <option value="OUT_OF_STOCK">Нөөц дууссан</option>
         </select>
         <select
           className={input}
-          aria-label="Sort products"
+          aria-label="Бүтээгдэхүүн эрэмбэлэх"
           value={filters.sort}
           onChange={(e) => change('sort', e.target.value)}
         >
-          <option value="newest">Newest</option>
-          <option value="oldest">Oldest</option>
-          <option value="name_asc">Name A–Z</option>
-          <option value="name_desc">Name Z–A</option>
-          <option value="price_asc">Price low–high</option>
-          <option value="price_desc">Price high–low</option>
-          <option value="stock_asc">Stock low–high</option>
-          <option value="stock_desc">Stock high–low</option>
+          <option value="newest">Шинэ эхэнд</option>
+          <option value="oldest">Хуучин эхэнд</option>
+          <option value="name_asc">Нэр А–Я</option>
+          <option value="name_desc">Нэр Я–А</option>
+          <option value="price_asc">Үнэ өсөхөөр</option>
+          <option value="price_desc">Үнэ буурахаар</option>
+          <option value="stock_asc">Нөөц өсөхөөр</option>
+          <option value="stock_desc">Нөөц буурахаар</option>
         </select>
       </div>
       {error && (
@@ -154,7 +194,7 @@ export function AdminProductsPage() {
       {!data && !error ? (
         <LoadingPanel />
       ) : data?.items.length === 0 ? (
-        <EmptyPanel title="No products match these filters" />
+        <EmptyPanel title="Шүүлтүүрт тохирох бүтээгдэхүүн олдсонгүй" />
       ) : (
         data && (
           <div className={`${panel} overflow-hidden`}>
@@ -162,18 +202,21 @@ export function AdminProductsPage() {
               <table className="w-full min-w-[1000px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
-                    <th className="p-4">Product</th>
-                    <th>Category / Brand</th>
-                    <th>Price</th>
-                    <th>Inventory</th>
-                    <th>Lifecycle</th>
-                    <th>Membership</th>
-                    <th className="pr-4 text-right">Actions</th>
+                    <th className="p-4">Бүтээгдэхүүн</th>
+                    <th>Ангилал / Брэнд</th>
+                    <th>Үнэ</th>
+                    <th>Нөөц</th>
+                    <th>Төлөв</th>
+                    <th>Гишүүнчлэл</th>
+                    <th className="pr-4 text-right">Үйлдэл</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.items.map((p) => (
-                    <tr key={p.id} className="border-t border-slate-100">
+                    <tr
+                      key={p.id}
+                      className="border-t border-slate-100 transition hover:bg-slate-50/70"
+                    >
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           {p.images[0] ? (
@@ -183,6 +226,7 @@ export function AdminProductsPage() {
                                 p.images[0].imageUrl
                               }
                               alt=""
+                              loading="lazy"
                               className="h-12 w-12 rounded-xl border object-cover"
                             />
                           ) : (
@@ -198,7 +242,7 @@ export function AdminProductsPage() {
                       </td>
                       <td>
                         <div>{p.category.name}</div>
-                        <div className="text-xs text-slate-400">{p.brand?.name ?? 'No brand'}</div>
+                        <div className="text-xs text-slate-400">{p.brand?.name ?? 'Брэндгүй'}</div>
                       </td>
                       <td>
                         <div className="font-semibold">₮ {p.basePrice.toLocaleString()}</div>
@@ -218,10 +262,10 @@ export function AdminProductsPage() {
                               : 'danger'
                           }
                         >
-                          {p.inventoryState.replace(/_/g, ' ')}
+                          {inventoryLabel(p.inventoryState)}
                         </StatusBadge>
                         <div className="mt-1 text-xs text-slate-400">
-                          {p.stockQuantity} in stock
+                          Үлдэгдэл: {p.stockQuantity}
                         </div>
                       </td>
                       <td>
@@ -234,16 +278,16 @@ export function AdminProductsPage() {
                               : 'warning'
                           }
                         >
-                          {p.lifecycle}
-                          {!p.active ? ' · OFF' : ''}
+                          {lifecycleLabel(p.lifecycle)}
+                          {!p.active ? ' · НУУЦ' : ''}
                         </StatusBadge>
                       </td>
-                      <td>{p.membershipDiscountEligible ? 'Eligible' : 'Excluded'}</td>
+                      <td>{p.membershipDiscountEligible ? 'Хамаарна' : 'Хамаарахгүй'}</td>
                       <td className="pr-4 text-right">
                         <Link
                           to={`/admin/products/${p.id}/edit`}
                           className="inline-block p-2"
-                          aria-label={`Edit ${p.name}`}
+                          aria-label={`${p.name} засах`}
                         >
                           <Edit3 size={17} />
                         </Link>
@@ -251,7 +295,9 @@ export function AdminProductsPage() {
                           onClick={() => void archive(p)}
                           className="p-2"
                           aria-label={
-                            p.lifecycle === 'ARCHIVED' ? 'Restore product' : 'Archive product'
+                            p.lifecycle === 'ARCHIVED'
+                              ? 'Бүтээгдэхүүн сэргээх'
+                              : 'Бүтээгдэхүүн архивлах'
                           }
                         >
                           {p.lifecycle === 'ARCHIVED' ? (
@@ -266,28 +312,15 @@ export function AdminProductsPage() {
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-between border-t p-4 text-sm">
-              <span>{data.totalElements} products</span>
-              <div className="flex gap-2">
-                <button
-                  className={secondaryButton}
-                  disabled={data.first}
-                  onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-2">
-                  {data.page + 1} / {Math.max(data.totalPages, 1)}
-                </span>
-                <button
-                  className={secondaryButton}
-                  disabled={data.last}
-                  onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              totalElements={data.totalElements}
+              first={data.first}
+              last={data.last}
+              noun="бүтээгдэхүүн"
+              onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+            />
           </div>
         )
       )}

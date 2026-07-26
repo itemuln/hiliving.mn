@@ -33,9 +33,11 @@ export function AdminNewsEditorPage() {
   const [error, setError] = useState('');
   useEffect(() => {
     if (!editId) return;
+    let active = true;
     api
       .getNews(editId)
       .then((n) => {
+        if (!active) return;
         setForm({
           title: n.title,
           slug: n.slug,
@@ -48,13 +50,18 @@ export function AdminNewsEditorPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError('The article could not be loaded.');
-        setLoading(false);
+        if (active) {
+          setError('Мэдээг уншиж чадсангүй.');
+          setLoading(false);
+        }
       });
+    return () => {
+      active = false;
+    };
   }, [editId]);
   const save = async (published: boolean) => {
     if (uploading) {
-      setError('Wait for the thumbnail upload to finish.');
+      setError('Нүүр зураг байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     setSaving(true);
@@ -69,7 +76,7 @@ export function AdminNewsEditorPage() {
       else await api.createNews(payload);
       navigate('/admin/news');
     } catch {
-      setError('The article could not be saved. Check required fields and the unique slug.');
+      setError('Мэдээг хадгалж чадсангүй. Заавал бөглөх талбар болон slug-ийг шалгана уу.');
     } finally {
       setSaving(false);
     }
@@ -80,17 +87,17 @@ export function AdminNewsEditorPage() {
   };
   if (loading)
     return (
-      <AdminShell title="News editor">
+      <AdminShell title="Мэдээний редактор">
         <LoadingPanel />
       </AdminShell>
     );
   return (
     <AdminShell
-      title={editId ? 'Edit news' : 'Add news'}
-      description="News content remains plain text; thumbnails use secure image upload."
+      title={editId ? 'Мэдээ засах' : 'Мэдээ нэмэх'}
+      description="Мэдээний агуулга энгийн бичвэрээр, нүүр зураг аюулгүй байршуулалтаар хадгалагдана."
       actions={
         <button className={secondaryButton} onClick={() => navigate('/admin/news')}>
-          Cancel
+          Цуцлах
         </button>
       }
     >
@@ -100,7 +107,7 @@ export function AdminNewsEditorPage() {
             <ErrorNotice message={error} />
           </div>
         )}
-        <Field label="Title">
+        <Field label="Гарчиг">
           <input
             required
             className={input}
@@ -117,7 +124,7 @@ export function AdminNewsEditorPage() {
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
           />
         </Field>
-        <Field label="Summary" wide>
+        <Field label="Товч тайлбар" wide>
           <textarea
             required
             rows={3}
@@ -126,7 +133,7 @@ export function AdminNewsEditorPage() {
             onChange={(e) => setForm({ ...form, summary: e.target.value })}
           />
         </Field>
-        <Field label="Content" wide>
+        <Field label="Агуулга" wide>
           <textarea
             required
             rows={12}
@@ -137,7 +144,7 @@ export function AdminNewsEditorPage() {
         </Field>
         <div className="sm:col-span-2">
           <ImageUploadControl
-            label="News thumbnail"
+            label="Мэдээний нүүр зураг"
             purpose="NEWS"
             value={form.thumbnailUrl ?? ''}
             onChange={(thumbnailUrl) => setForm({ ...form, thumbnailUrl })}
@@ -145,7 +152,7 @@ export function AdminNewsEditorPage() {
             disabled={saving}
           />
         </div>
-        <Field label="Publish at">
+        <Field label="Нийтлэх огноо">
           <input
             type="datetime-local"
             className={input}
@@ -160,7 +167,7 @@ export function AdminNewsEditorPage() {
         </Field>
         <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
           <button type="button" className={secondaryButton} onClick={() => navigate('/admin/news')}>
-            Cancel
+            Цуцлах
           </button>
           <button
             type="button"
@@ -168,7 +175,7 @@ export function AdminNewsEditorPage() {
             className={secondaryButton}
             onClick={() => void save(false)}
           >
-            Save draft
+            Ноорог хадгалах
           </button>
           <button
             type="button"
@@ -176,7 +183,7 @@ export function AdminNewsEditorPage() {
             className={primaryButton}
             onClick={() => void save(true)}
           >
-            {uploading ? 'Uploading…' : saving ? 'Saving…' : 'Publish'}
+            {uploading ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Нийтлэх'}
           </button>
         </div>
       </form>

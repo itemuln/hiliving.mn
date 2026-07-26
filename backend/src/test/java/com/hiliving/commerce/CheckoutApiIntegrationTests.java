@@ -122,6 +122,7 @@ class CheckoutApiIntegrationTests {
         ArgumentCaptor<QpayClient.InvoiceRequest> invoiceRequest =
                 ArgumentCaptor.forClass(QpayClient.InvoiceRequest.class);
         verify(qpay).createInvoice(invoiceRequest.capture());
+        assertThat(invoiceRequest.getValue().enableExpiry()).isFalse();
         String callbackPath = URI.create(invoiceRequest.getValue().callbackUrl()).getPath();
         mockMvc.perform(get(callbackPath).param("qpay_payment_id", "qpay-payment-1"))
                 .andExpect(status().isOk());

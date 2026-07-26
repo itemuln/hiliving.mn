@@ -15,15 +15,15 @@ import type { DashboardCounts } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
 import { ErrorPanel, LoadingPanel, panel } from '../components/AdminUi';
 const cards = [
-  ['totalProducts', 'Total products', Boxes],
-  ['activeProducts', 'Active products', PackageCheck],
-  ['draftProducts', 'Draft products', PackageOpen],
-  ['archivedProducts', 'Archived products', Archive],
-  ['categories', 'Categories', Tags],
-  ['brands', 'Brands', Building2],
-  ['users', 'Users', Users],
-  ['activeBanners', 'Active banners', Image],
-  ['publishedNews', 'Published news', Newspaper],
+  ['totalProducts', 'Нийт бүтээгдэхүүн', Boxes],
+  ['activeProducts', 'Нийтэлсэн бүтээгдэхүүн', PackageCheck],
+  ['draftProducts', 'Ноорог бүтээгдэхүүн', PackageOpen],
+  ['archivedProducts', 'Архивласан бүтээгдэхүүн', Archive],
+  ['categories', 'Ангилал', Tags],
+  ['brands', 'Брэнд', Building2],
+  ['users', 'Хэрэглэгч', Users],
+  ['activeBanners', 'Идэвхтэй баннер', Image],
+  ['publishedNews', 'Нийтэлсэн мэдээ', Newspaper],
 ] as const;
 export function AdminDashboardPage() {
   const [data, setData] = useState<DashboardCounts | null>(null);
@@ -38,8 +38,8 @@ export function AdminDashboardPage() {
   useEffect(load, []);
   return (
     <AdminShell
-      title="Dashboard"
-      description="A concise operational view of the HiLiving catalog and managed content."
+      title="Хяналтын самбар"
+      description="HiLiving каталог, хэрэглэгч болон контентын өнөөгийн тойм."
     >
       {error ? (
         <ErrorPanel retry={load} />
@@ -48,8 +48,11 @@ export function AdminDashboardPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {cards.map(([key, label, Icon]) => (
-            <div key={key} className={`${panel} flex items-center gap-4 p-5`}>
-              <div className="rounded-2xl bg-brand-50 p-3 text-brand-500">
+            <div
+              key={key}
+              className={`${panel} flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:border-brand-100 hover:shadow-soft`}
+            >
+              <div className="rounded-2xl bg-brand-50 p-3 text-brand-500 ring-1 ring-brand-100">
                 <Icon size={23} />
               </div>
               <div>

@@ -96,28 +96,28 @@ describe('admin product editor', () => {
   });
   it('shows image cards only after batch selection and validates publishing', async () => {
     render(page());
-    await waitFor(() => expect(screen.getByText('1. Product information')).toBeInTheDocument());
-    expect(screen.queryByLabelText('Product image 1')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Add product photos')).toHaveAttribute('multiple');
+    await waitFor(() => expect(screen.getByText('1. Бүтээгдэхүүний мэдээлэл')).toBeInTheDocument());
+    expect(screen.queryByLabelText('Бүтээгдэхүүний зураг 1')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Бүтээгдэхүүний зураг нэмэх')).toHaveAttribute('multiple');
     expect(screen.queryByPlaceholderText('https://…')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Нийтлэх' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'Publishing requires exactly one primary image'
+      'Нийтлэхийн тулд яг нэг үндсэн зураг сонгоно уу'
     );
     const file = new File(['png'], 'photo.png', { type: 'image/png' });
-    fireEvent.change(screen.getByLabelText('Add product photos'), {
+    fireEvent.change(screen.getByLabelText('Бүтээгдэхүүний зураг нэмэх'), {
       target: { files: [file] },
     });
     await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledWith(file, 'PRODUCT'));
     await waitFor(() =>
-      expect(screen.getByAltText('Product image 1 preview')).toHaveAttribute(
+      expect(screen.getByAltText('Бүтээгдэхүүний зураг 1 харагдац')).toHaveAttribute(
         'src',
         '/media/products/generated.png'
       )
     );
-    expect(screen.getByText('Replace')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Product image 2')).not.toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Primary image' })).toBeChecked();
+    expect(screen.getByText('Солих')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Бүтээгдэхүүний зураг 2')).not.toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Үндсэн зураг' })).toBeChecked();
   });
 
   it('renders selected product photos dynamically up to the six-image limit', async () => {
@@ -132,55 +132,55 @@ describe('admin product editor', () => {
       height: 10,
     }));
     render(page());
-    await screen.findByText('1. Product information');
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
     const files = [
       new File(['one'], 'one.png', { type: 'image/png' }),
       new File(['two'], 'two.jpg', { type: 'image/jpeg' }),
       new File(['three'], 'three.png', { type: 'image/png' }),
     ];
 
-    fireEvent.change(screen.getByLabelText('Add product photos'), {
+    fireEvent.change(screen.getByLabelText('Бүтээгдэхүүний зураг нэмэх'), {
       target: { files },
     });
 
     await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledTimes(3));
-    expect(await screen.findByAltText('Product image 1 preview')).toHaveAttribute(
+    expect(await screen.findByAltText('Бүтээгдэхүүний зураг 1 харагдац')).toHaveAttribute(
       'src',
       '/media/products/one.png'
     );
-    expect(screen.getByAltText('Product image 2 preview')).toHaveAttribute(
+    expect(screen.getByAltText('Бүтээгдэхүүний зураг 2 харагдац')).toHaveAttribute(
       'src',
       '/media/products/two.jpg'
     );
-    expect(screen.getByAltText('Product image 3 preview')).toHaveAttribute(
+    expect(screen.getByAltText('Бүтээгдэхүүний зураг 3 харагдац')).toHaveAttribute(
       'src',
       '/media/products/three.png'
     );
-    expect(screen.queryByLabelText('Product image 4')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('radio', { name: 'Primary image' })[0]).toBeChecked();
+    expect(screen.queryByLabelText('Бүтээгдэхүүний зураг 4')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('radio', { name: 'Үндсэн зураг' })[0]).toBeChecked();
 
     const moreFiles = [
       new File(['four'], 'four.png', { type: 'image/png' }),
       new File(['five'], 'five.jpg', { type: 'image/jpeg' }),
       new File(['six'], 'six.png', { type: 'image/png' }),
     ];
-    fireEvent.change(screen.getByLabelText('Add product photos'), {
+    fireEvent.change(screen.getByLabelText('Бүтээгдэхүүний зураг нэмэх'), {
       target: { files: moreFiles },
     });
 
     await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledTimes(6));
-    expect(await screen.findByAltText('Product image 6 preview')).toHaveAttribute(
+    expect(await screen.findByAltText('Бүтээгдэхүүний зураг 6 харагдац')).toHaveAttribute(
       'src',
       '/media/products/six.png'
     );
-    expect(screen.queryByLabelText('Add product photos')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Бүтээгдэхүүний зураг нэмэх')).not.toBeInTheDocument();
   });
 
   it('normalizes product number inputs without breaking decimal prices', async () => {
     render(page());
-    await screen.findByText('1. Product information');
-    const basePrice = screen.getByRole('spinbutton', { name: 'Base price' });
-    const stockQuantity = screen.getByRole('spinbutton', { name: 'Stock quantity' });
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
+    const basePrice = screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' });
+    const stockQuantity = screen.getByRole('spinbutton', { name: 'Үлдэгдэл тоо' });
 
     fireEvent.change(basePrice, { target: { value: '023' } });
     fireEvent.change(stockQuantity, { target: { value: '01' } });
@@ -193,46 +193,44 @@ describe('admin product editor', () => {
 
   it('shows an invalid state instead of a negative discount percentage', async () => {
     render(page());
-    await screen.findByText('1. Product information');
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
 
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
       target: { value: '100' },
     });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'This product has a discount' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Discounted price' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discounted price' }), {
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Хямдарсан үнээр' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' }), {
       target: { value: '14930' },
     });
 
-    expect(screen.getByText('Enter a valid discount')).toBeInTheDocument();
+    expect(screen.getByText('Зөв хөнгөлөлт оруулна уу')).toBeInTheDocument();
     expect(screen.queryByText('-14830%')).not.toBeInTheDocument();
   });
 
   it('keeps discount fields hidden until enabled and accepts a percentage', async () => {
     render(page());
-    await screen.findByText('1. Product information');
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
 
     const discountToggle = screen.getByRole('checkbox', {
-      name: 'This product has a discount',
+      name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй',
     });
     expect(discountToggle).not.toBeChecked();
-    expect(
-      screen.queryByRole('spinbutton', { name: 'Discount percentage' })
-    ).not.toBeInTheDocument();
-    expect(screen.queryByRole('spinbutton', { name: 'Discounted price' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: 'Хөнгөлөлтийн хувь' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: 'Хямдарсан үнэ' })).not.toBeInTheDocument();
 
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
       target: { value: '1000' },
     });
     fireEvent.click(discountToggle);
-    expect(screen.getByRole('radio', { name: 'Percentage' })).toBeChecked();
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discount percentage' }), {
+    expect(screen.getByRole('radio', { name: 'Хувиар' })).toBeChecked();
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Хөнгөлөлтийн хувь' }), {
       target: { value: '25' },
     });
 
     expect(screen.getByText('₮ 750')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
     expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBe(750);
@@ -240,20 +238,20 @@ describe('admin product editor', () => {
 
   it('accepts a final discounted price and calculates its percentage', async () => {
     render(page());
-    await screen.findByText('1. Product information');
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
 
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Base price' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
       target: { value: '200' },
     });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'This product has a discount' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Discounted price' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Discounted price' }), {
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Хямдарсан үнээр' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' }), {
       target: { value: '150' },
     });
 
     expect(screen.getByText('25%')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
     expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBe(150);
@@ -268,16 +266,16 @@ describe('admin product editor', () => {
 
     expect(await screen.findByDisplayValue('Existing product')).toBeInTheDocument();
     const discountToggle = screen.getByRole('checkbox', {
-      name: 'This product has a discount',
+      name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй',
     });
     expect(discountToggle).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Discounted price' })).toBeChecked();
-    expect(screen.getByRole('spinbutton', { name: 'Discounted price' })).toHaveValue(80);
+    expect(screen.getByRole('radio', { name: 'Хямдарсан үнээр' })).toBeChecked();
+    expect(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' })).toHaveValue(80);
     expect(screen.getByText('20%')).toBeInTheDocument();
 
     fireEvent.click(discountToggle);
-    expect(screen.queryByRole('spinbutton', { name: 'Discounted price' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+    expect(screen.queryByRole('spinbutton', { name: 'Хямдарсан үнэ' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.updateProduct).toHaveBeenCalledTimes(1));
     expect(vi.mocked(api.updateProduct).mock.calls[0][1].discountPrice).toBeNull();
@@ -285,20 +283,20 @@ describe('admin product editor', () => {
 
   it('creates a product without exposing or submitting slug and product code fields', async () => {
     render(page());
-    await screen.findByText('1. Product information');
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
 
     expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Product code')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Short description')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Full description')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Product name'), {
+    fireEvent.change(screen.getByLabelText('Бүтээгдэхүүний нэр'), {
       target: { value: 'Generated identifiers' },
     });
-    fireEvent.change(screen.getByLabelText('Description'), {
+    fireEvent.change(screen.getByLabelText('Тайлбар'), {
       target: { value: 'One product description' },
     });
-    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '1' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
     const payload = vi.mocked(api.createProduct).mock.calls[0][0];
@@ -318,11 +316,11 @@ describe('admin product editor', () => {
 
     expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Product code')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Description')).toHaveValue('Existing details');
-    fireEvent.change(screen.getByLabelText('Product name'), {
+    expect(screen.getByLabelText('Тайлбар')).toHaveValue('Existing details');
+    fireEvent.change(screen.getByLabelText('Бүтээгдэхүүний нэр'), {
       target: { value: 'Renamed product' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Save draft' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.updateProduct).toHaveBeenCalledTimes(1));
     const payload = vi.mocked(api.updateProduct).mock.calls[0][1];

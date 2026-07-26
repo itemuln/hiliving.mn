@@ -322,13 +322,18 @@ export function CheckoutPage() {
                             onChange={() => setSelectedAddressId(address.id)}
                           />
                           <span className="min-w-0 text-sm">
-                            <strong className="text-neutral-800">{address.label}</strong>
-                            <span className="mt-1 block break-words text-neutral-600">
+                            <strong className="block break-words text-neutral-800">
                               {address.cityOrProvince}, {address.districtOrSoum},{' '}
+                              {address.khorooOrBag ? `${address.khorooOrBag}, ` : ''}
                               {address.addressLine}
-                            </span>
+                            </strong>
+                            {address.additionalDetails ? (
+                              <span className="mt-1 block text-neutral-500">
+                                {address.additionalDetails}
+                              </span>
+                            ) : null}
                             <span className="mt-1 block text-neutral-500">
-                              {address.recipientName} · {address.recipientPhone}
+                              {address.recipientPhone}
                             </span>
                           </span>
                         </label>

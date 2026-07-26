@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Eye, Search } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
 import type { AdminUser, Page } from '../admin.types';
@@ -8,11 +8,14 @@ import {
   EmptyPanel,
   ErrorNotice,
   LoadingPanel,
+  Pagination,
+  SearchInput,
   StatusBadge,
   input,
   panel,
-  secondaryButton,
 } from '../components/AdminUi';
+import { accountStatusLabel, adminDate, membershipLabel } from '../adminLocale';
+import { useDebouncedValue } from '../components/useDebouncedValue';
 export function AdminUsersPage() {
   const [data, setData] = useState<Page<AdminUser> | null>(null);
   const [error, setError] = useState('');
@@ -24,62 +27,87 @@ export function AdminUsersPage() {
     page: 0,
     size: 20,
   });
+  const debouncedSearch = useDebouncedValue(filters.search);
   useEffect(() => {
+    let active = true;
     setError('');
-    api
-      .listUsers(filters)
-      .then(setData)
-      .catch(() => setError('Users could not be loaded.'));
-  }, [filters]);
+    void api
+      .listUsers({
+        search: debouncedSearch,
+        membership: filters.membership,
+        status: filters.status,
+        sort: filters.sort,
+        page: filters.page,
+        size: filters.size,
+      })
+      .then(
+        (users) => {
+          if (active) setData(users);
+        },
+        () => {
+          if (active) setError('Хэрэглэгчийн мэдээллийг уншиж чадсангүй.');
+        }
+      );
+    return () => {
+      active = false;
+    };
+  }, [
+    debouncedSearch,
+    filters.membership,
+    filters.page,
+    filters.size,
+    filters.sort,
+    filters.status,
+  ]);
   const change = (key: string, value: string) =>
     setFilters((f) => ({ ...f, [key]: value, page: 0 }));
   return (
     <AdminShell
-      title="Users"
-      description="Membership, discount overrides, and account status are controlled here."
+      title="Хэрэглэгч"
+      description="Гишүүнчлэл, тусгай хөнгөлөлт болон бүртгэлийн төлөвийг удирдана."
     >
       <div className={`${panel} mb-4 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4`}>
-        <label className="relative">
-          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-          <input
-            className={`${input} pl-10`}
-            value={filters.search}
-            onChange={(e) => change('search', e.target.value)}
-            placeholder="Name, email, phone"
-            aria-label="Search users"
-          />
-        </label>
+        <SearchInput
+          value={filters.search}
+          onChange={(value) => change('search', value)}
+          placeholder="Нэр, имэйл, утас"
+          label="Хэрэглэгч хайх"
+        />
         <select
           className={input}
           value={filters.membership}
           onChange={(e) => change('membership', e.target.value)}
-          aria-label="Membership filter"
+          aria-label="Гишүүнчлэлээр шүүх"
         >
-          <option value="">All memberships</option>
+          <option value="">Бүх гишүүнчлэл</option>
           {['REGULAR', 'BRONZE', 'SILVER', 'GOLD'].map((x) => (
-            <option key={x}>{x}</option>
+            <option key={x} value={x}>
+              {membershipLabel(x)}
+            </option>
           ))}
         </select>
         <select
           className={input}
           value={filters.status}
           onChange={(e) => change('status', e.target.value)}
-          aria-label="Status filter"
+          aria-label="Төлөвөөр шүүх"
         >
-          <option value="">All statuses</option>
+          <option value="">Бүх төлөв</option>
           {['ACTIVE', 'DISABLED', 'LOCKED'].map((x) => (
-            <option key={x}>{x}</option>
+            <option key={x} value={x}>
+              {accountStatusLabel(x)}
+            </option>
           ))}
         </select>
         <select
           className={input}
           value={filters.sort}
           onChange={(e) => change('sort', e.target.value)}
-          aria-label="Sort users"
+          aria-label="Хэрэглэгч эрэмбэлэх"
         >
-          <option value="newest">Newest</option>
-          <option value="name_asc">Name</option>
-          <option value="email_asc">Email</option>
+          <option value="newest">Шинэ эхэнд</option>
+          <option value="name_asc">Нэрээр</option>
+          <option value="email_asc">Имэйлээр</option>
         </select>
       </div>
       {error && (
@@ -90,7 +118,7 @@ export function AdminUsersPage() {
       {!data && !error ? (
         <LoadingPanel />
       ) : data?.items.length === 0 ? (
-        <EmptyPanel title="No users match these filters" />
+        <EmptyPanel title="Шүүлтүүрт тохирох хэрэглэгч олдсонгүй" />
       ) : (
         data && (
           <div className={`${panel} overflow-hidden`}>
@@ -98,18 +126,21 @@ export function AdminUsersPage() {
               <table className="w-full min-w-[960px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
-                    <th className="p-4">Name</th>
-                    <th>Email / phone</th>
-                    <th>Membership</th>
-                    <th>Effective discount</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th className="pr-4 text-right">Actions</th>
+                    <th className="p-4">Нэр</th>
+                    <th>Имэйл / Утас</th>
+                    <th>Гишүүнчлэл</th>
+                    <th>Үйлчлэх хөнгөлөлт</th>
+                    <th>Төлөв</th>
+                    <th>Бүртгэсэн</th>
+                    <th className="pr-4 text-right">Үйлдэл</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.items.map((user) => (
-                    <tr key={user.id} className="border-t border-slate-100">
+                    <tr
+                      key={user.id}
+                      className="border-t border-slate-100 transition hover:bg-slate-50/70"
+                    >
                       <td className="p-4 font-bold">
                         {user.firstName} {user.lastName}
                       </td>
@@ -117,7 +148,7 @@ export function AdminUsersPage() {
                         <div>{user.email}</div>
                         <div className="text-xs text-slate-400">{user.phoneNumber}</div>
                       </td>
-                      <td>{user.membership.code}</td>
+                      <td>{membershipLabel(user.membership.code)}</td>
                       <td className="font-semibold">
                         {user.membership.effectiveDiscountPercentage}%
                       </td>
@@ -131,15 +162,15 @@ export function AdminUsersPage() {
                               : 'warning'
                           }
                         >
-                          {user.status}
+                          {accountStatusLabel(user.status)}
                         </StatusBadge>
                       </td>
-                      <td>{new Date(user.createdAt).toLocaleDateString()}</td>
+                      <td>{adminDate.format(new Date(user.createdAt))}</td>
                       <td className="pr-4 text-right">
                         <Link
                           className="inline-flex p-2"
                           to={`/admin/users/${user.id}`}
-                          aria-label={`View ${user.firstName}`}
+                          aria-label={`${user.firstName} хэрэглэгчийг харах`}
                         >
                           <Eye size={17} />
                         </Link>
@@ -149,28 +180,15 @@ export function AdminUsersPage() {
                 </tbody>
               </table>
             </div>
-            <div className="flex items-center justify-between border-t p-4 text-sm">
-              <span>{data.totalElements} users</span>
-              <div className="flex gap-2">
-                <button
-                  className={secondaryButton}
-                  disabled={data.first}
-                  onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}
-                >
-                  Previous
-                </button>
-                <span className="px-3 py-2">
-                  {data.page + 1} / {Math.max(data.totalPages, 1)}
-                </span>
-                <button
-                  className={secondaryButton}
-                  disabled={data.last}
-                  onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}
-                >
-                  Next
-                </button>
-              </div>
-            </div>
+            <Pagination
+              page={data.page}
+              totalPages={data.totalPages}
+              totalElements={data.totalElements}
+              first={data.first}
+              last={data.last}
+              noun="хэрэглэгч"
+              onPageChange={(page) => setFilters((current) => ({ ...current, page }))}
+            />
           </div>
         )
       )}

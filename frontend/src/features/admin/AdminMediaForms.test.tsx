@@ -59,21 +59,21 @@ describe('admin media forms', () => {
 
   it('uploads a brand logo without exposing a URL input', async () => {
     render(page(<AdminBrandsPage />));
-    fireEvent.click(screen.getByRole('button', { name: 'Add brand' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Брэнд нэмэх' }));
     expect(screen.queryByLabelText('Logo URL')).not.toBeInTheDocument();
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
     });
     await waitFor(() =>
-      expect(screen.getByAltText('Brand logo preview')).toHaveAttribute(
+      expect(screen.getByAltText('Брэндийн лого харагдац')).toHaveAttribute(
         'src',
         '/media/brand/generated.png'
       )
     );
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Uploaded brand' } });
+    fireEvent.change(screen.getByLabelText('Нэр'), { target: { value: 'Uploaded brand' } });
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'uploaded-brand' } });
     expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Save brand' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Брэнд хадгалах' }));
     await waitFor(() =>
       expect(api.createBrand).toHaveBeenCalledWith(
         expect.objectContaining({ logoUrl: '/media/brand/generated.png' })
@@ -89,33 +89,33 @@ describe('admin media forms', () => {
       originalFilename: selectedFile.name,
     }));
     render(page(<AdminBannersPage />));
-    fireEvent.click(screen.getByRole('button', { name: 'Add banner' }));
-    expect(screen.getByLabelText('Add banner photos')).toHaveAttribute('multiple');
-    expect(screen.queryByLabelText('Desktop banner')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Баннер нэмэх' }));
+    expect(screen.getByLabelText('Баннер зураг нэмэх')).toHaveAttribute('multiple');
+    expect(screen.queryByLabelText('Компьютерийн баннер')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Destination URL')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Link label')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Starts at')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Ends at')).not.toBeInTheDocument();
-    const sortOrder = screen.getByRole('spinbutton', { name: 'Sort order' });
+    const sortOrder = screen.getByRole('spinbutton', { name: 'Эрэмбэ' });
     fireEvent.change(sortOrder, { target: { value: '023' } });
     expect(sortOrder).toHaveValue(23);
     const desktop = new File(['desktop'], 'desktop.png', { type: 'image/png' });
     const mobile = new File(['mobile'], 'mobile.jpg', { type: 'image/jpeg' });
-    fireEvent.change(screen.getByLabelText('Add banner photos'), {
+    fireEvent.change(screen.getByLabelText('Баннер зураг нэмэх'), {
       target: { files: [desktop, mobile] },
     });
     await waitFor(() => expect(api.uploadMediaImage).toHaveBeenCalledTimes(2));
-    expect(await screen.findByAltText('Desktop banner preview')).toHaveAttribute(
+    expect(await screen.findByAltText('Компьютерийн баннер харагдац')).toHaveAttribute(
       'src',
       '/media/banner/desktop.png'
     );
-    expect(screen.getByAltText('Mobile banner preview')).toHaveAttribute(
+    expect(screen.getByAltText('Гар утасны баннер харагдац')).toHaveAttribute(
       'src',
       '/media/banner/mobile.jpg'
     );
-    expect(screen.queryByLabelText('Add banner photos')).not.toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Uploaded banner' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save banner' }));
+    expect(screen.queryByLabelText('Баннер зураг нэмэх')).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Гарчиг'), { target: { value: 'Uploaded banner' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Баннер хадгалах' }));
     await waitFor(() =>
       expect(api.createBanner).toHaveBeenCalledWith({
         title: 'Uploaded banner',
@@ -131,22 +131,22 @@ describe('admin media forms', () => {
   it('uploads and persists a news thumbnail while body authoring stays text based', async () => {
     render(page(<AdminNewsEditorPage />));
     expect(document.querySelectorAll('input[type="file"]')).toHaveLength(1);
-    expect(screen.getByLabelText('Content')).toHaveAttribute('rows', '12');
+    expect(screen.getByLabelText('Агуулга')).toHaveAttribute('rows', '12');
     expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
     });
     await waitFor(() =>
-      expect(screen.getByAltText('News thumbnail preview')).toHaveAttribute(
+      expect(screen.getByAltText('Мэдээний нүүр зураг харагдац')).toHaveAttribute(
         'src',
         '/media/news/generated.png'
       )
     );
-    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Uploaded news' } });
+    fireEvent.change(screen.getByLabelText('Гарчиг'), { target: { value: 'Uploaded news' } });
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'uploaded-news' } });
-    fireEvent.change(screen.getByLabelText('Summary'), { target: { value: 'Summary' } });
-    fireEvent.change(screen.getByLabelText('Content'), { target: { value: 'Content' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    fireEvent.change(screen.getByLabelText('Товч тайлбар'), { target: { value: 'Summary' } });
+    fireEvent.change(screen.getByLabelText('Агуулга'), { target: { value: 'Content' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Нийтлэх' }));
     await waitFor(() =>
       expect(api.createNews).toHaveBeenCalledWith(
         expect.objectContaining({ thumbnailUrl: '/media/news/generated.png', published: true })

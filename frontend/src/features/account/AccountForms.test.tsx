@@ -85,18 +85,20 @@ describe('account forms', () => {
     vi.stubGlobal('fetch', fetchMock);
     render(<AddressList />);
     expect(await screen.findByText('Хүргэлтийн хаяг нэмээгүй байна.')).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText('Нэршил'), { target: { value: 'Гэр' } });
+    expect(screen.getByRole('button', { name: 'Газрын зураг дээр сонгох' })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Хот / аймаг'), { target: { value: 'Улаанбаатар' } });
-    fireEvent.change(screen.getByLabelText('Дүүрэг / сум'), { target: { value: 'СБД' } });
+    fireEvent.change(screen.getByLabelText('Дүүрэг / сум'), {
+      target: { value: 'Сүхбаатар дүүрэг' },
+    });
+    fireEvent.change(screen.getByLabelText('Хороо / баг'), { target: { value: '1-р хороо' } });
     fireEvent.change(screen.getByLabelText('Дэлгэрэнгүй хаяг'), {
       target: { value: 'Энхтайвны өргөн чөлөө' },
     });
-    fireEvent.change(screen.getByLabelText('Хүлээн авагч'), { target: { value: 'Temuulen' } });
     fireEvent.change(screen.getByLabelText('Хүлээн авагчийн утас'), {
       target: { value: '99112233' },
     });
     fireEvent.click(screen.getByLabelText('Үндсэн хаяг болгох'));
     fireEvent.click(screen.getByRole('button', { name: 'Хадгалах' }));
-    await waitFor(() => expect(screen.getByText('Үндсэн')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Үндсэн хаяг')).toBeInTheDocument());
   });
 });

@@ -31,7 +31,7 @@ public class QpayPaymentService {
                     + "/api/v1/payments/qpay/callback/" + preparation.callbackToken();
             QpayClient.InvoiceResponse response = qpay.createInvoice(new QpayClient.InvoiceRequest(
                     qpay.invoiceCode(), preparation.senderInvoiceNo(), preparation.customerCode(),
-                    "HiLiving order " + preparation.orderNumber().replace("-", ""), true,
+                    "HiLiving order " + preparation.orderNumber().replace("-", ""), false,
                     false, false, preparation.amount(), callbackUrl
             ));
             return state.recordInvoice(preparation.attemptId(), response);

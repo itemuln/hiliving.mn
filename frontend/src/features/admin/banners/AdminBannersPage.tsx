@@ -33,13 +33,14 @@ export function AdminBannersPage() {
   const [saving, setSaving] = useState(false);
   const [pending, setPending] = useState(0);
   const [batchUploading, setBatchUploading] = useState(false);
+  const [removing, setRemoving] = useState<Banner | null>(null);
   const batchInput = useRef<HTMLInputElement>(null);
   const batchInputId = useId();
   const load = () =>
     api
       .listBanners()
       .then(setItems)
-      .catch(() => setError('Banners could not be loaded.'));
+      .catch(() => setError('Баннерийн мэдээллийг уншиж чадсангүй.'));
   useEffect(() => {
     void load();
   }, []);
@@ -62,11 +63,11 @@ export function AdminBannersPage() {
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (pending > 0) {
-      setError('Wait for image uploads to finish.');
+      setError('Зураг байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     if (!form.imageUrl) {
-      setError('Upload a desktop banner image before saving.');
+      setError('Хадгалахын өмнө компьютерийн баннер зураг байршуулна уу.');
       return;
     }
     setSaving(true);
@@ -76,17 +77,20 @@ export function AdminBannersPage() {
       setEditing(undefined);
       await load();
     } catch {
-      setError('The banner could not be saved. Check the required fields.');
+      setError('Баннерийг хадгалж чадсангүй. Заавал бөглөх талбаруудыг шалгана уу.');
     } finally {
       setSaving(false);
     }
   };
-  const remove = async (b: Banner) => {
+  const remove = async () => {
+    if (!removing) return;
     try {
-      await api.deleteBanner(b.id);
+      await api.deleteBanner(removing.id);
+      setRemoving(null);
       await load();
     } catch {
-      setError('The banner could not be deleted.');
+      setError('Баннерийг устгаж чадсангүй.');
+      setRemoving(null);
     }
   };
   const uploadState = (value: boolean) =>
@@ -107,27 +111,33 @@ export function AdminBannersPage() {
     if (selected.length === 0) return;
     const available = 2 - imageCount;
     if (selected.length > available) {
-      setError(`You can add ${available} more banner photo${available === 1 ? '' : 's'}.`);
+      setError(`Нэмж ${available} баннер зураг оруулах боломжтой.`);
       return;
     }
     if (selected.some((file) => !['image/jpeg', 'image/png'].includes(file.type))) {
-      setError('Choose only JPEG or PNG banner photos.');
+      setError('Зөвхөн JPEG эсвэл PNG баннер зураг сонгоно уу.');
       return;
     }
     setError('');
     setBatchUploading(true);
     setPending((current) => current + 1);
     try {
-      for (const file of selected) {
-        const asset = await api.uploadMediaImage(file, 'BANNER');
-        setForm((current) => {
-          if (!current.imageUrl) return { ...current, imageUrl: asset.url };
-          if (!current.mobileImageUrl) return { ...current, mobileImageUrl: asset.url };
-          return current;
-        });
+      const results = await Promise.allSettled(
+        selected.map((file) => api.uploadMediaImage(file, 'BANNER'))
+      );
+      const uploaded = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value.url] : []
+      );
+      setForm((current) => {
+        const slots = [current.imageUrl, current.mobileImageUrl].filter(
+          (imageUrl): imageUrl is string => Boolean(imageUrl)
+        );
+        const [imageUrl = '', mobileImageUrl = ''] = [...slots, ...uploaded].slice(0, 2);
+        return { ...current, imageUrl, mobileImageUrl };
+      });
+      if (results.some((result) => result.status === 'rejected')) {
+        setError('Зарим зургийг байршуулж чадсангүй. Амжилттай зургууд хадгалагдлаа.');
       }
-    } catch {
-      setError('Some banner photos could not be uploaded. Completed photos are kept.');
     } finally {
       setBatchUploading(false);
       setPending((current) => Math.max(0, current - 1));
@@ -135,12 +145,12 @@ export function AdminBannersPage() {
   };
   return (
     <AdminShell
-      title="Banners"
-      description="Upload up to two hero images at once; the first is desktop and the second is mobile."
+      title="Баннер"
+      description="Нүүр хуудасны компьютер болон гар утасны баннер зургийг удирдана."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
-          Add banner
+          Баннер нэмэх
         </button>
       }
     >
@@ -152,12 +162,20 @@ export function AdminBannersPage() {
       {items === null ? (
         <LoadingPanel />
       ) : items.length === 0 ? (
-        <EmptyPanel title="No banners yet" />
+        <EmptyPanel title="Одоогоор баннер алга" />
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
           {items.map((b) => (
-            <article key={b.id} className={`${panel} overflow-hidden`}>
-              <img src={b.imageUrl} alt="" className="h-44 w-full bg-slate-50 object-cover" />
+            <article
+              key={b.id}
+              className={`${panel} overflow-hidden transition hover:-translate-y-0.5 hover:shadow-soft`}
+            >
+              <img
+                src={b.imageUrl}
+                alt=""
+                loading="lazy"
+                className="h-44 w-full bg-slate-50 object-cover"
+              />
               <div className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
@@ -165,19 +183,19 @@ export function AdminBannersPage() {
                     <p className="mt-1 text-sm text-slate-500">{b.subtitle}</p>
                   </div>
                   <StatusBadge tone={b.active ? 'success' : 'neutral'}>
-                    {b.active ? 'Active' : 'Inactive'}
+                    {b.active ? 'Идэвхтэй' : 'Идэвхгүй'}
                   </StatusBadge>
                 </div>
                 <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-                  <span>Sort {b.sortOrder}</span>
+                  <span>Эрэмбэ: {b.sortOrder}</span>
                   <div>
-                    <button className="p-2" onClick={() => open(b)} aria-label={`Edit ${b.title}`}>
+                    <button className="p-2" onClick={() => open(b)} aria-label={`${b.title} засах`}>
                       <Pencil size={17} />
                     </button>
                     <button
                       className="p-2 hover:text-rose-600"
-                      onClick={() => void remove(b)}
-                      aria-label={`Delete ${b.title}`}
+                      onClick={() => setRemoving(b)}
+                      aria-label={`${b.title} устгах`}
                     >
                       <Trash2 size={17} />
                     </button>
@@ -190,11 +208,11 @@ export function AdminBannersPage() {
       )}
       {editing !== undefined && (
         <Dialog
-          title={editing ? 'Edit banner' : 'Add banner'}
+          title={editing ? 'Баннер засах' : 'Баннер нэмэх'}
           onClose={() => setEditing(undefined)}
         >
           <form onSubmit={submit} className="grid min-w-0 gap-4 sm:grid-cols-2">
-            <Field label="Title">
+            <Field label="Гарчиг">
               <input
                 required
                 className={input}
@@ -202,7 +220,7 @@ export function AdminBannersPage() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
               />
             </Field>
-            <Field label="Subtitle" wide>
+            <Field label="Дэд гарчиг" wide>
               <textarea
                 className={input}
                 rows={2}
@@ -212,17 +230,16 @@ export function AdminBannersPage() {
             </Field>
             <div className="space-y-4 sm:col-span-2">
               <div>
-                <p className="text-sm font-bold text-slate-700">Banner photos</p>
+                <p className="text-sm font-bold text-slate-700">Баннер зураг</p>
                 <p className="text-xs text-slate-500">
-                  Select one desktop image or select desktop and mobile images together. Upload URLs
-                  are filled automatically.
+                  Эхний зураг компьютерт, хоёр дахь зураг гар утсанд ашиглагдана.
                 </p>
                 {imageCount < 2 && (
                   <div className="mt-3">
                     <input
                       ref={batchInput}
                       id={batchInputId}
-                      aria-label="Add banner photos"
+                      aria-label="Баннер зураг нэмэх"
                       type="file"
                       multiple
                       className="sr-only"
@@ -237,7 +254,7 @@ export function AdminBannersPage() {
                       }`}
                     >
                       <ImagePlus size={16} className="mr-2" />
-                      {batchUploading ? 'Uploading photos…' : 'Add photos'}
+                      {batchUploading ? 'Зураг байршуулж байна…' : 'Зураг нэмэх'}
                     </label>
                   </div>
                 )}
@@ -245,7 +262,7 @@ export function AdminBannersPage() {
               <div className="grid min-w-0 gap-4 sm:grid-cols-2">
                 {form.imageUrl && (
                   <ImageUploadControl
-                    label="Desktop banner"
+                    label="Компьютерийн баннер"
                     purpose="BANNER"
                     value={form.imageUrl}
                     onChange={(imageUrl) => setBannerImage('desktop', imageUrl)}
@@ -256,7 +273,7 @@ export function AdminBannersPage() {
                 )}
                 {form.mobileImageUrl && (
                   <ImageUploadControl
-                    label="Mobile banner"
+                    label="Гар утасны баннер"
                     purpose="BANNER"
                     value={form.mobileImageUrl}
                     onChange={(imageUrl) => setBannerImage('mobile', imageUrl)}
@@ -266,7 +283,7 @@ export function AdminBannersPage() {
                 )}
               </div>
             </div>
-            <Field label="Sort order">
+            <Field label="Эрэмбэ">
               <AdminNumberInput
                 min="0"
                 className={input}
@@ -280,7 +297,7 @@ export function AdminBannersPage() {
                 checked={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
               />
-              Active
+              Идэвхтэй
             </label>
             <div className="flex justify-end gap-2 sm:col-span-2">
               <button
@@ -288,13 +305,31 @@ export function AdminBannersPage() {
                 className={secondaryButton}
                 onClick={() => setEditing(undefined)}
               >
-                Cancel
+                Цуцлах
               </button>
               <button disabled={saving || pending > 0} className={primaryButton}>
-                {pending > 0 ? 'Uploading…' : saving ? 'Saving…' : 'Save banner'}
+                {pending > 0 ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Баннер хадгалах'}
               </button>
             </div>
           </form>
+        </Dialog>
+      )}
+      {removing && (
+        <Dialog title="Баннер устгах уу?" onClose={() => setRemoving(null)}>
+          <p className="text-sm text-slate-600">
+            <strong>{removing.title}</strong> баннерийг бүрмөсөн устгах гэж байна.
+          </p>
+          <div className="mt-6 flex justify-end gap-2">
+            <button className={secondaryButton} onClick={() => setRemoving(null)}>
+              Цуцлах
+            </button>
+            <button
+              className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white"
+              onClick={() => void remove()}
+            >
+              Устгах
+            </button>
+          </div>
         </Dialog>
       )}
     </AdminShell>

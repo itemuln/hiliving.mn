@@ -2,7 +2,7 @@
 
 ## Active
 
-- No active implementation task. Failed QPay initiation cleanup and the historical local-data repair are complete; the next P1 work is real paid/expiry verification and stable staging HTTPS.
+- No active implementation task. Failed QPay initiation cleanup, historical local-data repair, and application-owned 15-minute invoice expiry are complete; the next P1 work is real paid/expiry verification and stable staging HTTPS.
 
 ## Planned
 
@@ -10,9 +10,9 @@
 - [x] **P1 - Phase 7:** add ADMIN-only order list/detail workflows, validated fulfillment/status transitions, operational audit events, and customer order history before enabling the Orders navigation item.
 - [ ] **P1 - Phase 7:** define cancellation, rejection, and stock-restoration rules, including idempotent transitions and concurrency behavior, before allowing order cancellation.
 - [x] **P1:** implement the QPay Merchant V2 invoice/check lifecycle with server-verified callbacks, durable attempts, secret-safe configuration, expiry stock restoration, and explicit reconciliation failures. Settlement reporting and refunds remain planned separately.
-- [ ] **P1:** complete one real paid QPay callback/check and one real provider-invoice expiry rehearsal without changing the actual order amount; QR/deeplink creation is already proven against the live Merchant V2 endpoint.
+- [ ] **P1:** complete one real paid QPay callback/check and one real application-managed provider cancellation/expiry rehearsal without changing the actual order amount; QR/deeplink creation is already proven against the live Merchant V2 endpoint.
 - [ ] **P1:** replace the testing-only Quick Tunnel with stable `api.hiliving.mn` HTTPS. The owner must choose public NGINX/Let's Encrypt ingress or a named Cloudflare Tunnel and provide the required VPS, Cloudflare, and authoritative DNS access while preserving existing mail records.
-- [ ] **P1:** rotate the shared test credential before production, install only owner-controlled merchant values in the restricted server environment, align provider/application expiry, and keep QPay disabled in committed defaults.
+- [ ] **P1:** rotate the shared test credential before production, install only owner-controlled merchant values in the restricted server environment, and keep QPay disabled in committed defaults.
 - [ ] **P1:** install/use an exact Java 21 runtime and repeat the full backend verification before release; the latest local run passed on JDK 26 targeting compiler release 21.
 - [ ] **P1:** replace the deliberately marked self-pickup sample address, business hours, and phone with owner-confirmed production collection details before launch.
 - [ ] **P1:** define Ebarimt 3.0 invoice/receipt timing, tax classification, organization/customer data, retry, and correction policy before connecting the supplied Ebarimt contract.
@@ -28,6 +28,11 @@
 
 ## Completed
 
+- [x] Simplify Ulaanbaatar delivery-address entry with dependent district/khoroo dropdowns, entrance/apartment fields, phone-only recipient UI, and cleaned reverse-geocoded fallback text.
+- [x] Add an open-source Leaflet address picker centered on Ulaanbaatar with explicit, policy-limited OpenStreetMap reverse geocoding into the existing delivery-address fields.
+- [x] Add a direct storefront-home action to the desktop and mobile administration sidebar.
+- [x] Translate the complete admin UI to Mongolian, consolidate shared search/pagination/status/formatting primitives, refresh responsive visual states, confirm destructive actions, guard debounced list requests against stale results, and parallelize ordered product/banner batch uploads.
+- [x] Disable merchant-configured QPay auto-expiry and use the application-owned `QPAY_INVOICE_TTL` deadline, defaulting to 15 minutes, while retaining provider cancellation before inventory restoration.
 - [x] Restore the current hero image across reloads and storefront route remounts, and run its entrance animation only once per tab session.
 - [x] Add backend-authoritative zero-fee self-pickup, omit delivery-address entry for pickup orders, snapshot a sample collection location, and show it in customer/admin order detail.
 - [x] Use the mobile active-category icon tile as the accessible category-switching button and replace the separate select with a bounded route-link menu.

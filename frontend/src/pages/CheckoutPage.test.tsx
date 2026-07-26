@@ -163,7 +163,7 @@ describe('CheckoutPage', () => {
     vi.stubGlobal('fetch', fetchMock);
     const clearCart = renderCheckout();
 
-    expect(await screen.findByRole('radio', { name: /Home/ })).toBeChecked();
+    expect(await screen.findByRole('radio', { name: /Peace Avenue/ })).toBeChecked();
     expect(screen.getByRole('radio', { name: /QPay-аар төлөх/ })).toBeChecked();
     fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
     const placeButton = screen.getByRole('button', { name: 'Захиалга хийх' });
@@ -258,7 +258,7 @@ describe('CheckoutPage', () => {
       })
     );
     const clearCart = renderCheckout();
-    await screen.findByRole('radio', { name: /Home/ });
+    await screen.findByRole('radio', { name: /Peace Avenue/ });
     fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('үлдэгдлээс их');
@@ -305,7 +305,7 @@ describe('CheckoutPage', () => {
     vi.stubGlobal('fetch', fetchMock);
     renderCheckout();
 
-    await screen.findByRole('radio', { name: /Home/ });
+    await screen.findByRole('radio', { name: /Peace Avenue/ });
     fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
     await screen.findByRole('alert');
@@ -333,7 +333,7 @@ describe('CheckoutPage', () => {
     vi.stubGlobal('fetch', fetchMock);
     renderCheckout();
 
-    await screen.findByRole('radio', { name: /Home/ });
+    await screen.findByRole('radio', { name: /Peace Avenue/ });
     fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
     await screen.findByRole('alert');

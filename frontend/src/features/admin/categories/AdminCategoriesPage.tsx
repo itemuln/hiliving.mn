@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import * as api from '../../../api/adminApi';
 import type { Category, CategoryInput } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
@@ -9,6 +9,7 @@ import {
   ErrorNotice,
   Field,
   LoadingPanel,
+  SearchInput,
   StatusBadge,
   input,
   panel,
@@ -16,6 +17,7 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { AdminNumberInput } from '../components/AdminNumberInput';
+import { useDebouncedValue } from '../components/useDebouncedValue';
 const blank: CategoryInput = {
   name: '',
   slug: '',
@@ -32,17 +34,23 @@ export function AdminCategoriesPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [remove, setRemove] = useState<Category | null>(null);
-  const load = () =>
-    api
-      .listCategories(search)
-      .then(setItems)
-      .catch(() => setItems([]));
+  const debouncedSearch = useDebouncedValue(search);
+  const load = async () => setItems(await api.listCategories(debouncedSearch));
   useEffect(() => {
-    void api
-      .listCategories(search)
-      .then(setItems)
-      .catch(() => setItems([]));
-  }, [search]);
+    let active = true;
+    setError('');
+    void api.listCategories(debouncedSearch).then(
+      (categories) => {
+        if (active) setItems(categories);
+      },
+      () => {
+        if (active) setError('Ангиллын мэдээллийг уншиж чадсангүй.');
+      }
+    );
+    return () => {
+      active = false;
+    };
+  }, [debouncedSearch]);
   const open = (item?: Category) => {
     setEditing(item ?? null);
     setForm(
@@ -71,8 +79,8 @@ export function AdminCategoriesPage() {
     } catch (err) {
       setError(
         err instanceof Error
-          ? 'The category could not be saved. Check for a duplicate slug.'
-          : 'Save failed'
+          ? 'Ангиллыг хадгалж чадсангүй. Slug давхардсан эсэхийг шалгана уу.'
+          : 'Хадгалж чадсангүй.'
       );
     } finally {
       setSaving(false);
@@ -85,32 +93,30 @@ export function AdminCategoriesPage() {
       setRemove(null);
       await load();
     } catch {
-      setError('This category cannot be deleted while it is still in use. Deactivate it instead.');
+      setError('Ашиглагдаж байгаа ангиллыг устгах боломжгүй. Оронд нь идэвхгүй болгоно уу.');
       setRemove(null);
     }
   };
   return (
     <AdminShell
-      title="Categories"
-      description="Manage public catalog categories. Unsafe deletion is blocked."
+      title="Ангилал"
+      description="Каталогийн ангилал, дараалал болон харагдах төлөвийг удирдана."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
-          Add category
+          Ангилал нэмэх
         </button>
       }
     >
       <div className={`${panel} mb-4 p-4`}>
-        <label className="relative block max-w-md">
-          <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-          <input
-            aria-label="Search categories"
-            className={`${input} pl-10`}
+        <div className="max-w-md">
+          <SearchInput
+            label="Ангилал хайх"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name or slug"
+            onChange={setSearch}
+            placeholder="Нэр эсвэл slug-аар хайх"
           />
-        </label>
+        </div>
       </div>
       {error && (
         <div className="mb-4">
@@ -120,22 +126,25 @@ export function AdminCategoriesPage() {
       {items === null ? (
         <LoadingPanel />
       ) : items.length === 0 ? (
-        <EmptyPanel title="No categories match this search" />
+        <EmptyPanel title="Хайлтад тохирох ангилал олдсонгүй" />
       ) : (
         <div className={`${panel} overflow-hidden`}>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[620px] text-left text-sm">
               <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="p-4">Category</th>
-                  <th>Products</th>
-                  <th>Status</th>
-                  <th className="pr-4 text-right">Actions</th>
+                  <th className="p-4">Ангилал</th>
+                  <th>Бүтээгдэхүүн</th>
+                  <th>Төлөв</th>
+                  <th className="pr-4 text-right">Үйлдэл</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr key={item.id} className="border-t border-slate-100">
+                  <tr
+                    key={item.id}
+                    className="border-t border-slate-100 transition hover:bg-slate-50/70"
+                  >
                     <td className="p-4">
                       <div className="font-bold text-slate-900">{item.name}</div>
                       <div className="text-xs text-slate-400">/{item.slug}</div>
@@ -143,21 +152,21 @@ export function AdminCategoriesPage() {
                     <td>{item.productCount}</td>
                     <td>
                       <StatusBadge tone={item.active ? 'success' : 'neutral'}>
-                        {item.active ? 'Active' : 'Inactive'}
+                        {item.active ? 'Идэвхтэй' : 'Идэвхгүй'}
                       </StatusBadge>
                     </td>
                     <td className="pr-4 text-right">
                       <button
                         onClick={() => open(item)}
                         className="p-2 text-slate-500 hover:text-brand-500"
-                        aria-label={`Edit ${item.name}`}
+                        aria-label={`${item.name} засах`}
                       >
                         <Pencil size={17} />
                       </button>
                       <button
                         onClick={() => setRemove(item)}
                         className="p-2 text-slate-500 hover:text-rose-600"
-                        aria-label={`Delete ${item.name}`}
+                        aria-label={`${item.name} устгах`}
                       >
                         <Trash2 size={17} />
                       </button>
@@ -171,7 +180,7 @@ export function AdminCategoriesPage() {
       )}
       {editing !== undefined && (
         <Dialog
-          title={editing ? 'Edit category' : 'Add category'}
+          title={editing ? 'Ангилал засах' : 'Ангилал нэмэх'}
           onClose={() => setEditing(undefined)}
         >
           <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
@@ -180,7 +189,7 @@ export function AdminCategoriesPage() {
                 <ErrorNotice message={error} />
               </div>
             )}
-            <Field label="Name">
+            <Field label="Нэр">
               <input
                 required
                 className={input}
@@ -197,7 +206,7 @@ export function AdminCategoriesPage() {
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
               />
             </Field>
-            <Field label="Sort order">
+            <Field label="Эрэмбэ">
               <AdminNumberInput
                 min="0"
                 className={input}
@@ -205,7 +214,7 @@ export function AdminCategoriesPage() {
                 onValueChange={(sortOrder) => setForm({ ...form, sortOrder: sortOrder ?? 0 })}
               />
             </Field>
-            <Field label="Description" wide>
+            <Field label="Тайлбар" wide>
               <textarea
                 className={input}
                 rows={4}
@@ -219,7 +228,7 @@ export function AdminCategoriesPage() {
                 checked={form.active}
                 onChange={(e) => setForm({ ...form, active: e.target.checked })}
               />
-              Active in public catalog
+              Нийтийн каталогт идэвхтэй
             </label>
             <div className="flex justify-end gap-2 sm:col-span-2">
               <button
@@ -227,29 +236,29 @@ export function AdminCategoriesPage() {
                 className={secondaryButton}
                 onClick={() => setEditing(undefined)}
               >
-                Cancel
+                Цуцлах
               </button>
               <button disabled={saving} className={primaryButton}>
-                {saving ? 'Saving…' : 'Save category'}
+                {saving ? 'Хадгалж байна…' : 'Ангилал хадгалах'}
               </button>
             </div>
           </form>
         </Dialog>
       )}
       {remove && (
-        <Dialog title="Delete category?" onClose={() => setRemove(null)}>
+        <Dialog title="Ангилал устгах уу?" onClose={() => setRemove(null)}>
           <p className="text-sm text-slate-600">
-            Delete <strong>{remove.name}</strong>? This works only when the category is unused.
+            <strong>{remove.name}</strong> ангилал ашиглагдаагүй үед л устгагдана.
           </p>
           <div className="mt-6 flex justify-end gap-2">
             <button className={secondaryButton} onClick={() => setRemove(null)}>
-              Cancel
+              Цуцлах
             </button>
             <button
               className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white"
               onClick={() => void confirmDelete()}
             >
-              Delete
+              Устгах
             </button>
           </div>
         </Dialog>

@@ -39,7 +39,7 @@ export function AddressList() {
     }
   }
   async function remove(address: Address) {
-    if (!window.confirm(`“${address.label}” хаягийг устгах уу?`)) return;
+    if (!window.confirm(`“${address.addressLine}” хаягийг устгах уу?`)) return;
     setBusy(true);
     try {
       await deleteAddress(address.id);
@@ -78,22 +78,20 @@ export function AddressList() {
         <article key={address.id} className="min-w-0 rounded-2xl border border-neutral-200 p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="font-semibold text-neutral-800">
-                {address.label}{' '}
-                {address.defaultAddress ? (
-                  <span className="ml-2 rounded-full bg-brand-50 px-2 py-1 text-xs text-brand-600">
-                    Үндсэн
-                  </span>
-                ) : null}
-              </h2>
-              <p className="mt-2 break-words text-sm leading-6 text-neutral-600">
+              {address.defaultAddress ? (
+                <span className="rounded-full bg-brand-50 px-2 py-1 text-xs font-semibold text-brand-600">
+                  Үндсэн хаяг
+                </span>
+              ) : null}
+              <p className="mt-2 break-words font-medium leading-6 text-neutral-800">
                 {address.cityOrProvince}, {address.districtOrSoum},{' '}
                 {address.khorooOrBag ? `${address.khorooOrBag}, ` : ''}
                 {address.addressLine}
               </p>
-              <p className="mt-1 text-sm text-neutral-500">
-                {address.recipientName} · {address.recipientPhone}
-              </p>
+              {address.additionalDetails ? (
+                <p className="mt-1 text-sm text-neutral-500">{address.additionalDetails}</p>
+              ) : null}
+              <p className="mt-1 text-sm text-neutral-500">{address.recipientPhone}</p>
             </div>
             <div className="flex gap-2">
               <button

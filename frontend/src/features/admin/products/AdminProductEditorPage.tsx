@@ -19,6 +19,11 @@ import { AdminNumberInput } from '../components/AdminNumberInput';
 type ImageDraft = ProductInput['images'][number];
 type DiscountMode = 'PERCENTAGE' | 'PRICE';
 const MAX_PRODUCT_IMAGES = 6;
+const visibilityOptions = [
+  ['active', 'Харагдах'],
+  ['featured', 'Онцлох'],
+  ['newProduct', 'Шинэ бүтээгдэхүүн'],
+] as const;
 
 function discountedPriceFromPercentage(basePrice: number, percentage: number | null) {
   if (basePrice <= 0 || percentage === null || percentage <= 0 || percentage > 100) return null;
@@ -66,12 +71,14 @@ export function AdminProductEditorPage() {
   const batchInput = useRef<HTMLInputElement>(null);
   const batchInputId = useId();
   useEffect(() => {
+    let active = true;
     void Promise.all([
       api.listCategories(),
       api.listBrands(),
       editId ? api.getProduct(editId) : Promise.resolve(null),
     ])
       .then(([c, b, p]) => {
+        if (!active) return;
         setCategories(c);
         setBrands(b);
         if (p) {
@@ -103,9 +110,14 @@ export function AdminProductEditorPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError('The product could not be loaded.');
-        setLoading(false);
+        if (active) {
+          setError('Бүтээгдэхүүний мэдээллийг уншиж чадсангүй.');
+          setLoading(false);
+        }
       });
+    return () => {
+      active = false;
+    };
   }, [editId]);
   const calculatedPercentage = percentageFromDiscountedPrice(form.basePrice, form.discountPrice);
   const discount = {
@@ -179,38 +191,36 @@ export function AdminProductEditorPage() {
     if (selected.length === 0) return;
     const available = MAX_PRODUCT_IMAGES - form.images.length;
     if (selected.length > available) {
-      setError(`You can add ${available} more product photo${available === 1 ? '' : 's'}.`);
+      setError(`Нэмж ${available} бүтээгдэхүүний зураг оруулах боломжтой.`);
       return;
     }
     if (selected.some((file) => !['image/jpeg', 'image/png'].includes(file.type))) {
-      setError('Choose only JPEG or PNG product photos.');
+      setError('Зөвхөн JPEG эсвэл PNG бүтээгдэхүүний зураг сонгоно уу.');
       return;
     }
     setError('');
     setBatchUploading(true);
     setPendingUploads((value) => value + 1);
     try {
-      for (const file of selected) {
-        const asset = await api.uploadMediaImage(file, 'PRODUCT');
-        setForm((current) => {
-          if (current.images.length >= MAX_PRODUCT_IMAGES) return current;
-          const nextIndex = current.images.length;
-          return {
-            ...current,
-            images: [
-              ...current.images,
-              {
-                imageUrl: asset.url,
-                altText: '',
-                sortOrder: nextIndex,
-                primaryImage: nextIndex === 0,
-              },
-            ],
-          };
-        });
+      const results = await Promise.allSettled(
+        selected.map((file) => api.uploadMediaImage(file, 'PRODUCT'))
+      );
+      const uploaded = results.flatMap((result) =>
+        result.status === 'fulfilled' ? [result.value.url] : []
+      );
+      setForm((current) => {
+        const availableSlots = MAX_PRODUCT_IMAGES - current.images.length;
+        const additions = uploaded.slice(0, availableSlots).map((imageUrl, index) => ({
+          imageUrl,
+          altText: '',
+          sortOrder: current.images.length + index,
+          primaryImage: current.images.length === 0 && index === 0,
+        }));
+        return { ...current, images: [...current.images, ...additions] };
+      });
+      if (results.some((result) => result.status === 'rejected')) {
+        setError('Зарим зургийг байршуулж чадсангүй. Амжилттай зургууд хадгалагдлаа.');
       }
-    } catch {
-      setError('Some product photos could not be uploaded. Completed photos are kept.');
     } finally {
       setBatchUploading(false);
       setPendingUploads((value) => Math.max(0, value - 1));
@@ -219,7 +229,7 @@ export function AdminProductEditorPage() {
   const save = async (lifecycle: ProductLifecycle) => {
     setError('');
     if (pendingUploads > 0) {
-      setError('Wait for every image upload to finish before saving.');
+      setError('Бүх зураг байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     setSaving(true);
@@ -229,22 +239,22 @@ export function AdminProductEditorPage() {
       discountPrice: discountEnabled ? form.discountPrice : null,
     };
     if (discountEnabled && payload.discountPrice === null) {
-      setError('Enter a valid discount percentage or discounted price.');
+      setError('Зөв хөнгөлөлтийн хувь эсвэл хямдарсан үнэ оруулна уу.');
       setSaving(false);
       return;
     }
     if (payload.basePrice < 0 || (payload.discountPrice !== null && payload.discountPrice < 0)) {
-      setError('Prices cannot be negative.');
+      setError('Үнэ сөрөг байж болохгүй.');
       setSaving(false);
       return;
     }
     if (payload.discountPrice !== null && payload.discountPrice >= payload.basePrice) {
-      setError('Discount price must be lower than base price.');
+      setError('Хямдарсан үнэ үндсэн үнээс бага байх ёстой.');
       setSaving(false);
       return;
     }
     if (payload.stockQuantity < 0 || payload.lowStockThreshold < 0) {
-      setError('Inventory values cannot be negative.');
+      setError('Нөөцийн утга сөрөг байж болохгүй.');
       setSaving(false);
       return;
     }
@@ -253,7 +263,7 @@ export function AdminProductEditorPage() {
       payload.active &&
       payload.images.filter((i) => i.primaryImage).length !== 1
     ) {
-      setError('Publishing requires exactly one primary image.');
+      setError('Нийтлэхийн тулд яг нэг үндсэн зураг сонгоно уу.');
       setSaving(false);
       return;
     }
@@ -262,7 +272,7 @@ export function AdminProductEditorPage() {
       else await api.createProduct(payload);
       navigate('/admin/products');
     } catch {
-      setError('The product could not be saved. Check pricing, inventory, and image rules.');
+      setError('Бүтээгдэхүүнийг хадгалж чадсангүй. Үнэ, нөөц болон зургийн мэдээллийг шалгана уу.');
     } finally {
       setSaving(false);
     }
@@ -278,40 +288,40 @@ export function AdminProductEditorPage() {
       await api.archiveProduct(editId);
       navigate('/admin/products');
     } catch {
-      setError('The product could not be archived.');
+      setError('Бүтээгдэхүүнийг архивлаж чадсангүй.');
     } finally {
       setSaving(false);
     }
   };
   if (loading)
     return (
-      <AdminShell title="Product editor">
+      <AdminShell title="Бүтээгдэхүүний редактор">
         <LoadingPanel />
       </AdminShell>
     );
   return (
     <AdminShell
-      title={editId ? 'Edit product' : 'Add product'}
-      description="Upload up to six JPEG or PNG images. Publishing requires one primary image."
+      title={editId ? 'Бүтээгдэхүүн засах' : 'Бүтээгдэхүүн нэмэх'}
+      description="Зургаа хүртэл JPEG эсвэл PNG зураг оруулж, нэг үндсэн зураг сонгоно."
       actions={
         <button className={secondaryButton} onClick={() => navigate('/admin/products')}>
-          Cancel
+          Цуцлах
         </button>
       }
     >
       <form onSubmit={submit} className="space-y-5">
         {error && <ErrorNotice message={error} />}
         <section className={`${panel} p-5 sm:p-6`}>
-          <h2 className="mb-5 text-lg font-black">1. Product information</h2>
+          <h2 className="mb-5 text-lg font-black">1. Бүтээгдэхүүний мэдээлэл</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Category">
+            <Field label="Ангилал">
               <select
                 required
                 className={input}
                 value={form.categoryId || ''}
                 onChange={(e) => set('categoryId', Number(e.target.value))}
               >
-                <option value="">Select category</option>
+                <option value="">Ангилал сонгох</option>
                 {categories.map((c) => (
                   <option value={c.id} key={c.id}>
                     {c.name}
@@ -319,13 +329,13 @@ export function AdminProductEditorPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Brand">
+            <Field label="Брэнд">
               <select
                 className={input}
                 value={form.brandId ?? ''}
                 onChange={(e) => set('brandId', e.target.value ? Number(e.target.value) : null)}
               >
-                <option value="">No brand</option>
+                <option value="">Брэндгүй</option>
                 {brands.map((b) => (
                   <option value={b.id} key={b.id}>
                     {b.name}
@@ -333,7 +343,7 @@ export function AdminProductEditorPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Product name">
+            <Field label="Бүтээгдэхүүний нэр">
               <input
                 required
                 className={input}
@@ -341,7 +351,7 @@ export function AdminProductEditorPage() {
                 onChange={(e) => set('name', e.target.value)}
               />
             </Field>
-            <Field label="Description" wide>
+            <Field label="Тайлбар" wide>
               <textarea
                 rows={6}
                 className={input}
@@ -352,9 +362,9 @@ export function AdminProductEditorPage() {
           </div>
         </section>
         <section className={`${panel} p-5 sm:p-6`}>
-          <h2 className="mb-5 text-lg font-black">2. Price information</h2>
+          <h2 className="mb-5 text-lg font-black">2. Үнийн мэдээлэл</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Base price">
+            <Field label="Үндсэн үнэ">
               <AdminNumberInput
                 required
                 min="0"
@@ -370,13 +380,13 @@ export function AdminProductEditorPage() {
                 checked={discountEnabled}
                 onChange={(e) => toggleDiscount(e.target.checked)}
               />
-              This product has a discount
+              Энэ бүтээгдэхүүн хөнгөлөлттэй
             </label>
             {discountEnabled && (
               <div className="space-y-4 rounded-xl border border-slate-200 p-4 sm:col-span-2">
                 <fieldset>
                   <legend className="mb-2 text-sm font-bold text-slate-700">
-                    Enter discount as
+                    Хөнгөлөлт оруулах хэлбэр
                   </legend>
                   <div className="flex flex-wrap gap-4 text-sm font-semibold">
                     <label className="flex items-center gap-2">
@@ -386,7 +396,7 @@ export function AdminProductEditorPage() {
                         checked={discountMode === 'PERCENTAGE'}
                         onChange={() => selectDiscountMode('PERCENTAGE')}
                       />
-                      Percentage
+                      Хувиар
                     </label>
                     <label className="flex items-center gap-2">
                       <input
@@ -395,13 +405,13 @@ export function AdminProductEditorPage() {
                         checked={discountMode === 'PRICE'}
                         onChange={() => selectDiscountMode('PRICE')}
                       />
-                      Discounted price
+                      Хямдарсан үнээр
                     </label>
                   </div>
                 </fieldset>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {discountMode === 'PERCENTAGE' ? (
-                    <Field label="Discount percentage">
+                    <Field label="Хөнгөлөлтийн хувь">
                       <AdminNumberInput
                         min="0.01"
                         max="100"
@@ -413,7 +423,7 @@ export function AdminProductEditorPage() {
                       />
                     </Field>
                   ) : (
-                    <Field label="Discounted price">
+                    <Field label="Хямдарсан үнэ">
                       <AdminNumberInput
                         min="0"
                         step="0.01"
@@ -426,11 +436,11 @@ export function AdminProductEditorPage() {
                   )}
                   <div className="rounded-xl bg-slate-50 p-4 text-sm">
                     <span className="text-slate-500">
-                      {discountMode === 'PERCENTAGE' ? 'Discounted price' : 'Product discount'}
+                      {discountMode === 'PERCENTAGE' ? 'Хямдарсан үнэ' : 'Хөнгөлөлтийн хувь'}
                     </span>
                     <strong className={`float-right ${discount.invalid ? 'text-rose-600' : ''}`}>
                       {discount.invalid
-                        ? 'Enter a valid discount'
+                        ? 'Зөв хөнгөлөлт оруулна уу'
                         : discountMode === 'PERCENTAGE'
                         ? `₮ ${form.discountPrice?.toLocaleString()}`
                         : `${discount.percentage}%`}
@@ -445,14 +455,14 @@ export function AdminProductEditorPage() {
                 checked={form.membershipDiscountEligible}
                 onChange={(e) => set('membershipDiscountEligible', e.target.checked)}
               />
-              Membership discount eligible
+              Гишүүнчлэлийн хөнгөлөлт үйлчилнэ
             </label>
           </div>
         </section>
         <section className={`${panel} p-5 sm:p-6`}>
-          <h2 className="mb-5 text-lg font-black">3. Inventory and visibility</h2>
+          <h2 className="mb-5 text-lg font-black">3. Нөөц ба харагдах байдал</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Stock quantity">
+            <Field label="Үлдэгдэл тоо">
               <AdminNumberInput
                 min="0"
                 className={input}
@@ -460,7 +470,7 @@ export function AdminProductEditorPage() {
                 onValueChange={(stockQuantity) => set('stockQuantity', stockQuantity ?? 0)}
               />
             </Field>
-            <Field label="Low-stock threshold">
+            <Field label="Нөөц багассаны босго">
               <AdminNumberInput
                 min="0"
                 className={input}
@@ -470,30 +480,26 @@ export function AdminProductEditorPage() {
                 }
               />
             </Field>
-            <Field label="Lifecycle">
+            <Field label="Нийтлэлийн төлөв">
               <select
                 className={input}
                 value={form.lifecycle}
                 onChange={(e) => set('lifecycle', e.target.value as ProductLifecycle)}
               >
-                <option>DRAFT</option>
-                <option>ACTIVE</option>
-                <option>ARCHIVED</option>
+                <option value="DRAFT">Ноорог</option>
+                <option value="ACTIVE">Нийтэлсэн</option>
+                <option value="ARCHIVED">Архивласан</option>
               </select>
             </Field>
             <div className="grid grid-cols-2 gap-2 text-sm">
-              {(['active', 'featured', 'newProduct'] as const).map((key) => (
+              {visibilityOptions.map(([key, label]) => (
                 <label key={key} className="flex items-center gap-2 rounded-xl border p-3">
                   <input
                     type="checkbox"
                     checked={form[key]}
                     onChange={(e) => set(key, e.target.checked)}
                   />
-                  {key === 'active'
-                    ? 'Visible'
-                    : key === 'newProduct'
-                    ? 'New product'
-                    : key[0].toUpperCase() + key.slice(1)}
+                  {label}
                 </label>
               ))}
             </div>
@@ -501,16 +507,16 @@ export function AdminProductEditorPage() {
         </section>
         <section className={`${panel} p-5 sm:p-6`}>
           <div className="mb-5">
-            <h2 className="text-lg font-black">4. Product images</h2>
+            <h2 className="text-lg font-black">4. Бүтээгдэхүүний зураг</h2>
             <p className="text-xs text-slate-500">
-              Add up to six photos at once, then choose the primary image or change their order.
+              Зургаа хүртэл зураг сонгоод үндсэн зураг болон дарааллыг тохируулна уу.
             </p>
             {form.images.length < MAX_PRODUCT_IMAGES && (
               <div className="mt-3">
                 <input
                   ref={batchInput}
                   id={batchInputId}
-                  aria-label="Add product photos"
+                  aria-label="Бүтээгдэхүүний зураг нэмэх"
                   type="file"
                   multiple
                   className="sr-only"
@@ -525,7 +531,7 @@ export function AdminProductEditorPage() {
                   }`}
                 >
                   <ImagePlus size={16} className="mr-2" />
-                  {batchUploading ? 'Uploading photos…' : 'Add photos'}
+                  {batchUploading ? 'Зураг байршуулж байна…' : 'Зураг нэмэх'}
                 </label>
               </div>
             )}
@@ -534,7 +540,7 @@ export function AdminProductEditorPage() {
             {form.images.map((image, index) => (
               <div key={`${image.imageUrl}-${index}`} className="min-w-0">
                 <ImageUploadControl
-                  label={`Product image ${index + 1}`}
+                  label={`Бүтээгдэхүүний зураг ${index + 1}`}
                   purpose="PRODUCT"
                   value={image.imageUrl}
                   onChange={(url) => setSlot(index, url)}
@@ -544,8 +550,8 @@ export function AdminProductEditorPage() {
                   disabled={saving}
                 />
                 <input
-                  aria-label={`Alt text ${index + 1}`}
-                  placeholder="Alt text"
+                  aria-label={`Зургийн тайлбар ${index + 1}`}
+                  placeholder="Зургийн тайлбар"
                   className={`${input} mt-2`}
                   value={image.altText ?? ''}
                   onChange={(e) => updateImage(index, { altText: e.target.value })}
@@ -558,7 +564,7 @@ export function AdminProductEditorPage() {
                       checked={image.primaryImage}
                       onChange={() => updateImage(index, { primaryImage: true })}
                     />{' '}
-                    Primary image
+                    Үндсэн зураг
                   </label>
                   <div>
                     <button
@@ -566,7 +572,7 @@ export function AdminProductEditorPage() {
                       className="p-2"
                       disabled={index === 0}
                       onClick={() => move(index, -1)}
-                      aria-label="Move image up"
+                      aria-label="Зургийг дээш зөөх"
                     >
                       <ArrowUp size={16} />
                     </button>
@@ -575,7 +581,7 @@ export function AdminProductEditorPage() {
                       className="p-2"
                       disabled={index === form.images.length - 1}
                       onClick={() => move(index, 1)}
-                      aria-label="Move image down"
+                      aria-label="Зургийг доош зөөх"
                     >
                       <ArrowDown size={16} />
                     </button>
@@ -583,7 +589,7 @@ export function AdminProductEditorPage() {
                       type="button"
                       className="p-2 text-rose-500"
                       onClick={() => setSlot(index, '')}
-                      aria-label="Remove image reference"
+                      aria-label="Зургийг устгах"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -599,7 +605,7 @@ export function AdminProductEditorPage() {
             className={secondaryButton}
             onClick={() => navigate('/admin/products')}
           >
-            Cancel
+            Цуцлах
           </button>
           {editId && (
             <button
@@ -608,7 +614,7 @@ export function AdminProductEditorPage() {
               className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-bold text-rose-600"
               onClick={() => void archive()}
             >
-              Archive
+              Архивлах
             </button>
           )}
           <button
@@ -617,7 +623,7 @@ export function AdminProductEditorPage() {
             className={secondaryButton}
             onClick={() => void save('DRAFT')}
           >
-            Save draft
+            Ноорог хадгалах
           </button>
           <button
             type="button"
@@ -625,7 +631,7 @@ export function AdminProductEditorPage() {
             className={primaryButton}
             onClick={() => void save('ACTIVE')}
           >
-            {pendingUploads > 0 ? 'Uploading…' : saving ? 'Saving…' : 'Publish'}
+            {pendingUploads > 0 ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Нийтлэх'}
           </button>
         </section>
       </form>

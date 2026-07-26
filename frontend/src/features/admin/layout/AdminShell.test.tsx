@@ -18,17 +18,21 @@ describe('admin shell', () => {
     render(
       <AuthContext.Provider value={context}>
         <MemoryRouter initialEntries={['/admin']}>
-          <AdminShell title="Dashboard">
+          <AdminShell title="Хяналтын самбар">
             <p>Counts</p>
           </AdminShell>
         </MemoryRouter>
       </AuthContext.Provider>
     );
     expect(screen.getByText('HiLiving')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/admin/orders');
-    expect(screen.getByText('Pages').closest('[aria-disabled="true"]')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Open navigation' }));
-    expect(screen.getByRole('button', { name: 'Close navigation overlay' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Захиалга' })).toHaveAttribute('href', '/admin/orders');
+    expect(screen.getByRole('link', { name: 'Нүүр хуудас руу буцах' })).toHaveAttribute(
+      'href',
+      '/'
+    );
+    expect(screen.getByText('Хуудас').closest('[aria-disabled="true"]')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Цэс нээх' }));
+    expect(screen.getByRole('button', { name: 'Цэсний дэвсгэр хаах' })).toBeInTheDocument();
     expect(screen.getByText('Counts')).toBeInTheDocument();
   });
 
@@ -36,14 +40,14 @@ describe('admin shell', () => {
     render(
       <AuthContext.Provider value={context}>
         <MemoryRouter initialEntries={['/admin/products/new']}>
-          <AdminShell title="Add product">
+          <AdminShell title="Бүтээгдэхүүн нэмэх">
             <p>Editor</p>
           </AdminShell>
         </MemoryRouter>
       </AuthContext.Provider>
     );
 
-    expect(screen.getByRole('link', { name: 'Add product' })).toHaveClass('bg-brand-500');
-    expect(screen.getByRole('link', { name: 'All products' })).not.toHaveClass('bg-brand-500');
+    expect(screen.getByRole('link', { name: 'Бүтээгдэхүүн нэмэх' })).toHaveClass('bg-brand-500');
+    expect(screen.getByRole('link', { name: 'Бүх бүтээгдэхүүн' })).not.toHaveClass('bg-brand-500');
   });
 });

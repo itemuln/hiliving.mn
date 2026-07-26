@@ -5,8 +5,15 @@ import { cartErrorMessage } from '../../cart/cartErrorMessage';
 import { orderStatusLabel, paymentStatusLabel, statusTone } from '../../checkout/orderStatus';
 import type { AdminOrderDetail } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
+import {
+  ErrorNotice,
+  LoadingPanel,
+  panel,
+  primaryButton,
+  secondaryButton,
+} from '../components/AdminUi';
+import { adminMoney } from '../adminLocale';
 
-const money = new Intl.NumberFormat('mn-MN');
 const standardNextStatus: Record<string, string> = {
   CONFIRMED: 'PROCESSING',
   PROCESSING: 'SHIPPED',
@@ -18,6 +25,15 @@ function nextStatus(order: AdminOrderDetail['order']) {
     return 'DELIVERED';
   }
   return standardNextStatus[order.orderStatus];
+}
+
+function nextStatusAction(order: AdminOrderDetail['order']) {
+  const status = nextStatus(order);
+  if (order.deliveryMethod === 'SELF_PICKUP' && status === 'DELIVERED') return 'Хүлээлгэн өгсөн';
+  if (status === 'PROCESSING') return 'Бэлтгэж эхлэх';
+  if (status === 'SHIPPED') return 'Хүргэлтэд гаргах';
+  if (status === 'DELIVERED') return 'Хүргэгдсэн болгох';
+  return null;
 }
 
 export function AdminOrderDetailPage() {
@@ -56,28 +72,28 @@ export function AdminOrderDetailPage() {
 
   return (
     <AdminShell
-      title={orderNumber || 'Order'}
-      description="Order, customer, delivery, and payment details"
+      title={orderNumber || 'Захиалга'}
+      description="Захиалга, хэрэглэгч, хүргэлт болон төлбөрийн дэлгэрэнгүй."
       actions={
-        <Link to="/admin/orders" className="rounded-lg border bg-white px-4 py-2 text-sm">
-          Back to orders
+        <Link to="/admin/orders" className={secondaryButton}>
+          Захиалга руу буцах
         </Link>
       }
     >
       {error ? (
-        <p role="alert" className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700">
-          {error}
-        </p>
+        <div className="mb-4">
+          <ErrorNotice message={error} />
+        </div>
       ) : null}
       {!detail ? (
-        <div className="h-80 animate-pulse rounded-2xl bg-white" aria-label="Order loading" />
+        <LoadingPanel />
       ) : (
         <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-6">
-            <section className="rounded-2xl border bg-white p-6">
+            <section className={`${panel} p-6`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm text-slate-500">Customer</p>
+                  <p className="text-sm text-slate-500">Хэрэглэгч</p>
                   <h2 className="mt-1 font-semibold">{detail.customerName}</h2>
                   <p className="text-sm text-slate-500">{detail.customerEmail}</p>
                 </div>
@@ -99,8 +115,8 @@ export function AdminOrderDetailPage() {
                 </div>
               </div>
             </section>
-            <section className="rounded-2xl border bg-white p-6">
-              <h2 className="font-semibold">Items</h2>
+            <section className={`${panel} p-6`}>
+              <h2 className="font-semibold">Бүтээгдэхүүн</h2>
               <ul className="mt-4 divide-y">
                 {detail.order.items.map((item) => (
                   <li
@@ -110,24 +126,25 @@ export function AdminOrderDetailPage() {
                     <img
                       src={item.primaryImageUrl ?? '/product-cleaner.svg'}
                       alt={item.productName}
+                      loading="lazy"
                       className="h-14 w-14 rounded-lg border object-contain"
                     />
                     <span className="min-w-0 flex-1 text-sm">
                       {item.productName}
                       <small className="block text-slate-400">
-                        {item.quantity} × {money.format(item.unitEffectivePrice)}₮
+                        {item.quantity} × {adminMoney.format(item.unitEffectivePrice)}₮
                       </small>
                     </span>
-                    <strong className="text-sm">{money.format(item.lineTotal)}₮</strong>
+                    <strong className="text-sm">{adminMoney.format(item.lineTotal)}₮</strong>
                   </li>
                 ))}
               </ul>
             </section>
           </div>
           <aside className="space-y-6">
-            <section className="rounded-2xl border bg-white p-6">
+            <section className={`${panel} p-6`}>
               <h2 className="font-semibold">
-                {detail.order.deliveryMethod === 'SELF_PICKUP' ? 'Pickup' : 'Fulfillment'}
+                {detail.order.deliveryMethod === 'SELF_PICKUP' ? 'Өөрөө авах' : 'Хүргэлт'}
               </h2>
               <p className="mt-4 text-sm leading-6 text-slate-600">
                 {detail.order.address.recipientName} · {detail.order.address.recipientPhone}
@@ -146,31 +163,26 @@ export function AdminOrderDetailPage() {
                   type="button"
                   onClick={advance}
                   disabled={busy}
-                  className="mt-5 w-full rounded-xl bg-brand-500 px-4 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                  className={`${primaryButton} mt-5 w-full`}
                 >
-                  {busy
-                    ? 'Updating…'
-                    : detail.order.deliveryMethod === 'SELF_PICKUP' &&
-                      nextStatus(detail.order) === 'DELIVERED'
-                    ? 'Mark collected'
-                    : `Mark ${nextStatus(detail.order)?.toLowerCase()}`}
+                  {busy ? 'Шинэчилж байна…' : nextStatusAction(detail.order)}
                 </button>
               ) : null}
             </section>
-            <section className="rounded-2xl border bg-white p-6">
-              <h2 className="font-semibold">Summary</h2>
+            <section className={`${panel} p-6`}>
+              <h2 className="font-semibold">Төлбөрийн задаргаа</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <dt>Subtotal</dt>
-                  <dd>{money.format(detail.order.effectiveSubtotal)}₮</dd>
+                  <dt>Барааны дүн</dt>
+                  <dd>{adminMoney.format(detail.order.effectiveSubtotal)}₮</dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt>Shipping</dt>
-                  <dd>{money.format(detail.order.shippingTotal)}₮</dd>
+                  <dt>Хүргэлт</dt>
+                  <dd>{adminMoney.format(detail.order.shippingTotal)}₮</dd>
                 </div>
                 <div className="flex justify-between border-t pt-3 text-base font-semibold">
-                  <dt>Total</dt>
-                  <dd>{money.format(detail.order.grandTotal)}₮</dd>
+                  <dt>Нийт</dt>
+                  <dd>{adminMoney.format(detail.order.grandTotal)}₮</dd>
                 </div>
               </dl>
             </section>
