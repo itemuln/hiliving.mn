@@ -9,11 +9,11 @@ const navigation = [
   { label: 'Hiliving MGL', to: '/#hiliving-mgl', section: 'about' },
   { label: 'Брэндүүд', to: '/brands', section: 'brands' },
   { label: 'Мэдээлэл', to: '/news', section: 'news' },
-  { label: 'Холбоо барих', to: '/#contact', section: 'contact' },
+  { label: 'Холбоо барих', to: '/contact', section: 'contact' },
 ] as const;
 
 export function Header() {
-  const { pathname } = useLocation();
+  const { hash, pathname } = useLocation();
   const navigate = useNavigate();
   const auth = useOptionalAuth();
   const state = auth?.state ?? { status: 'anonymous' as const, user: null };
@@ -82,9 +82,12 @@ export function Header() {
               {navigation.map((item) => {
                 const isActive =
                   (item.section === 'categories' &&
-                    (pathname === '/' || pathname.startsWith('/categories'))) ||
+                    ((pathname === '/' && hash !== '#hiliving-mgl') ||
+                      pathname.startsWith('/categories'))) ||
+                  (item.section === 'about' && pathname === '/' && hash === '#hiliving-mgl') ||
                   (item.section === 'brands' && pathname.startsWith('/brands')) ||
-                  (item.section === 'news' && pathname.startsWith('/news'));
+                  (item.section === 'news' && pathname.startsWith('/news')) ||
+                  (item.section === 'contact' && pathname === '/contact');
 
                 return (
                   <Link

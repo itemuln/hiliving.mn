@@ -7,6 +7,8 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 ## Features currently working
 
 - Responsive React/Vite storefront with preserved home, category, brand, product, and news routes
+- Minimal responsive `/contact` page with direct phone, email, office-hours, address, and external map actions
+- Five-item mobile bottom navigation with a compact keyboard-safe text menu and one unambiguous active state
 - Environment-based catalog API configuration with same-origin defaults
 - Typed backend DTO definitions, explicit frontend-domain mapping, centralized fetch/status handling, cancellation, and safe normalized errors
 - Backend-driven home categories, brands, and featured products
@@ -21,6 +23,7 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Cookie-to-header CSRF protection through `XSRF-TOKEN` and `X-XSRF-TOKEN`
 - Auth hydration through `/api/v1/account/me`, protected account routes, safe internal `returnTo`, session-expiry handling, and responsive auth/account header states
 - Customer profile and password updates plus ownership-scoped delivery-address CRUD and transactional default switching
+- Compact account overview with profile editing, inline verified-email state, and unverified-email actions combined in registration information
 - Permanent `REGULAR`, `BRONZE`, `SILVER`, and `GOLD` tiers with default, override, and effective discount display
 - Responsive Mongolian-language admin shell, dashboard counts, catalog CRUD, managed image upload, inventory, orders, users, banners, and news
 - Permanent membership tiers with admin-only assignment, nullable override management, account status control, and address viewing
@@ -52,6 +55,10 @@ No implementation task is active. The failed-QPay-initiation inventory blocker i
 
 ## Latest meaningful changes
 
+- 2026-07-26: Removed the account overview's order-history shortcut, added `Мэдээлэл засах` navigation to Personal Information, reduced the membership card's width/padding/type scale, and replaced the verified-email status block with a small green check beside the email address. Unverified accounts retain their inline resend guidance. All 87 frontend tests, lint, TypeScript, and the production build pass.
+- 2026-07-26: Combined email-verification status and resend behavior with email/phone inside the account overview's registration-information panel, leaving membership and registration details as its two primary cards. Removed the redundant `Шууд холбогдох` heading from the self-explanatory contact actions. All 86 frontend tests, lint, TypeScript, and the production build pass.
+- 2026-07-26: Expanded the mobile bottom navigation with a fifth `Цэс` action that opens a minimal, title-free, arrow-free, focus-contained text sheet for Hiliving MGL, brands, news, and contact while keeping `Ангилал` product-only. The sheet closes through its trigger, backdrop, or Escape without a separate X, and suppresses the underlying route highlight while open so only one action appears selected. Added correct secondary-route active states and made the existing Hiliving MGL hash target functional. All 85 frontend tests, lint, TypeScript, and the production build pass.
+- 2026-07-26: Added a lazy-loaded responsive `/contact` page, changed the primary contact navigation from a home-page footer anchor to the real route, exposed click-to-call/email and external directions actions, and linked the page from the shared footer. Its final presentation uses plain white surfaces, restrained type, and dividers without gradients, decorative effects, or repeated calls to action. All 82 frontend tests, lint, TypeScript, and the production build pass.
 - 2026-07-26: Simplified delivery-address entry by removing customer-facing nickname and recipient-name controls, adding dependent Ulaanbaatar district/khoroo dropdowns plus entrance/apartment inputs, showing phone-only address cards, and stripping postal/Mongolia suffixes from reverse-geocoded fallback text. Backend address and order-snapshot contracts remain unchanged. All 81 frontend tests, lint, TypeScript, and the production build pass.
 - 2026-07-26: Added a lazy-loaded Leaflet delivery-address picker centered on Ulaanbaatar, with explicit OpenStreetMap attribution and one customer-confirmed Mongolian-preferred reverse lookup into the existing editable address fields. The integration requires no Google key or backend schema change and keeps tile/geocoder endpoints configurable. All 77 frontend tests, lint, TypeScript, and the production build pass.
 - 2026-07-26: Added a clearly separated `Нүүр хуудас руу буцах` action to the responsive administration sidebar so administrators can return directly to the storefront from desktop or mobile navigation. All 74 frontend tests, lint, TypeScript, and the production build pass.

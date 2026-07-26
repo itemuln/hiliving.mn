@@ -21,6 +21,9 @@ const NewsPage = lazy(() =>
 const NewsDetailPage = lazy(() =>
   import('./pages/NewsDetailPage').then((module) => ({ default: module.NewsDetailPage }))
 );
+const ContactPage = lazy(() =>
+  import('./pages/ContactPage').then((module) => ({ default: module.ContactPage }))
+);
 const ProductDetailPage = lazy(() =>
   import('./pages/ProductDetailPage').then((module) => ({ default: module.ProductDetailPage }))
 );
@@ -158,6 +161,7 @@ export function App() {
           />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:newsSlug" element={<NewsDetailPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

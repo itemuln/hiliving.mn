@@ -49,6 +49,7 @@ Catalog routes are:
 - `/brands` and `/brands/:brandSlug`
 - `/products/:productSlug`
 - `/news`
+- `/contact`
 - `/cart`
 - `/checkout`
 - `/checkout/payment/:orderNumber`
@@ -57,6 +58,12 @@ Catalog routes are:
 - `/admin/orders` and `/admin/orders/:orderNumber`
 
 Identity and account routes are `/login`, `/register`, `/account`, `/account/profile`, `/account/addresses`, and `/account/security`. Account and checkout routes hydrate through `GET /api/v1/account/me` and distinguish loading, anonymous, and authenticated state. Anonymous checkout navigation is redirected to `/login?returnTo=%2Fcheckout`; only same-origin relative paths are accepted, so a successful login safely returns to checkout without losing the browser cart.
+
+The account overview presents a compact membership summary and registration information as its two primary panels, with the narrower membership panel sized to its content. Registration information owns the customer's email and phone plus direct `Мэдээлэл засах` navigation to `/account/profile`. A verified address displays only a small accessible green check beside the email; unverified accounts render the resend action and response/error feedback below the fields. Order history remains available through the dedicated account navigation instead of a duplicate panel shortcut.
+
+`/contact` is a public, lazy-loaded storefront route using the shared header, footer, container, and mobile navigation. It uses a plain white, divider-based layout without decorative gradients or redundant section labels, renders the existing office address, hours, phone, and email as static presentation data, and provides native `tel:`/`mailto:` actions plus an external Google Maps search link. It deliberately has no inert inquiry form or backend write path.
+
+Mobile storefront navigation reserves the persistent bottom bar for five destinations: Home, product Categories, Cart, Account/Login, and `Цэс`. The menu action opens a compact, visually unlabelled text list containing the lower-frequency Hiliving MGL home anchor, brands, news, and contact routes without row arrows or a separate X control. It locks background scrolling, moves focus into the sheet, contains Tab navigation, closes through Escape, the backdrop, or its persistent trigger, and restores trigger focus. While open, it suppresses the underlying route highlight so only `Цэс` appears selected; secondary routes activate `Цэс` when closed instead of incorrectly marking Home active. `Ангилал` remains exclusively product-category navigation.
 
 Delivery-address creation and editing can lazy-load a Leaflet dialog centered on Ulaanbaatar. The customer pans or clicks to position one marker and explicitly confirms the point before the browser makes one Nominatim reverse-geocoding request; there is no autocomplete, map-movement lookup, or background polling. The returned Mongolian-preferred address is mapped into editable city/address fields plus dependent dropdowns for Ulaanbaatar's nine districts and 204 khoroos. Postal-code and Mongolia-country suffix segments are removed from fallback display addresses. Entrance and apartment values use a structured `Орц: … · Тоот: …` representation inside the compatible additional-details field. The customer UI omits the legacy nickname and recipient-name controls; new requests use a neutral internal address label and the authenticated account name while keeping the editable recipient phone. No coordinates, backend contract, or database schema are added. OpenStreetMap attribution stays visible, and the tile and Nominatim endpoints are replaceable through public `VITE_` configuration for a future owner-operated OSM deployment.
 

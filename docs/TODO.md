@@ -28,6 +28,9 @@
 
 ## Completed
 
+- [x] Compact the account overview, combine email verification with registration information, link profile editing, remove the duplicate orders shortcut, and simplify verified-email/contact presentation.
+- [x] Add a fifth mobile `Цэс` action with a minimal accessible text sheet and one active highlight while keeping product categories isolated under `Ангилал`.
+- [x] Add a minimal responsive public `/contact` route with direct phone, email, office details, maps directions, active primary navigation, and footer discovery without an unsupported inquiry form.
 - [x] Simplify Ulaanbaatar delivery-address entry with dependent district/khoroo dropdowns, entrance/apartment fields, phone-only recipient UI, and cleaned reverse-geocoded fallback text.
 - [x] Add an open-source Leaflet address picker centered on Ulaanbaatar with explicit, policy-limited OpenStreetMap reverse geocoding into the existing delivery-address fields.
 - [x] Add a direct storefront-home action to the desktop and mobile administration sidebar.
