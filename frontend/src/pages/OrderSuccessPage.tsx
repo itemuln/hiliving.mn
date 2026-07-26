@@ -118,6 +118,8 @@ export function OrderSuccessPage() {
                         <img
                           src={item.primaryImageUrl ?? '/product-cleaner.svg'}
                           alt={item.productName}
+                          loading="lazy"
+                          decoding="async"
                           className="h-16 w-16 rounded-lg border object-contain p-1"
                         />
                         <span className="min-w-0 flex-1 text-sm">

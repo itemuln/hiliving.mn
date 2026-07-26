@@ -55,20 +55,48 @@ export function ResetPasswordPage() {
         </p>
       ) : (
         <form onSubmit={submit} className="space-y-5">
-          {error ? <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+          {error ? (
+            <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
           <label className="block text-sm font-medium text-neutral-700">
             Шинэ нууц үг
-            <input className={fieldClass} name="newPassword" type="password" autoComplete="new-password" required minLength={10} maxLength={128} />
+            <input
+              className={fieldClass}
+              name="newPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={10}
+              maxLength={128}
+            />
           </label>
           <label className="block text-sm font-medium text-neutral-700">
             Шинэ нууц үг давтах
-            <input className={fieldClass} name="confirmPassword" type="password" autoComplete="new-password" required minLength={10} maxLength={128} />
+            <input
+              className={fieldClass}
+              name="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={10}
+              maxLength={128}
+            />
           </label>
-          <p className="text-xs leading-5 text-neutral-500">10-аас дээш тэмдэгт, дор хаяж нэг үсэг болон нэг тоо агуулна.</p>
-          <button className={primaryButtonClass} disabled={submitting}>{submitting ? 'Шинэчилж байна…' : 'Нууц үг шинэчлэх'}</button>
+          <p className="text-xs leading-5 text-neutral-500">
+            10-аас дээш тэмдэгт, дор хаяж нэг үсэг болон нэг тоо агуулна.
+          </p>
+          <button className={primaryButtonClass} disabled={submitting}>
+            {submitting ? 'Шинэчилж байна…' : 'Нууц үг шинэчлэх'}
+          </button>
         </form>
       )}
-      <p className="mt-5 text-center text-sm"><Link className="font-medium text-brand-600 hover:underline" to="/login">Нэвтрэх рүү буцах</Link></p>
+      <p className="mt-5 text-center text-sm">
+        <Link className="font-medium text-brand-600 hover:underline" to="/login">
+          Нэвтрэх рүү буцах
+        </Link>
+      </p>
     </AuthPageShell>
   );
 }

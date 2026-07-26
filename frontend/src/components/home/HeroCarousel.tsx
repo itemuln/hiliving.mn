@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, useReducedMotion } from 'motion/react';
@@ -73,11 +73,12 @@ function HeroCarouselComponent() {
     0,
     initialSession.banners.findIndex((banner) => banner.id === initialSession.selectedBannerId)
   );
-  const autoplay = useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: false, stopOnMouseEnter: true })
+  const autoplay = useMemo(
+    () => Autoplay({ delay: 5000, stopOnInteraction: false, stopOnMouseEnter: true }),
+    []
   );
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex: initialSelectedIndex }, [
-    autoplay.current,
+    autoplay,
   ]);
   const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -111,10 +112,10 @@ function HeroCarouselComponent() {
 
   useEffect(() => {
     if (shouldReduceMotion) {
-      autoplay.current.stop();
+      autoplay.stop();
       setIsPlaying(false);
     }
-  }, [shouldReduceMotion]);
+  }, [autoplay, shouldReduceMotion]);
 
   useEffect(() => {
     if (banners.length > 0 && shouldAnimateEntrance) {
@@ -124,9 +125,9 @@ function HeroCarouselComponent() {
 
   const toggleAutoplay = () => {
     if (isPlaying) {
-      autoplay.current.stop();
+      autoplay.stop();
     } else {
-      autoplay.current.play();
+      autoplay.play();
     }
     setIsPlaying((current) => !current);
   };

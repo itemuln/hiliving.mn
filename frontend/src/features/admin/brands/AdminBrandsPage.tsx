@@ -148,6 +148,8 @@ export function AdminBrandsPage() {
                             className="h-10 w-10 rounded-lg border object-contain"
                             src={item.logoUrl}
                             alt=""
+                            loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <div className="h-10 w-10 rounded-lg bg-slate-100" />

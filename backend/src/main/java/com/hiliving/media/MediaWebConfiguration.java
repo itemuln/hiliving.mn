@@ -1,6 +1,7 @@
 package com.hiliving.media;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -19,6 +20,6 @@ class MediaWebConfiguration implements WebMvcConfigurer {
         if (!location.endsWith("/")) location += "/";
         registry.addResourceHandler("/media/**")
                 .addResourceLocations(location)
-                .setCachePeriod((int) Duration.ofDays(30).toSeconds());
+                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable());
     }
 }

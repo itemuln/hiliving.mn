@@ -28,7 +28,15 @@ function renderPage(element: React.ReactNode, entry: string) {
     <MemoryRouter initialEntries={[entry]}>
       <AuthContext.Provider value={authContext}>
         <Routes>
-          <Route path="*" element={<>{element}<LocationProbe /></>} />
+          <Route
+            path="*"
+            element={
+              <>
+                {element}
+                <LocationProbe />
+              </>
+            }
+          />
         </Routes>
       </AuthContext.Provider>
     </MemoryRouter>
@@ -44,11 +52,16 @@ afterEach(() => {
 describe('account recovery pages', () => {
   it('shows the same accepted forgot-password message without account disclosure', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(accountJson({ data: { message: 'generic' } })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(accountJson({ data: { message: 'generic' } }))
+    );
     renderPage(<ForgotPasswordPage />, '/forgot-password');
     fireEvent.change(screen.getByLabelText('Имэйл'), { target: { value: 'missing@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Сэргээх заавар авах' }));
-    expect(await screen.findByRole('status')).toHaveTextContent('Хэрэв энэ имэйлээр бүртгэл байгаа бол');
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'Хэрэв энэ имэйлээр бүртгэл байгаа бол'
+    );
     expect(screen.queryByText(/бүртгэл олдсон/i)).not.toBeInTheDocument();
   });
 
@@ -57,19 +70,30 @@ describe('account recovery pages', () => {
     const fetchMock = vi.fn().mockResolvedValue(accountJson({ data: { message: 'done' } }));
     vi.stubGlobal('fetch', fetchMock);
     renderPage(<ResetPasswordPage />, '/reset-password?token=sensitive-token-value');
-    await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('/reset-password'));
+    await waitFor(() =>
+      expect(screen.getByTestId('location')).toHaveTextContent('/reset-password')
+    );
     expect(screen.getByTestId('location')).not.toHaveTextContent('token=');
-    fireEvent.change(screen.getByLabelText('Шинэ нууц үг'), { target: { value: 'NewPassword123' } });
-    fireEvent.change(screen.getByLabelText('Шинэ нууц үг давтах'), { target: { value: 'NewPassword123' } });
+    fireEvent.change(screen.getByLabelText('Шинэ нууц үг'), {
+      target: { value: 'NewPassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('Шинэ нууц үг давтах'), {
+      target: { value: 'NewPassword123' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Нууц үг шинэчлэх' }));
     expect(await screen.findByRole('status')).toHaveTextContent('амжилттай шинэчлэгдлээ');
-    expect(fetchMock).toHaveBeenCalledWith('/api/v1/auth/password-reset/confirm',
-      expect.objectContaining({ body: expect.stringContaining('sensitive-token-value') }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/v1/auth/password-reset/confirm',
+      expect.objectContaining({ body: expect.stringContaining('sensitive-token-value') })
+    );
   });
 
   it('confirms verification automatically, removes the query token, and refreshes account state', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(accountJson({ data: { message: 'verified' } })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(accountJson({ data: { message: 'verified' } }))
+    );
     renderPage(<VerifyEmailPage />, '/verify-email?token=verification-token-value');
     expect(await screen.findByText('Имэйл хаяг амжилттай баталгаажлаа.')).toBeInTheDocument();
     expect(screen.getByTestId('location')).toHaveTextContent('/verify-email');
@@ -79,11 +103,22 @@ describe('account recovery pages', () => {
 
   it('shows a safe combined invalid, expired, or used reset-link error', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(accountJson({ error: { code: 'PASSWORD_RESET_TOKEN_INVALID' } }, 400)));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(accountJson({ error: { code: 'PASSWORD_RESET_TOKEN_INVALID' } }, 400))
+    );
     renderPage(<ResetPasswordPage />, '/reset-password?token=used-token-value');
-    fireEvent.change(screen.getByLabelText('Шинэ нууц үг'), { target: { value: 'NewPassword123' } });
-    fireEvent.change(screen.getByLabelText('Шинэ нууц үг давтах'), { target: { value: 'NewPassword123' } });
+    fireEvent.change(screen.getByLabelText('Шинэ нууц үг'), {
+      target: { value: 'NewPassword123' },
+    });
+    fireEvent.change(screen.getByLabelText('Шинэ нууц үг давтах'), {
+      target: { value: 'NewPassword123' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Нууц үг шинэчлэх' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('хүчингүй, хугацаа дууссан эсвэл өмнө ашиглагдсан');
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'хүчингүй, хугацаа дууссан эсвэл өмнө ашиглагдсан'
+    );
   });
 });

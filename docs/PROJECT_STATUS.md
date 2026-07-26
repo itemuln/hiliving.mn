@@ -48,6 +48,8 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Spring Boot 4.1.0 catalog API compiled and tested on Temurin Java 21
 - PostgreSQL 17, Flyway through version 12, Hibernate schema validation, and Testcontainers integration coverage
 - GitHub Actions and Jenkins frontend test stages
+- Weekly Dependabot monitoring for frontend npm and backend Maven dependencies
+- Immutable one-year browser caching for UUID-addressed managed media
 
 ## Current active task
 
@@ -55,6 +57,7 @@ No implementation task is active. The failed-QPay-initiation inventory blocker i
 
 ## Latest meaningful changes
 
+- 2026-07-26: Completed a security, performance, and React-quality hardening pass. Patched PostgreSQL JDBC to 42.7.12 for CVE-2026-54291, updated the ESLint/tooling dependency chain to remove its high-severity advisory, pinned the reviewed React Router version, added weekly npm/Maven dependency monitoring, improved image loading priorities, made UUID media publicly cacheable for one year as immutable content, and removed render-time ref access in shared carousel/dialog code. All 87 frontend tests, lint, TypeScript/production build, all 65 backend tests, media cache-header integration coverage, and diff checks pass. A production-dependency Trivy scan is clean except for the upstream React Router RSC server-action advisory; this BrowserRouter SPA does not use RSC or router actions, so the affected execution path is absent while a patched applicable release is monitored.
 - 2026-07-26: Removed the account overview's order-history shortcut, added `Мэдээлэл засах` navigation to Personal Information, reduced the membership card's width/padding/type scale, and replaced the verified-email status block with a small green check beside the email address. Unverified accounts retain their inline resend guidance. All 87 frontend tests, lint, TypeScript, and the production build pass.
 - 2026-07-26: Combined email-verification status and resend behavior with email/phone inside the account overview's registration-information panel, leaving membership and registration details as its two primary cards. Removed the redundant `Шууд холбогдох` heading from the self-explanatory contact actions. All 86 frontend tests, lint, TypeScript, and the production build pass.
 - 2026-07-26: Expanded the mobile bottom navigation with a fifth `Цэс` action that opens a minimal, title-free, arrow-free, focus-contained text sheet for Hiliving MGL, brands, news, and contact while keeping `Ангилал` product-only. The sheet closes through its trigger, backdrop, or Escape without a separate X, and suppresses the underlying route highlight while open so only one action appears selected. Added correct secondary-route active states and made the existing Hiliving MGL hash target functional. All 85 frontend tests, lint, TypeScript, and the production build pass.
@@ -135,6 +138,7 @@ No implementation task is active. The failed-QPay-initiation inventory blocker i
 - WEBP is deliberately rejected until the Java runtime has a verified decoder/encoder; supported uploads are JPEG and PNG only.
 - EXIF orientation is not normalized, so phone photos must already have display-correct pixel orientation.
 - Existing external image URLs remain readable, but new administration uploads return same-origin `/media/...` URLs. There is no delete/reference-count endpoint yet, so replaced or removed files require a future safe orphan-maintenance job.
+- The installed React Router release is flagged for an RSC server-action CSRF advisory. HiLiving is a client-only `BrowserRouter` SPA with no RSC or router actions, so the vulnerable server execution path is not present; Dependabot must track the first patched compatible release.
 - Local storage and PostgreSQL must be backed up together. Production backup automation and an S3-compatible provider are designed but not implemented.
 - Checkout and order amounts explicitly use MNT, but the older catalog tables still do not store a per-product currency. Product slugs are now backend-generated and stable across normal edits; there is still no redirect or alias policy for a future exceptional slug migration.
 

@@ -457,3 +457,11 @@
 **Decision:** Keep membership as one compact, content-sized primary panel and combine email, phone, verification state, resend action, feedback, and profile-edit navigation in one registration-information panel. Represent a verified email with a small accessible green check directly beside the address; render the embedded status/action boundary only while unverified. Remove the duplicate order-history shortcut because the account navigation already owns that destination. Remove similarly redundant visible headings where contact actions are already self-explanatory.
 
 **Consequences:** The account overview has two proportionate information groups, avoids repeating the customer email or order destination, and retains the existing verification API and error/status behavior. Customers edit registration details through Personal Information. Verified and unverified states remain accessible without changing authentication contracts or backend data.
+
+## 2026-07-26 - Dependency monitoring and immutable media caching
+
+**Context:** A hardening pass found patched frontend tooling dependencies, an upstream React Router advisory limited to RSC server actions, and managed UUID image responses cached for only 30 days despite never being overwritten.
+
+**Decision:** Override Spring Boot's managed PostgreSQL JDBC version with patched 42.7.12 for CVE-2026-54291, upgrade and pin the reviewed lint toolchain, keep React Router 7.18.1 because it fixes older browser/redirect vulnerabilities and the app does not use the newly advised RSC/action path, and monitor npm plus Maven weekly through Dependabot. Treat generated media URLs as immutable content and serve them with a one-year public cache lifetime. Add explicit eager/high priority only to primary above-the-fold images and lazy asynchronous decoding to secondary/list images.
+
+**Consequences:** The development-only dependency advisory is removed, future package fixes are surfaced automatically, and repeat media views avoid unnecessary transfers. `npm audit` remains non-zero until React Router publishes an applicable patched release, but the affected server execution mode is absent from this client-only `BrowserRouter` application. Replacing an image must continue producing a new UUID URL; production NGINX must preserve the same immutable cache policy.

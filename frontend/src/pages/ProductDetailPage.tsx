@@ -93,6 +93,9 @@ export function ProductDetailPage() {
                     <img
                       src={selectedImage || product.imageUrl}
                       alt={product.name}
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
                       className="h-full w-full object-contain"
                     />
                   </div>
@@ -118,6 +121,8 @@ export function ProductDetailPage() {
                           <img
                             src={image.imageUrl}
                             alt={image.altText ?? `${product.name} зураг ${index + 1}`}
+                            loading="lazy"
+                            decoding="async"
                             className="h-full w-full object-contain"
                           />
                         </button>

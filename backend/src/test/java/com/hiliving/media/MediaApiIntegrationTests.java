@@ -118,7 +118,10 @@ class MediaApiIntegrationTests {
     void storedMediaIsPublicReadOnlyAndHasNoDirectoryListing() throws Exception {
         var result = upload(image("news.png", "image/png", "PNG", 40, 25), "NEWS").andExpect(status().isCreated()).andReturn();
         String url = com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.data.url");
-        mvc.perform(get(url)).andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+        mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("image/png"))
+                .andExpect(header().string("Cache-Control", "max-age=31536000, public, immutable"));
         mvc.perform(head(url)).andExpect(status().isOk());
         mvc.perform(get("/media/news/missing.png")).andExpect(status().isNotFound());
         mvc.perform(get("/media/news/")).andExpect(status().isNotFound());

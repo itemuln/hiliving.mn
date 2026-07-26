@@ -96,6 +96,8 @@ export function PaymentPage() {
                       <img
                         src={payment.qrImageDataUrl}
                         alt="QPay төлбөрийн QR код"
+                        loading="eager"
+                        decoding="async"
                         className="aspect-square w-full object-contain"
                       />
                     ) : (
@@ -135,6 +137,8 @@ export function PaymentPage() {
                               <img
                                 src={deeplink.logoUrl}
                                 alt=""
+                                loading="lazy"
+                                decoding="async"
                                 className="h-7 w-7 rounded-md object-contain"
                               />
                             ) : null}

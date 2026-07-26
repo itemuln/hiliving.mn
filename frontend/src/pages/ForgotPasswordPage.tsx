@@ -4,8 +4,7 @@ import { requestPasswordReset } from '../api/accountApi';
 import { authErrorMessage } from '../features/auth/authErrorMessage';
 import { AuthPageShell, fieldClass, primaryButtonClass } from '../features/auth/AuthPageShell';
 
-const acceptedMessage =
-  'Хэрэв энэ имэйлээр бүртгэл байгаа бол нууц үг сэргээх заавар илгээгдлээ.';
+const acceptedMessage = 'Хэрэв энэ имэйлээр бүртгэл байгаа бол нууц үг сэргээх заавар илгээгдлээ.';
 
 export function ForgotPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -35,10 +34,21 @@ export function ForgotPasswordPage() {
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-5">
-          {error ? <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
+          {error ? (
+            <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
           <label className="block text-sm font-medium text-neutral-700">
             Имэйл
-            <input className={fieldClass} name="email" type="email" autoComplete="email" required maxLength={254} />
+            <input
+              className={fieldClass}
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              maxLength={254}
+            />
           </label>
           <button className={primaryButtonClass} disabled={submitting}>
             {submitting ? 'Илгээж байна…' : 'Сэргээх заавар авах'}
@@ -46,7 +56,9 @@ export function ForgotPasswordPage() {
         </form>
       )}
       <p className="mt-5 text-center text-sm">
-        <Link className="font-medium text-brand-600 hover:underline" to="/login">Нэвтрэх рүү буцах</Link>
+        <Link className="font-medium text-brand-600 hover:underline" to="/login">
+          Нэвтрэх рүү буцах
+        </Link>
       </p>
     </AuthPageShell>
   );

@@ -92,6 +92,8 @@ export function CartPage() {
                           <img
                             src={line.primaryImageUrl ?? '/product-cleaner.svg'}
                             alt={line.productName}
+                            loading="lazy"
+                            decoding="async"
                             className="h-full w-full object-contain"
                           />
                         </Link>

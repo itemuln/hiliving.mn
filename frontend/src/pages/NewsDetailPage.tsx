@@ -32,6 +32,9 @@ export function NewsDetailPage() {
                 <img
                   src={article.thumbnailUrl}
                   alt=""
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
                   className="mb-8 aspect-[2/1] w-full rounded-2xl object-cover"
                 />
               )}
