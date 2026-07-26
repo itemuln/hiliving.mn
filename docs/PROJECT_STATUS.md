@@ -2,7 +2,7 @@
 
 ## Current project state
 
-HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot API in `backend/`. Phase 7B/7C is implemented: durable transactional email, email verification, verified-email password recovery, reset-driven session invalidation, and order confirmation/status notifications now extend the Phase 6 commerce foundation.
+HiLiving is a modular monorepo with an independently buildable React/Vite storefront in `frontend/` and a Java 21 Spring Boot API in `backend/`. QPay Merchant V2 checkout, customer order history, administration order management, and the earlier transactional-email/account recovery work now extend the commerce foundation. Environment-only test merchant credentials have successfully created a real QPay invoice with a QR image and 22 bank deeplinks. Failed QPay initiation now atomically cancels the order and restores its inventory exactly once. Production activation still requires owner-controlled credentials, a stable public HTTPS callback origin, and real paid/expiry rehearsals.
 
 ## Features currently working
 
@@ -10,7 +10,7 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Environment-based catalog API configuration with same-origin defaults
 - Typed backend DTO definitions, explicit frontend-domain mapping, centralized fetch/status handling, cancellation, and safe normalized errors
 - Backend-driven home categories, brands, and featured products
-- Backend-driven category and brand pages with URL-based search, controlled sorting, and server pagination
+- Backend-driven category and brand pages with URL-based search, controlled sorting, server pagination, a persistent shared hero, home-style reveal motion, and icon-triggered mobile category switching
 - Complete slug-based product detail with ordered gallery images, SKU, membership-aware pricing, bounded quantities, stock state, add-to-cart, and related products
 - Loading skeletons plus successful, empty, safe error, retry, 400, 404, and backend-unavailable states
 - API-backed active hero banners and published news list/detail content
@@ -22,9 +22,9 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - Auth hydration through `/api/v1/account/me`, protected account routes, safe internal `returnTo`, session-expiry handling, and responsive auth/account header states
 - Customer profile and password updates plus ownership-scoped delivery-address CRUD and transactional default switching
 - Permanent `REGULAR`, `BRONZE`, `SILVER`, and `GOLD` tiers with default, override, and effective discount display
-- Responsive separate admin shell, dashboard counts, catalog CRUD, managed image upload, inventory, users, banners, and news
+- Responsive separate admin shell, dashboard counts, catalog CRUD, managed image upload, inventory, orders, users, banners, and news
 - Permanent membership tiers with admin-only assignment, nullable override management, account status control, and address viewing
-- Product lifecycle, operational active flag, computed inventory state, six-image limit, and membership-discount eligibility controls
+- Product lifecycle, operational visibility flag labeled `Visible` in administration, computed inventory state, six-image limit, and membership-discount eligibility controls
 - Reusable safe admin audit logging for catalog, price, inventory, membership, status, banner, and news changes
 - JPEG/PNG decode-and-reencode processing with purpose-specific limits, safe UUID keys, external filesystem storage, and public read-only `/media/**` delivery
 - Reusable upload controls with picker, drag/drop, progress, preview, replacement, removal, retry, and save blocking while uploads are pending
@@ -33,24 +33,36 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 - News uses automatic publication-date ordering, brands use automatic alphabetical ordering, and category administration omits parent/children controls
 - Admin numeric inputs normalize leading zeros, preserve native step controls, clamp configured bounds on blur, and keep nullable values empty; product discounts are opt-in and can be entered as either a percentage or final discounted price with live conversion
 - Versioned browser cart persistence containing only product slugs and quantities, with duplicate merging, malformed-data recovery, live item counts, and server reconciliation
-- Public backend-authoritative cart quotation in MNT, including catalog discounts, eligible customer membership discounts, configured standard delivery, stock validation, and final totals
-- Protected checkout with safe post-login return, ownership-scoped address selection/creation, cash-on-delivery confirmation, submission locking, and failure-safe cart retention
-- Transactional order creation with immutable item/address/pricing snapshots, row-locked inventory deduction, per-customer idempotency keys, and ownership-scoped order confirmation
-- Explicit initial `PENDING_CONFIRMATION`/`UNPAID` order state plus a payment-provider interface boundary without a real payment integration
+- Public backend-authoritative cart quotation in MNT, including catalog discounts, eligible customer membership discounts, selected delivery method, stock validation, and final totals
+- Protected checkout with safe post-login return, standard-delivery address selection/creation, zero-fee self-pickup with a clearly marked sample collection location, QPay QR/deeplink generation, submission locking, and failure-safe cart retention
+- Transactional order creation with immutable item/address/pricing snapshots, row-locked inventory deduction, per-customer idempotency keys, payment expiry stock restoration, and ownership-scoped order access
+- QPay Merchant V2 token/invoice/check client, durable payment attempts/deeplinks, unguessable callback URLs, server-side amount/currency verification, exact-once order confirmation email, and late-payment reconciliation state
+- Customer order list/detail/payment routes plus ADMIN order list/search/filter/detail and validated fulfillment transitions
 - PostgreSQL email outbox with idempotent event keys, concurrent claiming, processing leases, bounded retry, safe failures, and SMTP delivery disabled by default
 - Hashed, expiring, single-use, purpose-specific verification/reset tokens, protected token-bearing outbox data, and bounded rate limits
 - `/forgot-password`, `/reset-password`, and `/verify-email` routes plus authenticated verification status/resend controls
 - Password-reset session-version invalidation and immutable order email contact snapshots
 - Spring Boot 4.1.0 catalog API compiled and tested on Temurin Java 21
-- PostgreSQL 17, Flyway through version 10, Hibernate schema validation, and Testcontainers integration coverage
+- PostgreSQL 17, Flyway through version 12, Hibernate schema validation, and Testcontainers integration coverage
 - GitHub Actions and Jenkins frontend test stages
 
 ## Current active task
 
-No implementation task is active. Phase 7B/7C implementation and validation are complete.
+No implementation task is active. The failed-QPay-initiation inventory blocker is resolved and its five historical local test orders are repaired. The next P1 verification is one real paid callback/check and one real provider-invoice expiry, followed by stable staging HTTPS.
 
 ## Latest meaningful changes
 
+- 2026-07-26: Kept the current hero banner in per-tab session state, restored it immediately across reloads and storefront route remounts, limited its fade/scale entrance to once per tab session, and eagerly loaded the visible slide. All 74 frontend tests, lint, TypeScript, and the production build pass.
+- 2026-07-26: Added backend-authoritative `SELF_PICKUP` checkout with a 0₮ shipping quote, no customer delivery-address requirement, an immutable sample pickup-location snapshot, pickup-aware customer/admin order detail, and direct processing-to-collected fulfillment. All 65 backend tests, 73 frontend tests, frontend lint, TypeScript, and production build pass.
+- 2026-07-26: Turned the mobile category icon tile into the accessible category-switching button, removed the separate select, and added a scrollable active-state menu with focus/Escape handling; all 72 frontend tests, lint, TypeScript, production build, and 390×844 browser interaction pass.
+- 2026-07-26: Kept the hero carousel mounted across category and brand URL changes, moved internal catalog navigation directly to the product area, and applied the home page's reduced-motion-aware ease-out reveal to catalog content; all 70 frontend tests, lint, TypeScript, production build, and real-browser category-to-brand navigation pass.
+- 2026-07-26: Added QPay Merchant V2 QR/deeplink checkout preparation, verified GET callback reconciliation through `payment/check`, durable payment attempts, expiry stock restoration, customer order history, and administration order list/detail/fulfillment views.
+- 2026-07-26: Corrected the live Merchant V2 invoice response contract to read bank deeplinks from `urls`, then successfully created a real invoice with a QR image and 22 deeplinks while preserving the actual order amount. Exact MNT payment verification and callback semantics remain backend-authoritative.
+- 2026-07-26: Reassessed the full project: all 63 backend tests and packaging passed with Flyway V1-V11 and Hibernate validation; all 65 frontend tests, lint, TypeScript compilation, and the Vite production build passed. The local backend run used JDK 26 with compiler release 21 because this workstation does not currently have a Java 21 runtime; exact Java 21 verification remains required before release.
+- 2026-07-26: Made failed QPay authentication/invoice initiation atomically mark the attempt `FAILED`, cancel the order with payment `FAILED`, restore row-locked inventory, and stamp the release exactly once. Explicit provider failures now rotate the browser idempotency key for a safe fresh order, while network-ambiguous responses retain the original key to avoid duplicates. All 64 backend tests, 67 frontend tests, frontend lint, and the production build pass.
+- 2026-07-26: Repaired the five historical local failed QPay orders in one guarded transaction, restored seven `skincare` units, recorded audits, and verified zero stranded failed orders. The separate valid awaiting-payment invoice was not changed.
+- 2026-07-26: Completed an isolated real-browser checkout rehearsal from registration and address entry through QR/deeplink display, unpaid/paid verification, callback replay, customer history, and ADMIN list/detail. Corrected the checkout's stale cash-on-delivery label and the ADMIN blank-search PostgreSQL query discovered during that rehearsal.
+- 2026-07-23: Renamed the product editor's operational `Active` checkbox to `Visible` without changing its stored field or storefront-visibility behavior.
 - 2026-07-22: Verified the completed admin input/content cleanup with all 59 backend tests, all 64 frontend tests, frontend lint, TypeScript/Vite production build, real-browser interaction checks, and `git diff --check`.
 - 2026-07-22: Removed manual news and brand sort authoring, switched their server ordering to newest-publication and alphabetical rules, removed category parent/children controls, and added dynamic two-photo banner batch upload without unused click-through fields.
 - 2026-07-22: Made catalog discounts optional in the product editor. Enabling the discount checkbox reveals percentage/final-price modes, calculates the corresponding value live, and continues submitting only the backend-compatible nullable discounted price.
@@ -101,11 +113,12 @@ No implementation task is active. Phase 7B/7C implementation and validation are 
 - This workstation already has services on ports 5432 and 8080. Its ignored `.env` uses PostgreSQL 5433, and integration uses Spring Boot 18080. Committed and production defaults remain 5432 and 8080.
 - Direct cross-origin `VITE_API_BASE_URL` values require a deliberately configured backend/API gateway origin policy. No backend CORS configuration is added because local Vite and future NGINX use same-origin `/api` proxying.
 - Frontend API DTOs are manually mirrored from the backend contract; future contract changes must update both sides and their tests together.
-- Inventory is validated and deducted only during order placement; there is no cart-time reservation, reservation expiry, backorder, or cancellation-driven stock restoration yet.
-- Checkout currently supports one `STANDARD_DELIVERY` option with a configurable flat MNT 5,000 default and only `CASH_ON_DELIVERY`. Orders start `UNPAID`; no real payment provider, payment callback, refund, or settlement flow exists.
+- Inventory is validated and deducted during order placement. A successfully created QPay invoice holds that stock until verified payment or confirmed provider-invoice expiry. A failed QPay initiation atomically cancels the order as payment `FAILED` and restores stock under product row locks; the inventory-release timestamp makes repeated cleanup idempotent. There is still no cart-time reservation, backorder, customer/admin cancellation workflow, or refund-driven stock policy.
+- Checkout offers configurable-fee `STANDARD_DELIVERY` and zero-fee `SELF_PICKUP`. The pickup address, hours, and phone are deliberately marked sample data and must be replaced with the owner-confirmed collection location before launch. QPay remains disabled by default in committed configuration and fails explicitly until environment-owned merchant credentials, invoice code, callback URL, and matching provider-side invoice expiry are configured. The current `trycloudflare.com` Quick Tunnel is temporary test infrastructure and is not a production callback origin. Refunds and settlement reporting are not implemented.
+- The repository has a large uncommitted QPay/order-management worktree and local browser-verification artifacts. It requires a focused diff review and clean commit checkpoint after the P1 payment-failure correction; the ignored root `.env` must remain uncommitted.
 - The cart is browser-local and anonymous-capable. It does not synchronize across devices or customer sessions, and server repricing can change or remove lines when stock/catalog state changes.
-- Customer order access is limited to the success/detail endpoint. A narrow ADMIN status-transition endpoint and notifications now exist, but administration order lists/details, cancellation stock restoration, and customer order history remain unimplemented.
-- Variants, reviews, password reset, and verification delivery are not implemented.
+- Customer and administration order list/detail views are implemented. Standard delivery advances through confirmed, processing, shipped, and delivered; self-pickup advances directly from processing to collected/delivered. Cancellation/rejection and refund workflows remain deliberately unavailable until their financial and stock rules are defined.
+- Variants, reviews, Ebarimt receipt issuance, payment refunds, and settlement reporting are not implemented.
 - Password changes keep the current session valid and cannot invalidate other sessions until shared/session-registry infrastructure is deliberately added.
 - WEBP is deliberately rejected until the Java runtime has a verified decoder/encoder; supported uploads are JPEG and PNG only.
 - EXIF orientation is not normalized, so phone photos must already have display-correct pixel orientation.
@@ -115,4 +128,4 @@ No implementation task is active. Phase 7B/7C implementation and validation are 
 
 ## Next recommended step
 
-Implement Phase 7 as administration order management and fulfillment: secure order list/detail views, explicit validated status transitions, cancellation and stock-restoration policy, operational audit events, and customer order history. Keep the existing cash-on-delivery flow while that lifecycle is proven; design provider callbacks, reconciliation, and refunds before connecting a real payment service. Production media provisioning and paired database/upload backup rehearsal remain required before deployment.
+Verify one real payment through callback/check and one real invoice-expiry path without changing the order amount. Before staging, replace the temporary Quick Tunnel with a stable `api.hiliving.mn` HTTPS origin (public NGINX/Let's Encrypt or a named Cloudflare Tunnel), rotate the shared test credential into owner-controlled production credentials, align QPay's expiry with `QPAY_INVOICE_TTL`, and run the backend on an exact Java 21 runtime. Cancellation/refund and Ebarimt 3.0 policies plus production media/database backup rehearsal remain required before launch.

@@ -8,6 +8,7 @@ import com.hiliving.catalog.product.persistence.ProductStatus;
 import com.hiliving.commerce.cart.CartItemRequest;
 import com.hiliving.commerce.cart.CartLineResponse;
 import com.hiliving.commerce.cart.CartQuoteResponse;
+import com.hiliving.commerce.order.DeliveryMethod;
 import com.hiliving.identity.user.persistence.UserEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,25 @@ public class PricingService {
     }
 
     @Transactional(readOnly = true)
-    public CartQuoteResponse quote(List<CartItemRequest> requestedItems, UserEntity customer) {
+    public CartQuoteResponse quote(
+            List<CartItemRequest> requestedItems,
+            UserEntity customer,
+            String deliveryMethodValue
+    ) {
+        DeliveryMethod deliveryMethod;
+        try {
+            deliveryMethod = DeliveryMethod.valueOf(deliveryMethodValue);
+        } catch (RuntimeException exception) {
+            throw error(HttpStatus.BAD_REQUEST, "UNSUPPORTED_DELIVERY_METHOD", "Delivery method is not supported");
+        }
+        return quote(requestedItems, customer, deliveryMethod);
+    }
+
+    public CartQuoteResponse quote(
+            List<CartItemRequest> requestedItems,
+            UserEntity customer,
+            DeliveryMethod deliveryMethod
+    ) {
         if (requestedItems == null || requestedItems.isEmpty()) {
             throw error(HttpStatus.BAD_REQUEST, "CART_EMPTY", "Cart must contain at least one item");
         }
@@ -93,7 +112,9 @@ public class PricingService {
         BigDecimal membershipDiscount = money(membershipDiscountTotal);
         BigDecimal discountTotal = money(catalogDiscount.add(membershipDiscount));
         BigDecimal effectiveSubtotal = money(regular.subtract(discountTotal));
-        BigDecimal shipping = standardShippingFee;
+        BigDecimal shipping = deliveryMethod == DeliveryMethod.SELF_PICKUP
+                ? money(BigDecimal.ZERO)
+                : standardShippingFee;
         return new CartQuoteResponse(
                 List.copyOf(lines), regular, catalogDiscount, membershipDiscount, discountTotal,
                 effectiveSubtotal, shipping, money(effectiveSubtotal.add(shipping)), CURRENCY, true

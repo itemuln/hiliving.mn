@@ -1,4 +1,5 @@
 import type { AuthenticatedUser } from '../auth/auth.types';
+import type { CustomerOrder } from '../checkout/order.types';
 
 export interface DashboardCounts {
   totalProducts: number;
@@ -141,4 +142,22 @@ export interface MediaUpload {
   sizeBytes: number;
   width: number;
   height: number;
+}
+
+export interface AdminOrderSummary {
+  orderNumber: string;
+  placedAt: string;
+  customerName: string;
+  customerEmail: string;
+  orderStatus: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  grandTotal: number;
+  currency: 'MNT';
+}
+
+export interface AdminOrderDetail {
+  customerName: string;
+  customerEmail: string;
+  order: CustomerOrder;
 }

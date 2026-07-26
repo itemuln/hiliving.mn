@@ -2,14 +2,20 @@
 
 ## Active
 
-- No active implementation task. Phase 7B/7C transactional email, verification, and password recovery are implemented and validated.
+- No active implementation task. Failed QPay initiation cleanup and the historical local-data repair are complete; the next P1 work is real paid/expiry verification and stable staging HTTPS.
 
 ## Planned
 
 - [x] **P1 - Phase 4B/7C:** implement email verification and password-reset tokens, expiry, one-time use, abuse protection, session invalidation, and transactional SMTP/outbox delivery. Phone/SMS verification remains out of scope.
-- [ ] **P1 - Phase 7:** add ADMIN-only order list/detail workflows, validated fulfillment/status transitions, operational audit events, and customer order history before enabling the Orders navigation item.
+- [x] **P1 - Phase 7:** add ADMIN-only order list/detail workflows, validated fulfillment/status transitions, operational audit events, and customer order history before enabling the Orders navigation item.
 - [ ] **P1 - Phase 7:** define cancellation, rejection, and stock-restoration rules, including idempotent transitions and concurrency behavior, before allowing order cancellation.
-- [ ] **P1:** design the real payment-provider lifecycle, signed callbacks, reconciliation, settlement, refunds, failure recovery, and secret handling before implementing `PaymentProvider`; retain `UNPAID` cash-on-delivery until then.
+- [x] **P1:** implement the QPay Merchant V2 invoice/check lifecycle with server-verified callbacks, durable attempts, secret-safe configuration, expiry stock restoration, and explicit reconciliation failures. Settlement reporting and refunds remain planned separately.
+- [ ] **P1:** complete one real paid QPay callback/check and one real provider-invoice expiry rehearsal without changing the actual order amount; QR/deeplink creation is already proven against the live Merchant V2 endpoint.
+- [ ] **P1:** replace the testing-only Quick Tunnel with stable `api.hiliving.mn` HTTPS. The owner must choose public NGINX/Let's Encrypt ingress or a named Cloudflare Tunnel and provide the required VPS, Cloudflare, and authoritative DNS access while preserving existing mail records.
+- [ ] **P1:** rotate the shared test credential before production, install only owner-controlled merchant values in the restricted server environment, align provider/application expiry, and keep QPay disabled in committed defaults.
+- [ ] **P1:** install/use an exact Java 21 runtime and repeat the full backend verification before release; the latest local run passed on JDK 26 targeting compiler release 21.
+- [ ] **P1:** replace the deliberately marked self-pickup sample address, business hours, and phone with owner-confirmed production collection details before launch.
+- [ ] **P1:** define Ebarimt 3.0 invoice/receipt timing, tax classification, organization/customer data, retry, and correction policy before connecting the supplied Ebarimt contract.
 - [ ] **P1:** provision the production upload root and NGINX read-only `/media/` alias, then rehearse paired PostgreSQL/filesystem backup and restore before deployment.
 - [ ] **P2:** add reference-aware media deletion/orphan reporting after defining retention and recovery policy; do not delete shared or externally hosted URLs.
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
@@ -22,6 +28,19 @@
 
 ## Completed
 
+- [x] Restore the current hero image across reloads and storefront route remounts, and run its entrance animation only once per tab session.
+- [x] Add backend-authoritative zero-fee self-pickup, omit delivery-address entry for pickup orders, snapshot a sample collection location, and show it in customer/admin order detail.
+- [x] Use the mobile active-category icon tile as the accessible category-switching button and replace the separate select with a bounded route-link menu.
+- [x] Keep the hero carousel mounted across category and brand URL navigation, scroll internal catalog changes to the product area, and reuse the home page's reduced-motion-aware ease-out reveal for collection content.
+- [x] Atomically cancel failed QPay initiations as `CANCELLED`/`FAILED`, restore row-locked inventory exactly once, record an audit, and test safe repeated handling.
+- [x] Generate a fresh checkout idempotency key after explicit terminal QPay initiation errors while retaining the original key for network-ambiguous responses; verify both paths in frontend tests.
+- [x] Repair the five historical local failed QPay orders in one guarded transaction, restore seven stock units, and verify zero stranded failed orders without changing the separate valid awaiting-payment invoice.
+- [x] Add Flyway V11 QPay payment attempts/deeplinks, secure callback-token hashes, Merchant V2 token/invoice/check integration, verified payment confirmation, expiry stock restoration, and reconciliation state.
+- [x] Add QPay QR/deeplink checkout UI, customer order history/detail/payment status, and administration order list/search/filter/detail/fulfillment routes.
+- [x] Cross-check the supplied QPay workbook/Postman contract, correct the live provider deeplink field to `urls`, and validate backend migrations/callback confirmation plus 65 frontend tests, lint, TypeScript, and the production build.
+- [x] Rehearse the simulated/isolated QPay journey in a real browser, including pending/paid checks, callback replay, customer history, and ADMIN visibility; fix the stale checkout label and blank ADMIN search failure found by the rehearsal.
+- [x] Create a real Merchant V2 test invoice with the unchanged order amount and verify that QPay returns a QR image and 22 ordered bank deeplinks.
+- [x] Rename the product editor's operational `Active` checkbox to `Visible` without changing backend behavior.
 - [x] Audit and restructure the repository into independent frontend/backend modules.
 - [x] Create and maintain project-memory documentation.
 - [x] Establish Java 21 Spring Boot, PostgreSQL, Flyway, JPA validation, Actuator, Testcontainers, Compose, and secret-safe environment foundations.

@@ -1,0 +1,105 @@
+- generic [ref=f1e414]:
+  - banner [ref=f1e415]:
+    - generic [ref=f1e416]:
+      - link "Hiliving Mongolia нүүр хуудас" [ref=f1e417] [cursor=pointer]:
+        - /url: /
+        - img "Hiliving Mongolia" [ref=f1e418]
+      - generic [ref=f1e419]:
+        - generic [ref=f1e420]:
+          - generic [ref=f1e421]: QPay
+          - link "Миний бүртгэл" [ref=f1e422] [cursor=pointer]:
+            - /url: /account
+          - button "Гарах" [ref=f1e423] [cursor=pointer]
+        - generic [ref=f1e424]:
+          - navigation "Үндсэн цэс" [ref=f1e425]:
+            - link "Дэлгүүр хэсэх" [ref=f1e426] [cursor=pointer]:
+              - /url: /categories/
+            - link "Hiliving MGL" [ref=f1e427] [cursor=pointer]:
+              - /url: /#hiliving-mgl
+            - link "Брэндүүд" [ref=f1e428] [cursor=pointer]:
+              - /url: /brands
+            - link "Мэдээлэл" [ref=f1e429] [cursor=pointer]:
+              - /url: /news
+            - link "Холбоо барих" [ref=f1e430] [cursor=pointer]:
+              - /url: /#contact
+          - link "Сагс, 0 бараа" [ref=f1e431] [cursor=pointer]:
+            - /url: /cart
+  - main [ref=f1e433]:
+    - article [ref=f1e436]:
+      - paragraph [ref=f1e437]: QPay төлбөр
+      - heading "Захиалгын QR код" [level=1] [ref=f1e438]
+      - paragraph [ref=f1e439]: HL-20260725-5ADB64FD1330
+      - generic [ref=f1e440]:
+        - img "QPay төлбөрийн QR код" [ref=f1e442]
+        - generic [ref=f1e443]:
+          - paragraph [ref=f1e444]: Төлөх дүн
+          - paragraph [ref=f1e445]: 100₮
+          - paragraph [ref=f1e446]: "Хугацаа: Jul 26, 2026, 2:21 AM"
+          - paragraph [ref=f1e447]: Банкны апп-аар QR уншуулах эсвэл доорх апп-аас сонгоно уу.
+          - generic [ref=f1e448]:
+            - link "qPay wallet" [ref=f1e449] [cursor=pointer]:
+              - /url: qpaywallet://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Khan bank" [ref=f1e451] [cursor=pointer]:
+              - /url: khanbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "State bank 3.0" [ref=f1e453] [cursor=pointer]:
+              - /url: statebankmongolia://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Xac bank" [ref=f1e455] [cursor=pointer]:
+              - /url: xacbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Trade and Development bank" [ref=f1e457] [cursor=pointer]:
+              - /url: tdbbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Social Pay" [ref=f1e459] [cursor=pointer]:
+              - /url: socialpay-payment://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Most money" [ref=f1e461] [cursor=pointer]:
+              - /url: most://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "National investment bank" [ref=f1e463] [cursor=pointer]:
+              - /url: nibank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Chinggis khaan bank" [ref=f1e465] [cursor=pointer]:
+              - /url: ckbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Capitron bank" [ref=f1e467] [cursor=pointer]:
+              - /url: capitronbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Bogd bank" [ref=f1e469] [cursor=pointer]:
+              - /url: bogdbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Trans bank" [ref=f1e471] [cursor=pointer]:
+              - /url: transbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "M bank" [ref=f1e473] [cursor=pointer]:
+              - /url: mbank://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Ard App" [ref=f1e475] [cursor=pointer]:
+              - /url: ard://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Toki App" [ref=f1e477] [cursor=pointer]:
+              - /url: toki://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Arig bank" [ref=f1e479] [cursor=pointer]:
+              - /url: arig://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Monpay" [ref=f1e481] [cursor=pointer]:
+              - /url: monpay://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Hipay" [ref=f1e483] [cursor=pointer]:
+              - /url: hipay://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Happy Pay" [ref=f1e485] [cursor=pointer]:
+              - /url: tdbwallet://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Sono" [ref=f1e487] [cursor=pointer]:
+              - /url: sono://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "PayOn" [ref=f1e489] [cursor=pointer]:
+              - /url: payon://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+            - link "Tino" [ref=f1e491] [cursor=pointer]:
+              - /url: tino://q?qPay_QRcode=0002010102121531279404962794049600260712999212427420014A00000084300010220N4ijtBp038v5kY2udyJv52045999530349654031005802MN5919TUGSAMARENKHTUVSHIN6011ULAANBAATAR62240720N4ijtBp038v5kY2udyJv7106QPP_QR78155000932364218937902228002016304D7B5
+          - button "Төлбөр шалгах" [ref=f1e493] [cursor=pointer]
+          - link "Миний захиалгууд" [ref=f1e494] [cursor=pointer]:
+            - /url: /account/orders
+  - contentinfo [ref=f1e495]:
+    - generic [ref=f1e497]:
+      - img "Hiliving Mongolia" [ref=f1e498]
+      - generic [ref=f1e499]:
+        - link "YouTube" [ref=f1e500] [cursor=pointer]:
+          - /url: "#youtube"
+        - link "Instagram" [ref=f1e502] [cursor=pointer]:
+          - /url: "#instagram"
+        - link "Facebook" [ref=f1e504] [cursor=pointer]:
+          - /url: "#facebook"
+    - generic [ref=f1e506]:
+      - generic [ref=f1e507]:
+        - paragraph [ref=f1e508]: "Хаяг: Монгол Улс, Улаанбаатар хот, Хан-Уул дүүрэг, 17 дугаар хороо, Зайсангийн гүүрний урд, “Hiliving Mongolia” төв оффис, 17012"
+        - paragraph [ref=f1e509]: "И-мэйл: info@hilivingmgl.mn"
+        - paragraph [ref=f1e510]: Бүх эрх хуулиар баталгаажсан. ©2026
+      - generic [ref=f1e511]:
+        - paragraph [ref=f1e512]: Даваа – Бямба 10:00 - 20:00
+        - paragraph [ref=f1e513]: Ням амарна.
+        - paragraph [ref=f1e514]: "Утас: 7755-8888"

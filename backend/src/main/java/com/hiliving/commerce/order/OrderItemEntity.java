@@ -61,6 +61,7 @@ public class OrderItemEntity {
     }
 
     public Long getId() { return id; }
+    public ProductEntity getProduct() { return product; }
     public String getProductSlugSnapshot() { return productSlugSnapshot; }
     public String getSkuSnapshot() { return skuSnapshot; }
     public String getProductNameSnapshot() { return productNameSnapshot; }

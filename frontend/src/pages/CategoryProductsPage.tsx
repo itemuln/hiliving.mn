@@ -10,10 +10,6 @@ import { MobileCategoryHeader } from '../components/catalog/MobileCategoryHeader
 import { ProductGrid } from '../components/catalog/ProductGrid';
 import { ProductGridSkeleton } from '../components/catalog/ProductGridSkeleton';
 import { Sidebar } from '../components/catalog/Sidebar';
-import { HeroCarousel } from '../components/home/HeroCarousel';
-import { Footer } from '../components/layout/Footer';
-import { Header } from '../components/layout/Header';
-import { MobileBottomNav } from '../components/layout/MobileBottomNav';
 import { useCategories, useProducts } from '../features/catalog/useCatalog';
 import { useCatalogPageQuery } from '../features/catalog/useCatalogPageQuery';
 
@@ -68,36 +64,28 @@ export function CategoryProductsPage() {
     );
 
   return (
-    <div id="top" className="min-h-screen bg-white">
-      <Header />
-      <main>
-        <HeroCarousel />
-        <CatalogLayout sidebar={navigation} mobileNavigation={mobileNavigation}>
-          <CatalogToolbar search={search} sort={sort} onSearch={setSearch} onSort={setSort} />
-          {categoriesResource.status === 'error' || productsResource.status === 'error' ? (
-            <CatalogErrorState onRetry={retry} />
-          ) : hasUnknownSlug ? (
-            <CatalogEmptyState title="Ангилал олдсонгүй" />
-          ) : categoriesResource.status === 'loading' || productsResource.status === 'loading' ? (
-            <ProductGridSkeleton count={8} />
-          ) : productsResource.data && productsResource.data.items.length > 0 ? (
-            <>
-              <ProductGrid products={productsResource.data.items} variant="category" />
-              <CatalogPagination
-                currentPage={productsResource.data.page + 1}
-                totalPages={productsResource.data.totalPages}
-              />
-            </>
-          ) : (
-            <CatalogEmptyState
-              title="Бүтээгдэхүүн олдсонгүй"
-              description="Хайлтын нөхцөлөө өөрчлөөд дахин оролдоно уу."
-            />
-          )}
-        </CatalogLayout>
-      </main>
-      <Footer />
-      <MobileBottomNav />
-    </div>
+    <CatalogLayout sidebar={navigation} mobileNavigation={mobileNavigation}>
+      <CatalogToolbar search={search} sort={sort} onSearch={setSearch} onSort={setSort} />
+      {categoriesResource.status === 'error' || productsResource.status === 'error' ? (
+        <CatalogErrorState onRetry={retry} />
+      ) : hasUnknownSlug ? (
+        <CatalogEmptyState title="Ангилал олдсонгүй" />
+      ) : categoriesResource.status === 'loading' || productsResource.status === 'loading' ? (
+        <ProductGridSkeleton count={8} />
+      ) : productsResource.data && productsResource.data.items.length > 0 ? (
+        <>
+          <ProductGrid products={productsResource.data.items} variant="category" />
+          <CatalogPagination
+            currentPage={productsResource.data.page + 1}
+            totalPages={productsResource.data.totalPages}
+          />
+        </>
+      ) : (
+        <CatalogEmptyState
+          title="Бүтээгдэхүүн олдсонгүй"
+          description="Хайлтын нөхцөлөө өөрчлөөд дахин оролдоно уу."
+        />
+      )}
+    </CatalogLayout>
   );
 }

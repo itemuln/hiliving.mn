@@ -1,0 +1,110 @@
+- generic [ref=f1e312]:
+  - banner [ref=f1e313]:
+    - generic [ref=f1e314]:
+      - link "Hiliving Mongolia нүүр хуудас" [ref=f1e315] [cursor=pointer]:
+        - /url: /
+        - img "Hiliving Mongolia" [ref=f1e316]
+      - generic [ref=f1e317]:
+        - generic [ref=f1e318]:
+          - generic [ref=f1e319]: QPay
+          - link "Миний бүртгэл" [ref=f1e320] [cursor=pointer]:
+            - /url: /account
+          - button "Гарах" [ref=f1e321] [cursor=pointer]
+        - generic [ref=f1e322]:
+          - navigation "Үндсэн цэс" [ref=f1e323]:
+            - link "Дэлгүүр хэсэх" [ref=f1e324] [cursor=pointer]:
+              - /url: /categories/
+            - link "Hiliving MGL" [ref=f1e325] [cursor=pointer]:
+              - /url: /#hiliving-mgl
+            - link "Брэндүүд" [ref=f1e326] [cursor=pointer]:
+              - /url: /brands
+            - link "Мэдээлэл" [ref=f1e327] [cursor=pointer]:
+              - /url: /news
+            - link "Холбоо барих" [ref=f1e328] [cursor=pointer]:
+              - /url: /#contact
+          - link "Сагс, 1 бараа" [ref=f1e329] [cursor=pointer]:
+            - /url: /cart
+            - generic [ref=f1e331]: "1"
+  - main [ref=f1e332]:
+    - generic [ref=f1e334]:
+      - paragraph [ref=f1e335]: Захиалга баталгаажуулах
+      - heading "Хүргэлт ба төлбөр" [level=1] [ref=f1e336]
+      - generic [ref=f1e337]:
+        - generic [ref=f1e338]:
+          - region [ref=f1e339]:
+            - heading "Хэрэглэгч" [level=2] [ref=f1e340]
+            - paragraph [ref=f1e341]: QPay Test · qpay.real100.20260726@example.com
+          - region [ref=f1e342]:
+            - generic [ref=f1e343]:
+              - heading "Хүргэлтийн хаяг" [level=2] [ref=f1e344]
+              - generic [ref=f1e345]:
+                - link "Засах" [ref=f1e346] [cursor=pointer]:
+                  - /url: /account/addresses
+                - button "Шинэ хаяг" [ref=f1e347] [cursor=pointer]
+            - generic [ref=f1e349] [cursor=pointer]:
+              - radio "Test Ulaanbaatar, Sukhbaatar, QPay 100 test address QPay Test · +97699117727" [checked] [ref=f1e350]
+              - generic [ref=f1e351]:
+                - strong [ref=f1e352]: Test
+                - generic [ref=f1e353]: Ulaanbaatar, Sukhbaatar, QPay 100 test address
+                - generic [ref=f1e354]: QPay Test · +97699117727
+          - generic [ref=f1e355]:
+            - heading "Хүргэлт" [level=2] [ref=f1e356]
+            - generic [ref=f1e357]:
+              - radio "Стандарт хүргэлт 0₮" [checked] [ref=f1e358]
+              - generic [ref=f1e359]:
+                - strong [ref=f1e360]: Стандарт хүргэлт
+                - generic [ref=f1e361]: 0₮
+          - generic [ref=f1e362]:
+            - heading "Төлбөрийн хэлбэр" [level=2] [ref=f1e363]
+            - generic [ref=f1e364]:
+              - radio "QPay-аар төлөх Захиалга хийсний дараа QR код болон банкны аппын холбоос гарна." [checked] [ref=f1e365]
+              - generic [ref=f1e366]:
+                - strong [ref=f1e367]: QPay-аар төлөх
+                - generic [ref=f1e368]: Захиалга хийсний дараа QR код болон банкны аппын холбоос гарна.
+            - generic [ref=f1e369]:
+              - text: Захиалгын тайлбар
+              - textbox "Захиалгын тайлбар" [ref=f1e370]
+        - complementary "Захиалгын хураангуй" [ref=f1e371]:
+          - heading "Захиалгын хураангуй" [level=2] [ref=f1e372]
+          - list [ref=f1e373]:
+            - listitem [ref=f1e374]:
+              - generic [ref=f1e375]: Plant-Based Household Cleaner × 1
+              - generic [ref=f1e376]: 100₮
+          - generic [ref=f1e377]:
+            - generic [ref=f1e378]:
+              - term [ref=f1e379]: Барааны дүн
+              - definition [ref=f1e380]: 100₮
+            - generic [ref=f1e381]:
+              - term [ref=f1e382]: Нийт хөнгөлөлт
+              - definition [ref=f1e383]: −0₮
+            - generic [ref=f1e384]:
+              - term [ref=f1e385]: Хүргэлт
+              - definition [ref=f1e386]: 0₮
+            - generic [ref=f1e387]:
+              - term [ref=f1e388]: Төлөх нийт
+              - definition [ref=f1e389]: 100₮
+          - generic [ref=f1e390]:
+            - checkbox "Захиалгын мэдээлэл болон хүргэлтийн хаяг зөв болохыг баталж байна." [ref=f1e391]
+            - text: Захиалгын мэдээлэл болон хүргэлтийн хаяг зөв болохыг баталж байна.
+          - button "Захиалга хийх" [disabled] [ref=f1e392]
+          - link "Сагс руу буцах" [ref=f1e393] [cursor=pointer]:
+            - /url: /cart
+  - contentinfo [ref=f1e394]:
+    - generic [ref=f1e396]:
+      - img "Hiliving Mongolia" [ref=f1e397]
+      - generic [ref=f1e398]:
+        - link "YouTube" [ref=f1e399] [cursor=pointer]:
+          - /url: "#youtube"
+        - link "Instagram" [ref=f1e401] [cursor=pointer]:
+          - /url: "#instagram"
+        - link "Facebook" [ref=f1e403] [cursor=pointer]:
+          - /url: "#facebook"
+    - generic [ref=f1e405]:
+      - generic [ref=f1e406]:
+        - paragraph [ref=f1e407]: "Хаяг: Монгол Улс, Улаанбаатар хот, Хан-Уул дүүрэг, 17 дугаар хороо, Зайсангийн гүүрний урд, “Hiliving Mongolia” төв оффис, 17012"
+        - paragraph [ref=f1e408]: "И-мэйл: info@hilivingmgl.mn"
+        - paragraph [ref=f1e409]: Бүх эрх хуулиар баталгаажсан. ©2026
+      - generic [ref=f1e410]:
+        - paragraph [ref=f1e411]: Даваа – Бямба 10:00 - 20:00
+        - paragraph [ref=f1e412]: Ням амарна.
+        - paragraph [ref=f1e413]: "Утас: 7755-8888"

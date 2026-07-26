@@ -5,6 +5,10 @@ import com.hiliving.identity.auth.security.UserPrincipal;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import org.springframework.web.bind.annotation.RequestParam;
+import com.hiliving.api.PagedResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
@@ -22,17 +26,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/orders")
 public class OrderController {
     private final OrderService orderService;
+    private final OrderCheckoutService checkoutService;
 
-    public OrderController(OrderService orderService) { this.orderService = orderService; }
+    public OrderController(OrderService orderService, OrderCheckoutService checkoutService) {
+        this.orderService = orderService;
+        this.checkoutService = checkoutService;
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<OrderResponse> place(
+    public ApiResponse<CheckoutResponse> place(
             @AuthenticationPrincipal UserPrincipal principal,
             @RequestHeader("Idempotency-Key") @Size(max = 36) String idempotencyKey,
             @Valid @RequestBody PlaceOrderRequest request
     ) {
-        return ApiResponse.of(orderService.place(principal.id(), idempotencyKey, request));
+        return ApiResponse.of(checkoutService.place(principal.id(), idempotencyKey, request));
+    }
+
+    @GetMapping
+    public ApiResponse<PagedResponse<OrderSummaryResponse>> listOwn(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return ApiResponse.of(orderService.listOwn(principal.id(), page, size));
     }
 
     @GetMapping("/{orderNumber}")

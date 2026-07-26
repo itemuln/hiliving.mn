@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, useReducedMotion } from 'motion/react';
@@ -6,25 +6,99 @@ import { getPublicBanners } from '../../api/contentApi';
 import type { Banner } from '../../features/admin/admin.types';
 import { CarouselControls } from '../ui/CarouselControls';
 
-export function HeroCarousel() {
-  const [banners, setBanners] = useState<Banner[]>([]);
+const heroEntranceState = { opacity: 0.84, scale: 1.006 };
+const heroRestingState = { opacity: 1, scale: 1 };
+const heroEntranceTransition = { duration: 0.35, ease: 'easeOut' as const };
+const heroSessionStorageKey = 'hiliving.hero.v1';
+
+type HeroBanner = Pick<Banner, 'id' | 'title' | 'imageUrl' | 'mobileImageUrl'>;
+
+interface HeroSession {
+  banners: HeroBanner[];
+  selectedBannerId: number | null;
+  hasAnimated: boolean;
+}
+
+const emptyHeroSession = (): HeroSession => ({
+  banners: [],
+  selectedBannerId: null,
+  hasAnimated: false,
+});
+
+const isHeroBanner = (value: unknown): value is HeroBanner => {
+  if (!value || typeof value !== 'object') return false;
+  const banner = value as Record<string, unknown>;
+  return (
+    typeof banner.id === 'number' &&
+    typeof banner.title === 'string' &&
+    typeof banner.imageUrl === 'string' &&
+    (banner.mobileImageUrl === null || typeof banner.mobileImageUrl === 'string')
+  );
+};
+
+const readHeroSession = (): HeroSession => {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(heroSessionStorageKey) ?? 'null') as unknown;
+    if (!parsed || typeof parsed !== 'object') return emptyHeroSession();
+    const session = parsed as Record<string, unknown>;
+    if (!Array.isArray(session.banners) || !session.banners.every(isHeroBanner)) {
+      return emptyHeroSession();
+    }
+    return {
+      banners: session.banners,
+      selectedBannerId:
+        typeof session.selectedBannerId === 'number' ? session.selectedBannerId : null,
+      hasAnimated: session.hasAnimated === true,
+    };
+  } catch {
+    return emptyHeroSession();
+  }
+};
+
+const updateHeroSession = (update: Partial<HeroSession>) => {
+  try {
+    sessionStorage.setItem(
+      heroSessionStorageKey,
+      JSON.stringify({ ...readHeroSession(), ...update })
+    );
+  } catch {
+    // The API remains authoritative when browser storage is unavailable.
+  }
+};
+
+function HeroCarouselComponent() {
+  const [initialSession] = useState(readHeroSession);
+  const [banners, setBanners] = useState<HeroBanner[]>(initialSession.banners);
+  const initialSelectedIndex = Math.max(
+    0,
+    initialSession.banners.findIndex((banner) => banner.id === initialSession.selectedBannerId)
+  );
   const autoplay = useRef(
     Autoplay({ delay: 5000, stopOnInteraction: false, stopOnMouseEnter: true })
   );
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [autoplay.current]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex: initialSelectedIndex }, [
+    autoplay.current,
+  ]);
+  const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
   const [isPlaying, setIsPlaying] = useState(true);
   const shouldReduceMotion = useReducedMotion();
+  const shouldAnimateEntrance = !initialSession.hasAnimated;
 
   useEffect(() => {
     void getPublicBanners()
-      .then(setBanners)
-      .catch(() => setBanners([]));
+      .then((freshBanners) => {
+        setBanners(freshBanners);
+        updateHeroSession({ banners: freshBanners });
+      })
+      .catch(() => undefined);
   }, []);
 
   const onSelect = useCallback(() => {
-    if (emblaApi) setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
+    if (!emblaApi) return;
+    const nextIndex = emblaApi.selectedScrollSnap();
+    setSelectedIndex(nextIndex);
+    updateHeroSession({ selectedBannerId: banners[nextIndex]?.id ?? null });
+  }, [banners, emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -42,6 +116,12 @@ export function HeroCarousel() {
     }
   }, [shouldReduceMotion]);
 
+  useEffect(() => {
+    if (banners.length > 0 && shouldAnimateEntrance) {
+      updateHeroSession({ hasAnimated: true });
+    }
+  }, [banners.length, shouldAnimateEntrance]);
+
   const toggleAutoplay = () => {
     if (isPlaying) {
       autoplay.current.stop();
@@ -58,12 +138,13 @@ export function HeroCarousel() {
           {banners.map((banner, index) => (
             <div key={banner.id} className="min-w-0 flex-[0_0_100%]">
               <motion.div
-                animate={
-                  selectedIndex === index && !shouldReduceMotion
-                    ? { opacity: [0.84, 1], scale: [1.006, 1] }
-                    : { opacity: 1, scale: 1 }
+                initial={
+                  index === selectedIndex && shouldAnimateEntrance && !shouldReduceMotion
+                    ? heroEntranceState
+                    : false
                 }
-                transition={{ duration: 0.35, ease: 'easeOut' }}
+                animate={heroRestingState}
+                transition={heroEntranceTransition}
               >
                 <picture>
                   {banner.mobileImageUrl && (
@@ -72,7 +153,8 @@ export function HeroCarousel() {
                   <img
                     src={banner.imageUrl}
                     alt={banner.title}
-                    loading="lazy"
+                    loading={index === selectedIndex ? 'eager' : 'lazy'}
+                    fetchPriority={index === selectedIndex ? 'high' : 'auto'}
                     decoding="async"
                     className="h-[170px] w-full object-fill sm:h-[260px] md:h-[340px] md:object-cover lg:h-[390px]"
                   />
@@ -113,3 +195,5 @@ export function HeroCarousel() {
     </section>
   );
 }
+
+export const HeroCarousel = memo(HeroCarouselComponent);

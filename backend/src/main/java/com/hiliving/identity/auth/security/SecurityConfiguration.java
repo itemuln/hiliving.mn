@@ -72,6 +72,7 @@ public class SecurityConfiguration {
                                 "/media/**",
                                 "/api/v1/auth/csrf", "/actuator/health", "/actuator/health/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/qpay/callback/**").permitAll()
                         .requestMatchers(HttpMethod.HEAD, "/media/**").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/api/v1/auth/register", "/api/v1/auth/login",

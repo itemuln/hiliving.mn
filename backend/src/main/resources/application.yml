@@ -31,6 +31,17 @@ spring:
 hiliving:
   checkout:
     standard-shipping-fee: ${HILIVING_STANDARD_SHIPPING_FEE:5000.00}
+  qpay:
+    enabled: ${QPAY_ENABLED:false}
+    base-url: ${QPAY_BASE_URL:}
+    client-id: ${QPAY_CLIENT_ID:}
+    client-secret: ${QPAY_CLIENT_SECRET:}
+    invoice-code: ${QPAY_INVOICE_CODE:}
+    callback-base-url: ${QPAY_CALLBACK_BASE_URL:}
+    invoice-ttl: ${QPAY_INVOICE_TTL:15m}
+    connect-timeout: ${QPAY_CONNECT_TIMEOUT:5s}
+    read-timeout: ${QPAY_READ_TIMEOUT:15s}
+    expiry-polling-interval: ${QPAY_EXPIRY_POLLING_INTERVAL:1m}
   media:
     storage-path: ${HILIVING_MEDIA_STORAGE_PATH:../infrastructure/data/uploads}
   email:

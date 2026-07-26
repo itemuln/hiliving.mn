@@ -65,7 +65,7 @@ describe('OrderSuccessPage', () => {
     renderPage();
 
     expect(await screen.findByText(order.orderNumber)).toBeInTheDocument();
-    expect(screen.getByText('PENDING_CONFIRMATION')).toBeInTheDocument();
+    expect(screen.getAllByText('Баталгаажуулалт хүлээж байна')).not.toHaveLength(0);
     expect(screen.getByText('UNPAID')).toBeInTheDocument();
     expect(screen.getByText('Test product')).toBeInTheDocument();
     expect(screen.getByText(/Test Person/)).toBeInTheDocument();

@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('commerceApi', () => {
-  it('sends only product identity and quantity when requesting an authoritative quote', async () => {
+  it('sends product identity, quantity, and delivery method for an authoritative quote', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
     const fetchMock = vi
       .fn()
@@ -48,20 +48,33 @@ describe('commerceApi', () => {
     expect(init.headers).toMatchObject({ 'X-XSRF-TOKEN': 'token' });
     expect(JSON.parse(String(init.body))).toEqual({
       items: [{ productSlug: 'test-product', quantity: 2 }],
+      deliveryMethod: 'STANDARD_DELIVERY',
     });
   });
 
   it('places an order with a stable idempotency header and no client-authoritative money or status', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ data: order }), { status: 201 }));
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: {
+            order: { ...order, paymentStatus: 'PENDING', paymentMethod: 'QPAY' },
+            payment: { status: 'AWAITING_PAYMENT' },
+          },
+        }),
+        { status: 201 }
+      )
+    );
     vi.stubGlobal('fetch', fetchMock);
     const result = await placeOrder(
-      { items: [{ productSlug: 'test-product', quantity: 1 }], addressId: 7 },
+      {
+        items: [{ productSlug: 'test-product', quantity: 1 }],
+        addressId: 7,
+        deliveryMethod: 'STANDARD_DELIVERY',
+      },
       '123e4567-e89b-42d3-a456-426614174000'
     );
-    expect(result.paymentStatus).toBe('UNPAID');
+    expect(result.order.paymentStatus).toBe('PENDING');
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(init.headers).toMatchObject({
       'Idempotency-Key': '123e4567-e89b-42d3-a456-426614174000',
@@ -71,7 +84,7 @@ describe('commerceApi', () => {
       items: [{ productSlug: 'test-product', quantity: 1 }],
       addressId: 7,
       deliveryMethod: 'STANDARD_DELIVERY',
-      paymentMethod: 'CASH_ON_DELIVERY',
+      paymentMethod: 'QPAY',
     });
     expect(body.grandTotal).toBeUndefined();
     expect(body.paymentStatus).toBeUndefined();

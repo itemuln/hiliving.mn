@@ -52,6 +52,7 @@ public class OrderEntity {
     @Column(name = "grand_total", nullable = false, precision = 14, scale = 2) private BigDecimal grandTotal;
     @Column(name = "customer_note", length = 500) private String customerNote;
     @Column(name = "placed_at", nullable = false) private Instant placedAt;
+    @Column(name = "inventory_released_at") private Instant inventoryReleasedAt;
     @Column(name = "created_at", nullable = false, updatable = false) private Instant createdAt;
     @Column(name = "updated_at", nullable = false) private Instant updatedAt;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true) private List<OrderItemEntity> items = new ArrayList<>();
@@ -69,8 +70,10 @@ public class OrderEntity {
         order.requestHash = requestHash;
         order.customerEmailSnapshot = customer.getEmail();
         order.customerFirstNameSnapshot = customer.getFirstName();
-        order.orderStatus = OrderStatus.PENDING_CONFIRMATION;
-        order.paymentStatus = PaymentStatus.UNPAID;
+        order.orderStatus = paymentMethod == PaymentMethod.QPAY
+                ? OrderStatus.PENDING_PAYMENT : OrderStatus.PENDING_CONFIRMATION;
+        order.paymentStatus = paymentMethod == PaymentMethod.QPAY
+                ? PaymentStatus.PENDING : PaymentStatus.UNPAID;
         order.paymentMethod = paymentMethod;
         order.deliveryMethod = deliveryMethod;
         order.currency = quote.currency();
@@ -84,7 +87,9 @@ public class OrderEntity {
         for (CartLineResponse line : quote.items()) {
             order.items.add(OrderItemEntity.snapshot(order, products.get(line.productSlug()), line));
         }
-        order.addressSnapshot = OrderAddressSnapshotEntity.snapshot(order, address);
+        order.addressSnapshot = deliveryMethod == DeliveryMethod.SELF_PICKUP
+                ? OrderAddressSnapshotEntity.pickup(order, customer)
+                : OrderAddressSnapshotEntity.delivery(order, address);
         return order;
     }
 
@@ -110,7 +115,33 @@ public class OrderEntity {
     public BigDecimal getGrandTotal() { return grandTotal; }
     public String getCustomerNote() { return customerNote; }
     public Instant getPlacedAt() { return placedAt; }
+    public Instant getInventoryReleasedAt() { return inventoryReleasedAt; }
     public List<OrderItemEntity> getItems() { return Collections.unmodifiableList(items); }
     public OrderAddressSnapshotEntity getAddressSnapshot() { return addressSnapshot; }
     public void changeStatus(OrderStatus status) { this.orderStatus = status; }
+    public void confirmPaid() {
+        if (paymentMethod != PaymentMethod.QPAY || orderStatus != OrderStatus.PENDING_PAYMENT) {
+            throw new IllegalStateException("Only pending QPay orders can be confirmed by payment");
+        }
+        paymentStatus = PaymentStatus.PAID;
+        orderStatus = OrderStatus.CONFIRMED;
+    }
+    public void expirePaymentAndReleaseInventory(Instant releasedAt) {
+        if (paymentMethod != PaymentMethod.QPAY || paymentStatus == PaymentStatus.PAID) {
+            throw new IllegalStateException("Paid or non-QPay orders cannot expire");
+        }
+        if (inventoryReleasedAt != null) return;
+        inventoryReleasedAt = releasedAt;
+        paymentStatus = PaymentStatus.EXPIRED;
+        orderStatus = OrderStatus.CANCELLED;
+    }
+    public void failPaymentAndReleaseInventory(Instant releasedAt) {
+        if (paymentMethod != PaymentMethod.QPAY || paymentStatus == PaymentStatus.PAID) {
+            throw new IllegalStateException("Paid or non-QPay orders cannot fail payment");
+        }
+        if (inventoryReleasedAt != null) return;
+        inventoryReleasedAt = releasedAt;
+        paymentStatus = PaymentStatus.FAILED;
+        orderStatus = OrderStatus.CANCELLED;
+    }
 }

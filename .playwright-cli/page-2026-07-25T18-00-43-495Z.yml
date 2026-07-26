@@ -1,0 +1,90 @@
+- generic [ref=f1e73]:
+  - banner [ref=f1e74]:
+    - generic [ref=f1e75]:
+      - link "Hiliving Mongolia нүүр хуудас" [ref=f1e76] [cursor=pointer]:
+        - /url: /
+        - img "Hiliving Mongolia" [ref=f1e77]
+      - generic [ref=f1e78]:
+        - generic [ref=f1e79]:
+          - generic [ref=f1e80]: QPay
+          - link "Миний бүртгэл" [ref=f1e81] [cursor=pointer]:
+            - /url: /account
+          - button "Гарах" [ref=f1e82] [cursor=pointer]
+        - generic [ref=f1e83]:
+          - navigation "Үндсэн цэс" [ref=f1e84]:
+            - link "Дэлгүүр хэсэх" [ref=f1e85] [cursor=pointer]:
+              - /url: /categories/
+            - link "Hiliving MGL" [ref=f1e86] [cursor=pointer]:
+              - /url: /#hiliving-mgl
+            - link "Брэндүүд" [ref=f1e87] [cursor=pointer]:
+              - /url: /brands
+            - link "Мэдээлэл" [ref=f1e88] [cursor=pointer]:
+              - /url: /news
+            - link "Холбоо барих" [ref=f1e89] [cursor=pointer]:
+              - /url: /#contact
+          - link "Сагс, 1 бараа" [ref=f1e90] [cursor=pointer]:
+            - /url: /cart
+            - generic [ref=f1e92]: "1"
+  - main [ref=f1e93]:
+    - generic [ref=f1e95]:
+      - generic [ref=f1e96]:
+        - generic [ref=f1e97]:
+          - paragraph [ref=f1e98]: Таны сонголт
+          - heading "Худалдааны сагс" [level=1] [ref=f1e99]
+        - button "Сагс хоослох" [ref=f1e100] [cursor=pointer]
+      - generic [ref=f1e101]:
+        - region "Сагсны бүтээгдэхүүн" [ref=f1e102]:
+          - article [ref=f1e103]:
+            - generic [ref=f1e104]:
+              - link [ref=f1e105] [cursor=pointer]:
+                - /url: /products/plant-based-household-cleaner
+                - img "Plant-Based Household Cleaner" [ref=f1e106]
+              - generic [ref=f1e107]:
+                - generic [ref=f1e108]:
+                  - generic [ref=f1e109]:
+                    - link "Plant-Based Household Cleaner" [ref=f1e110] [cursor=pointer]:
+                      - /url: /products/plant-based-household-cleaner
+                    - paragraph [ref=f1e111]: "SKU: PLANT-BASED-HOUSEHOLD-CLEANER"
+                  - button "Plant-Based Household Cleaner сагснаас хасах" [ref=f1e112] [cursor=pointer]: Хасах
+                - generic [ref=f1e113]:
+                  - generic [ref=f1e114]:
+                    - button "Plant-Based Household Cleaner тоо хасах" [disabled] [ref=f1e115]: −
+                    - spinbutton "Plant-Based Household Cleaner тоо ширхэг" [ref=f1e116]: "1"
+                    - button "Plant-Based Household Cleaner тоо нэмэх" [ref=f1e117] [cursor=pointer]: +
+                  - paragraph [ref=f1e119]: 100₮
+          - link "← Дэлгүүр хэсэхээ үргэлжлүүлэх" [ref=f1e120] [cursor=pointer]:
+            - /url: /categories
+        - complementary "Сагсны дүн" [ref=f1e121]:
+          - heading "Төлбөрийн мэдээлэл" [level=2] [ref=f1e122]
+          - generic [ref=f1e123]:
+            - generic [ref=f1e124]:
+              - term [ref=f1e125]: Үндсэн дүн
+              - definition [ref=f1e126]: 100₮
+            - generic [ref=f1e127]:
+              - term [ref=f1e128]: Хүргэлт
+              - definition [ref=f1e129]: 0₮
+            - generic [ref=f1e130]:
+              - term [ref=f1e131]: Нийт
+              - definition [ref=f1e132]: 100₮
+          - link "Худалдан авалт үргэлжлүүлэх" [ref=f1e133] [cursor=pointer]:
+            - /url: /checkout
+          - paragraph [ref=f1e134]: Эцсийн үнэ, үлдэгдлийг захиалга хийхэд сервер дахин шалгана.
+  - contentinfo [ref=f1e135]:
+    - generic [ref=f1e137]:
+      - img "Hiliving Mongolia" [ref=f1e138]
+      - generic [ref=f1e139]:
+        - link "YouTube" [ref=f1e140] [cursor=pointer]:
+          - /url: "#youtube"
+        - link "Instagram" [ref=f1e142] [cursor=pointer]:
+          - /url: "#instagram"
+        - link "Facebook" [ref=f1e144] [cursor=pointer]:
+          - /url: "#facebook"
+    - generic [ref=f1e146]:
+      - generic [ref=f1e147]:
+        - paragraph [ref=f1e148]: "Хаяг: Монгол Улс, Улаанбаатар хот, Хан-Уул дүүрэг, 17 дугаар хороо, Зайсангийн гүүрний урд, “Hiliving Mongolia” төв оффис, 17012"
+        - paragraph [ref=f1e149]: "И-мэйл: info@hilivingmgl.mn"
+        - paragraph [ref=f1e150]: Бүх эрх хуулиар баталгаажсан. ©2026
+      - generic [ref=f1e151]:
+        - paragraph [ref=f1e152]: Даваа – Бямба 10:00 - 20:00
+        - paragraph [ref=f1e153]: Ням амарна.
+        - paragraph [ref=f1e154]: "Утас: 7755-8888"

@@ -1,6 +1,7 @@
 package com.hiliving.commerce.order;
 
 import com.hiliving.identity.user.persistence.UserAddressEntity;
+import com.hiliving.identity.user.persistence.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -29,7 +30,10 @@ public class OrderAddressSnapshotEntity {
 
     protected OrderAddressSnapshotEntity() {}
 
-    static OrderAddressSnapshotEntity snapshot(OrderEntity order, UserAddressEntity address) {
+    static OrderAddressSnapshotEntity delivery(OrderEntity order, UserAddressEntity address) {
+        if (address == null) {
+            throw new IllegalStateException("Standard delivery requires an address snapshot");
+        }
         OrderAddressSnapshotEntity snapshot = new OrderAddressSnapshotEntity();
         snapshot.order = order;
         snapshot.label = address.getLabel();
@@ -40,6 +44,20 @@ public class OrderAddressSnapshotEntity {
         snapshot.additionalDetails = address.getAdditionalDetails();
         snapshot.recipientName = address.getRecipientName();
         snapshot.recipientPhone = address.getRecipientPhone();
+        return snapshot;
+    }
+
+    static OrderAddressSnapshotEntity pickup(OrderEntity order, UserEntity customer) {
+        OrderAddressSnapshotEntity snapshot = new OrderAddressSnapshotEntity();
+        snapshot.order = order;
+        snapshot.label = "Өөрөө авах — туршилтын байршил";
+        snapshot.cityOrProvince = "Улаанбаатар";
+        snapshot.districtOrSoum = "Хан-Уул дүүрэг";
+        snapshot.khorooOrBag = "17-р хороо";
+        snapshot.addressLine = "Зайсангийн гүүрний урд, Hiliving Mongolia төв оффис";
+        snapshot.additionalDetails = "Даваа–Бямба 10:00–20:00 · Ням амарна · Утас: 7755-8888";
+        snapshot.recipientName = (customer.getFirstName() + " " + customer.getLastName()).trim();
+        snapshot.recipientPhone = customer.getPhoneNumber();
         return snapshot;
     }
 

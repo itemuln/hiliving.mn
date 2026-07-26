@@ -1,3 +1,5 @@
+import type { DeliveryMethod } from './delivery';
+
 export interface OrderItem {
   readonly productSlug: string;
   readonly sku: string;
@@ -27,7 +29,7 @@ export interface CustomerOrder {
   readonly orderStatus: string;
   readonly paymentStatus: string;
   readonly paymentMethod: string;
-  readonly deliveryMethod: string;
+  readonly deliveryMethod: DeliveryMethod;
   readonly currency: 'MNT';
   readonly regularSubtotal: number;
   readonly discountTotal: number;
@@ -37,4 +39,50 @@ export interface CustomerOrder {
   readonly customerNote: string | null;
   readonly items: readonly OrderItem[];
   readonly address: OrderAddress;
+}
+
+export interface OrderSummary {
+  readonly orderNumber: string;
+  readonly placedAt: string;
+  readonly orderStatus: string;
+  readonly paymentStatus: string;
+  readonly paymentMethod: string;
+  readonly grandTotal: number;
+  readonly currency: 'MNT';
+  readonly itemCount: number;
+}
+
+export interface Page<T> {
+  readonly items: readonly T[];
+  readonly page: number;
+  readonly size: number;
+  readonly totalElements: number;
+  readonly totalPages: number;
+  readonly first: boolean;
+  readonly last: boolean;
+}
+
+export interface PaymentDeeplink {
+  readonly name: string;
+  readonly description: string | null;
+  readonly logoUrl: string | null;
+  readonly link: string;
+}
+
+export interface PaymentInstructions {
+  readonly provider: 'QPAY';
+  readonly status: string;
+  readonly amount: number;
+  readonly currency: 'MNT';
+  readonly qrText: string | null;
+  readonly qrImageDataUrl: string | null;
+  readonly shortUrl: string | null;
+  readonly expiresAt: string;
+  readonly paidAt: string | null;
+  readonly deeplinks: readonly PaymentDeeplink[];
+}
+
+export interface CheckoutResult {
+  readonly order: CustomerOrder;
+  readonly payment: PaymentInstructions;
 }

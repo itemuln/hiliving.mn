@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { createAddress, getAddresses } from '../api/accountApi';
-import { placeOrder } from '../api/commerceApi';
+import { AccountApiError, createAddress, getAddresses } from '../api/accountApi';
+import { placeOrder, quoteCart } from '../api/commerceApi';
 import { Container } from '../components/layout/Container';
 import { Footer } from '../components/layout/Footer';
 import { Header } from '../components/layout/Header';
@@ -10,9 +10,17 @@ import { AddressForm } from '../features/account/AddressForm';
 import type { Address, AddressInput } from '../features/account/account.types';
 import { useAuth } from '../features/auth/useAuth';
 import { cartErrorMessage } from '../features/cart/cartErrorMessage';
+import type { CartQuote } from '../features/cart/cart.types';
 import { useCart } from '../features/cart/useCart';
+import { SELF_PICKUP_LOCATION, type DeliveryMethod } from '../features/checkout/delivery';
 
 const money = new Intl.NumberFormat('mn-MN');
+const terminalQpayInitiationErrors = new Set([
+  'QPAY_AUTH_INVALID',
+  'QPAY_AUTH_UNAVAILABLE',
+  'QPAY_INVOICE_UNAVAILABLE',
+  'QPAY_RESPONSE_INVALID',
+]);
 const newKey = () =>
   globalThis.crypto?.randomUUID?.() ??
   `00000000-0000-4000-8000-${Date.now().toString(16).padStart(12, '0').slice(-12)}`;
@@ -20,9 +28,14 @@ const newKey = () =>
 export function CheckoutPage() {
   const navigate = useNavigate();
   const { state } = useAuth();
-  const { items, quote, quoteStatus, refreshQuote, clearCart } = useCart();
+  const { items, clearCart } = useCart();
   const [addresses, setAddresses] = useState<readonly Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('STANDARD_DELIVERY');
+  const [checkoutQuote, setCheckoutQuote] = useState<CartQuote | null>(null);
+  const [checkoutQuoteStatus, setCheckoutQuoteStatus] = useState<'loading' | 'ready' | 'error'>(
+    'loading'
+  );
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressBusy, setAddressBusy] = useState(false);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
@@ -31,12 +44,14 @@ export function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const idempotencyKey = useRef(newKey());
+  const quoteRequestSequence = useRef(0);
+  const orderAddressId = deliveryMethod === 'STANDARD_DELIVERY' ? selectedAddressId : null;
   const fingerprint = useMemo(
     () =>
       `${items
         .map((item) => `${item.productSlug}:${item.quantity}`)
-        .join(',')}|${selectedAddressId}|${note.trim()}`,
-    [items, note, selectedAddressId]
+        .join(',')}|${deliveryMethod}|${orderAddressId}|${note.trim()}`,
+    [deliveryMethod, items, note, orderAddressId]
   );
   const previousFingerprint = useRef(fingerprint);
 
@@ -63,10 +78,33 @@ export function CheckoutPage() {
     }
   }, []);
 
+  const refreshCheckoutQuote = useCallback(async () => {
+    const sequence = ++quoteRequestSequence.current;
+    setCheckoutQuote(null);
+    setCheckoutQuoteStatus('loading');
+    try {
+      const nextQuote = await quoteCart(items, deliveryMethod);
+      if (sequence === quoteRequestSequence.current) {
+        setCheckoutQuote(nextQuote);
+        setCheckoutQuoteStatus('ready');
+      }
+      return nextQuote;
+    } catch (failure) {
+      if (sequence === quoteRequestSequence.current) {
+        setCheckoutQuoteStatus('error');
+        setError(cartErrorMessage(failure));
+      }
+      return null;
+    }
+  }, [deliveryMethod, items]);
+
   useEffect(() => {
-    void refreshQuote();
+    void refreshCheckoutQuote();
+  }, [refreshCheckoutQuote]);
+
+  useEffect(() => {
     void loadAddresses();
-  }, [loadAddresses, refreshQuote]);
+  }, [loadAddresses]);
 
   if (items.length === 0) {
     return (
@@ -97,20 +135,47 @@ export function CheckoutPage() {
     }
   }
 
+  function selectDeliveryMethod(nextMethod: DeliveryMethod) {
+    quoteRequestSequence.current += 1;
+    setDeliveryMethod(nextMethod);
+    setCheckoutQuote(null);
+    setCheckoutQuoteStatus('loading');
+    setConfirmed(false);
+    setShowAddressForm(false);
+    setError('');
+  }
+
   async function submitOrder() {
-    if (!selectedAddressId || !confirmed || !quote || submitting) return;
+    if (
+      (deliveryMethod === 'STANDARD_DELIVERY' && !selectedAddressId) ||
+      !confirmed ||
+      !checkoutQuote ||
+      submitting
+    )
+      return;
     setSubmitting(true);
     setError('');
     try {
-      const finalQuote = await refreshQuote();
+      const finalQuote = await refreshCheckoutQuote();
       if (!finalQuote) throw new Error('Quote unavailable');
-      const order = await placeOrder(
-        { items, addressId: selectedAddressId, customerNote: note.trim() || undefined },
+      const checkout = await placeOrder(
+        {
+          items,
+          addressId: orderAddressId,
+          deliveryMethod,
+          customerNote: note.trim() || undefined,
+        },
         idempotencyKey.current
       );
       clearCart();
-      navigate(`/checkout/success/${encodeURIComponent(order.orderNumber)}`, { replace: true });
+      navigate(`/checkout/payment/${encodeURIComponent(checkout.order.orderNumber)}`, {
+        replace: true,
+        state: { payment: checkout.payment },
+      });
     } catch (failure) {
+      if (failure instanceof AccountApiError && terminalQpayInitiationErrors.has(failure.code)) {
+        idempotencyKey.current = newKey();
+      }
       setError(cartErrorMessage(failure));
     } finally {
       setSubmitting(false);
@@ -147,99 +212,154 @@ export function CheckoutPage() {
                   </p>
                 </section>
 
-                <section
-                  className="rounded-2xl border bg-white p-5"
-                  aria-labelledby="address-title"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h2 id="address-title" className="text-lg font-semibold">
-                      Хүргэлтийн хаяг
-                    </h2>
-                    <div className="flex gap-3 text-sm text-brand-600">
-                      <Link to="/account/addresses" className="underline">
-                        Засах
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => setShowAddressForm((value) => !value)}
-                        className="underline"
-                      >
-                        {showAddressForm ? 'Болих' : 'Шинэ хаяг'}
-                      </button>
-                    </div>
-                  </div>
-                  {loadingAddresses ? (
-                    <div className="mt-4 h-24 animate-pulse rounded-xl bg-neutral-100" />
-                  ) : null}
-                  <div className="mt-4 space-y-3">
-                    {addresses.map((address) => (
-                      <label
-                        key={address.id}
-                        className={`flex cursor-pointer gap-3 rounded-xl border p-4 ${
-                          selectedAddressId === address.id
-                            ? 'border-brand-500 bg-brand-50/40'
-                            : 'border-neutral-200'
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="address"
-                          checked={selectedAddressId === address.id}
-                          onChange={() => setSelectedAddressId(address.id)}
-                        />
-                        <span className="min-w-0 text-sm">
-                          <strong className="text-neutral-800">{address.label}</strong>
-                          <span className="mt-1 block break-words text-neutral-600">
-                            {address.cityOrProvince}, {address.districtOrSoum},{' '}
-                            {address.addressLine}
-                          </span>
-                          <span className="mt-1 block text-neutral-500">
-                            {address.recipientName} · {address.recipientPhone}
-                          </span>
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                  {addresses.length === 0 && !loadingAddresses && !showAddressForm ? (
-                    <p className="mt-4 text-sm text-amber-700">
-                      Захиалга хийхийн тулд хүргэлтийн хаяг нэмнэ үү.
-                    </p>
-                  ) : null}
-                  {showAddressForm ? (
-                    <div className="mt-5">
-                      <AddressForm
-                        editing={null}
-                        onSubmit={saveAddress}
-                        onCancel={() => setShowAddressForm(false)}
-                        busy={addressBusy}
+                <fieldset className="rounded-2xl border bg-white p-5">
+                  <legend className="px-1 text-lg font-semibold">Хүргэлт</legend>
+                  <div className="mt-3 space-y-3">
+                    <label
+                      className={`flex cursor-pointer gap-3 rounded-xl border p-4 text-sm transition-colors ${
+                        deliveryMethod === 'STANDARD_DELIVERY'
+                          ? 'border-brand-500 bg-brand-50/40'
+                          : 'border-neutral-200'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="delivery-method"
+                        value="STANDARD_DELIVERY"
+                        checked={deliveryMethod === 'STANDARD_DELIVERY'}
+                        onChange={() => selectDeliveryMethod('STANDARD_DELIVERY')}
                       />
-                    </div>
-                  ) : null}
-                </section>
-
-                <section className="rounded-2xl border bg-white p-5">
-                  <h2 className="text-lg font-semibold">Хүргэлт</h2>
-                  <label className="mt-4 flex gap-3 rounded-xl border border-brand-500 bg-brand-50/40 p-4 text-sm">
-                    <input type="radio" checked readOnly />
-                    <span>
-                      <strong>Стандарт хүргэлт</strong>
-                      <span className="mt-1 block text-neutral-500">
-                        {quote
-                          ? `${money.format(quote.shippingAmount)}₮`
-                          : 'Сервер тооцоолж байна…'}
+                      <span>
+                        <strong>Стандарт хүргэлт</strong>
+                        <span className="mt-1 block text-neutral-500">
+                          {deliveryMethod === 'STANDARD_DELIVERY' && checkoutQuote
+                            ? `${money.format(checkoutQuote.shippingAmount)}₮`
+                            : deliveryMethod === 'STANDARD_DELIVERY'
+                            ? 'Сервер тооцоолж байна…'
+                            : 'Хаягаар хүргэнэ'}
+                        </span>
                       </span>
-                    </span>
-                  </label>
-                </section>
+                    </label>
+
+                    <label
+                      className={`flex cursor-pointer gap-3 rounded-xl border p-4 text-sm transition-colors ${
+                        deliveryMethod === 'SELF_PICKUP'
+                          ? 'border-brand-500 bg-brand-50/40'
+                          : 'border-neutral-200'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="delivery-method"
+                        value="SELF_PICKUP"
+                        checked={deliveryMethod === 'SELF_PICKUP'}
+                        onChange={() => selectDeliveryMethod('SELF_PICKUP')}
+                      />
+                      <span className="min-w-0">
+                        <strong>Хүргэлтгүй — өөрөө авах</strong>
+                        <span className="mt-1 block text-neutral-500">
+                          {deliveryMethod === 'SELF_PICKUP' && checkoutQuote
+                            ? `${money.format(checkoutQuote.shippingAmount)}₮`
+                            : deliveryMethod === 'SELF_PICKUP'
+                            ? 'Сервер тооцоолж байна…'
+                            : 'Хүргэлтийн төлбөргүй'}
+                        </span>
+                        <span className="mt-3 block rounded-lg bg-white/80 p-3 leading-6 text-neutral-600">
+                          <span className="font-medium text-brand-600">
+                            {SELF_PICKUP_LOCATION.label}
+                          </span>
+                          <span className="block font-medium text-neutral-800">
+                            {SELF_PICKUP_LOCATION.name}
+                          </span>
+                          <span className="block">{SELF_PICKUP_LOCATION.address}</span>
+                          <span className="block">{SELF_PICKUP_LOCATION.hours}</span>
+                          <span className="block">Утас: {SELF_PICKUP_LOCATION.phone}</span>
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </fieldset>
+
+                {deliveryMethod === 'STANDARD_DELIVERY' ? (
+                  <section
+                    className="rounded-2xl border bg-white p-5"
+                    aria-labelledby="address-title"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 id="address-title" className="text-lg font-semibold">
+                        Хүргэлтийн хаяг
+                      </h2>
+                      <div className="flex gap-3 text-sm text-brand-600">
+                        <Link to="/account/addresses" className="underline">
+                          Засах
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddressForm((value) => !value)}
+                          className="underline"
+                        >
+                          {showAddressForm ? 'Болих' : 'Шинэ хаяг'}
+                        </button>
+                      </div>
+                    </div>
+                    {loadingAddresses ? (
+                      <div className="mt-4 h-24 animate-pulse rounded-xl bg-neutral-100" />
+                    ) : null}
+                    <div className="mt-4 space-y-3">
+                      {addresses.map((address) => (
+                        <label
+                          key={address.id}
+                          className={`flex cursor-pointer gap-3 rounded-xl border p-4 ${
+                            selectedAddressId === address.id
+                              ? 'border-brand-500 bg-brand-50/40'
+                              : 'border-neutral-200'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="address"
+                            checked={selectedAddressId === address.id}
+                            onChange={() => setSelectedAddressId(address.id)}
+                          />
+                          <span className="min-w-0 text-sm">
+                            <strong className="text-neutral-800">{address.label}</strong>
+                            <span className="mt-1 block break-words text-neutral-600">
+                              {address.cityOrProvince}, {address.districtOrSoum},{' '}
+                              {address.addressLine}
+                            </span>
+                            <span className="mt-1 block text-neutral-500">
+                              {address.recipientName} · {address.recipientPhone}
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {addresses.length === 0 && !loadingAddresses && !showAddressForm ? (
+                      <p className="mt-4 text-sm text-amber-700">
+                        Захиалга хийхийн тулд хүргэлтийн хаяг нэмнэ үү.
+                      </p>
+                    ) : null}
+                    {showAddressForm ? (
+                      <div className="mt-5">
+                        <AddressForm
+                          editing={null}
+                          onSubmit={saveAddress}
+                          onCancel={() => setShowAddressForm(false)}
+                          busy={addressBusy}
+                        />
+                      </div>
+                    ) : null}
+                  </section>
+                ) : null}
 
                 <section className="rounded-2xl border bg-white p-5">
                   <h2 className="text-lg font-semibold">Төлбөрийн хэлбэр</h2>
                   <label className="mt-4 flex gap-3 rounded-xl border border-brand-500 bg-brand-50/40 p-4 text-sm">
                     <input type="radio" checked readOnly />
                     <span>
-                      <strong>Хүргэлтээр бэлнээр төлөх</strong>
+                      <strong>QPay-аар төлөх</strong>
                       <span className="mt-1 block text-neutral-500">
-                        Захиалга төлөгдөөгүй төлөвтэй үүснэ.
+                        Захиалга хийсний дараа QR код болон банкны аппын холбоос гарна.
                       </span>
                     </span>
                   </label>
@@ -260,10 +380,10 @@ export function CheckoutPage() {
                 aria-label="Захиалгын хураангуй"
               >
                 <h2 className="text-lg font-semibold">Захиалгын хураангуй</h2>
-                {quote ? (
+                {checkoutQuote ? (
                   <>
                     <ul className="mt-4 space-y-3 border-b pb-4">
-                      {quote.items.map((line) => (
+                      {checkoutQuote.items.map((line) => (
                         <li key={line.productSlug} className="flex justify-between gap-3 text-sm">
                           <span className="min-w-0 text-neutral-600">
                             {line.productName} × {line.requestedQuantity}
@@ -277,19 +397,19 @@ export function CheckoutPage() {
                     <dl className="mt-4 space-y-3 text-sm">
                       <div className="flex justify-between">
                         <dt>Барааны дүн</dt>
-                        <dd>{money.format(quote.regularSubtotal)}₮</dd>
+                        <dd>{money.format(checkoutQuote.regularSubtotal)}₮</dd>
                       </div>
                       <div className="flex justify-between text-emerald-700">
                         <dt>Нийт хөнгөлөлт</dt>
-                        <dd>−{money.format(quote.discountTotal)}₮</dd>
+                        <dd>−{money.format(checkoutQuote.discountTotal)}₮</dd>
                       </div>
                       <div className="flex justify-between">
                         <dt>Хүргэлт</dt>
-                        <dd>{money.format(quote.shippingAmount)}₮</dd>
+                        <dd>{money.format(checkoutQuote.shippingAmount)}₮</dd>
                       </div>
                       <div className="flex justify-between border-t pt-4 text-base font-semibold">
                         <dt>Төлөх нийт</dt>
-                        <dd>{money.format(quote.grandTotal)}₮</dd>
+                        <dd>{money.format(checkoutQuote.grandTotal)}₮</dd>
                       </div>
                     </dl>
                   </>
@@ -303,15 +423,17 @@ export function CheckoutPage() {
                     onChange={(event) => setConfirmed(event.target.checked)}
                     className="mt-1"
                   />
-                  Захиалгын мэдээлэл болон хүргэлтийн хаяг зөв болохыг баталж байна.
+                  {deliveryMethod === 'SELF_PICKUP'
+                    ? 'Захиалгын мэдээлэл болон өөрөө авах байршил зөв болохыг баталж байна.'
+                    : 'Захиалгын мэдээлэл болон хүргэлтийн хаяг зөв болохыг баталж байна.'}
                 </label>
                 <button
                   type="button"
                   onClick={() => void submitOrder()}
                   disabled={
-                    !quote ||
-                    quoteStatus === 'loading' ||
-                    !selectedAddressId ||
+                    !checkoutQuote ||
+                    checkoutQuoteStatus === 'loading' ||
+                    (deliveryMethod === 'STANDARD_DELIVERY' && !selectedAddressId) ||
                     !confirmed ||
                     submitting
                   }

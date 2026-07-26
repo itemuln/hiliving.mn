@@ -1,0 +1,64 @@
+- generic [ref=e162]:
+  - banner [ref=e163]:
+    - generic [ref=e164]:
+      - link "Hiliving Mongolia нүүр хуудас" [ref=e165] [cursor=pointer]:
+        - /url: /
+        - img "Hiliving Mongolia" [ref=e166]
+      - generic [ref=e167]:
+        - generic [ref=e168]:
+          - link "Нэвтрэх" [ref=e169] [cursor=pointer]:
+            - /url: /login
+          - link "Бүртгүүлэх" [ref=e170] [cursor=pointer]:
+            - /url: /register
+        - generic [ref=e171]:
+          - navigation "Үндсэн цэс" [ref=e172]:
+            - link "Дэлгүүр хэсэх" [ref=e173] [cursor=pointer]:
+              - /url: /categories/
+            - link "Hiliving MGL" [ref=e174] [cursor=pointer]:
+              - /url: /#hiliving-mgl
+            - link "Брэндүүд" [ref=e175] [cursor=pointer]:
+              - /url: /brands
+            - link "Мэдээлэл" [ref=e176] [cursor=pointer]:
+              - /url: /news
+            - link "Холбоо барих" [ref=e177] [cursor=pointer]:
+              - /url: /#contact
+          - link "Сагс, 0 бараа" [ref=e178] [cursor=pointer]:
+            - /url: /cart
+  - main [ref=e180]:
+    - generic [ref=e181]:
+      - heading "Нэвтрэх" [level=1] [ref=e182]
+      - paragraph [ref=e183]: HiLiving бүртгэлдээ имэйл эсвэл утасны дугаараар нэвтэрнэ үү.
+      - generic [ref=e185]:
+        - generic [ref=e186]:
+          - text: Имэйл эсвэл утас
+          - textbox "Имэйл эсвэл утас" [ref=e187]
+        - generic [ref=e188]:
+          - text: Нууц үг
+          - textbox "Нууц үг" [ref=e189]
+        - button "Нэвтрэх" [ref=e190] [cursor=pointer]
+        - paragraph [ref=e191]:
+          - link "Нууц үгээ мартсан уу?" [ref=e192] [cursor=pointer]:
+            - /url: /forgot-password
+        - paragraph [ref=e193]:
+          - text: Бүртгэлгүй юу?
+          - link "Бүртгүүлэх" [ref=e194] [cursor=pointer]:
+            - /url: /register
+  - contentinfo [ref=e195]:
+    - generic [ref=e197]:
+      - img "Hiliving Mongolia" [ref=e198]
+      - generic [ref=e199]:
+        - link "YouTube" [ref=e200] [cursor=pointer]:
+          - /url: "#youtube"
+        - link "Instagram" [ref=e202] [cursor=pointer]:
+          - /url: "#instagram"
+        - link "Facebook" [ref=e204] [cursor=pointer]:
+          - /url: "#facebook"
+    - generic [ref=e206]:
+      - generic [ref=e207]:
+        - paragraph [ref=e208]: "Хаяг: Монгол Улс, Улаанбаатар хот, Хан-Уул дүүрэг, 17 дугаар хороо, Зайсангийн гүүрний урд, “Hiliving Mongolia” төв оффис, 17012"
+        - paragraph [ref=e209]: "И-мэйл: info@hilivingmgl.mn"
+        - paragraph [ref=e210]: Бүх эрх хуулиар баталгаажсан. ©2026
+      - generic [ref=e211]:
+        - paragraph [ref=e212]: Даваа – Бямба 10:00 - 20:00
+        - paragraph [ref=e213]: Ням амарна.
+        - paragraph [ref=e214]: "Утас: 7755-8888"

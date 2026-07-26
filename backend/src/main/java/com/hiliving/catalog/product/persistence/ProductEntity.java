@@ -217,6 +217,11 @@ public class ProductEntity {
         stockQuantity -= quantity;
     }
 
+    public void restoreStock(int quantity) {
+        if (quantity <= 0) throw new IllegalArgumentException("Restored quantity must be positive");
+        stockQuantity = Math.addExact(stockQuantity, quantity);
+    }
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();

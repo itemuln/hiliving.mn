@@ -1,6 +1,7 @@
 package com.hiliving.commerce.order;
 
 import com.hiliving.api.error.ApiRequestException;
+import com.hiliving.api.PagedResponse;
 import com.hiliving.admin.audit.AuditService;
 import com.hiliving.catalog.product.persistence.ProductEntity;
 import com.hiliving.catalog.product.persistence.ProductRepository;
@@ -16,6 +17,7 @@ import com.hiliving.identity.user.persistence.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -57,7 +59,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse place(Long customerId, String idempotencyKeyValue, PlaceOrderRequest request) {
+    public OrderPlacement place(Long customerId, String idempotencyKeyValue, PlaceOrderRequest request) {
         UUID idempotencyKey = parseIdempotencyKey(idempotencyKeyValue);
         DeliveryMethod deliveryMethod = parseDeliveryMethod(request.deliveryMethod());
         PaymentMethod paymentMethod = parsePaymentMethod(request.paymentMethod());
@@ -71,11 +73,10 @@ public class OrderService {
             if (!existing.getRequestHash().equals(requestHash)) {
                 throw error(HttpStatus.CONFLICT, "DUPLICATE_ORDER_SUBMISSION", "Idempotency key was already used for a different order");
             }
-            return OrderResponse.from(existing);
+            return new OrderPlacement(existing.getId(), OrderResponse.from(existing));
         }
 
-        UserAddressEntity address = addresses.findByIdAndUserId(request.addressId(), customerId)
-                .orElseThrow(() -> error(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "Address was not found"));
+        UserAddressEntity address = resolveAddress(request.addressId(), customerId, deliveryMethod);
 
         List<Long> productIds = products.findIdsBySlugIn(
                 request.items().stream().map(item -> item.productSlug()).distinct().toList());
@@ -83,7 +84,7 @@ public class OrderService {
         Map<String, ProductEntity> lockedBySlug = new HashMap<>();
         lockedProducts.forEach(product -> lockedBySlug.put(product.getSlug(), product));
 
-        CartQuoteResponse quote = pricing.quote(request.items(), customer);
+        CartQuoteResponse quote = pricing.quote(request.items(), customer, deliveryMethod);
         for (var line : quote.items()) {
             ProductEntity product = lockedBySlug.get(line.productSlug());
             if (product == null) {
@@ -98,10 +99,36 @@ public class OrderService {
                 note, quote, address, lockedBySlug
         );
         OrderEntity saved = orders.saveAndFlush(order);
-        emailOutbox.enqueue("order-confirmation:" + saved.getOrderNumber(), EmailEventType.ORDER_CONFIRMATION,
-                saved.getCustomerEmailSnapshot(), "HiLiving захиалга баталгаажлаа — " + saved.getOrderNumber(),
-                "order-confirmation", emailPayloads.from(saved));
-        return OrderResponse.from(saved);
+        if (paymentMethod == PaymentMethod.CASH_ON_DELIVERY) {
+            emailOutbox.enqueue("order-confirmation:" + saved.getOrderNumber(), EmailEventType.ORDER_CONFIRMATION,
+                    saved.getCustomerEmailSnapshot(), "HiLiving захиалга баталгаажлаа — " + saved.getOrderNumber(),
+                    "order-confirmation", emailPayloads.from(saved));
+        }
+        return new OrderPlacement(saved.getId(), OrderResponse.from(saved));
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<OrderSummaryResponse> listOwn(Long customerId, int page, int size) {
+        var result = orders.findByCustomerIdOrderByPlacedAtDescIdDesc(customerId, PageRequest.of(page, size));
+        return new PagedResponse<>(result.getContent().stream().map(OrderSummaryResponse::from).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages(),
+                result.isFirst(), result.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<AdminOrderSummaryResponse> listAdmin(int page, int size, String search,
+                                                              OrderStatus orderStatus, PaymentStatus paymentStatus) {
+        String normalizedSearch = search == null ? "" : search.trim();
+        var result = orders.findAdminPage(normalizedSearch, orderStatus, paymentStatus, PageRequest.of(page, size));
+        return new PagedResponse<>(result.getContent().stream().map(AdminOrderSummaryResponse::from).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages(),
+                result.isFirst(), result.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public AdminOrderDetailResponse findAdmin(String orderNumber) {
+        return orders.findByOrderNumber(orderNumber).map(AdminOrderDetailResponse::from)
+                .orElseThrow(() -> error(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "Order was not found"));
     }
 
     @Transactional(readOnly = true)
@@ -123,7 +150,7 @@ public class OrderService {
                 .orElseThrow(() -> error(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND", "Order was not found"));
         OrderStatus previous = order.getOrderStatus();
         if (previous == requested) return OrderResponse.from(order);
-        if (!allowedNext(previous).contains(requested)) {
+        if (!allowedNext(order).contains(requested)) {
             throw error(HttpStatus.CONFLICT, "ORDER_STATUS_TRANSITION_INVALID", "Order status transition is not allowed");
         }
         order.changeStatus(requested);
@@ -136,28 +163,47 @@ public class OrderService {
         return OrderResponse.from(order);
     }
 
-    private Set<OrderStatus> allowedNext(OrderStatus current) {
-        return switch (current) {
+    private Set<OrderStatus> allowedNext(OrderEntity order) {
+        return switch (order.getOrderStatus()) {
+            case PENDING_PAYMENT -> Set.of();
             case PENDING_CONFIRMATION -> Set.of(OrderStatus.CONFIRMED);
             case CONFIRMED -> Set.of(OrderStatus.PROCESSING);
-            case PROCESSING -> Set.of(OrderStatus.SHIPPED);
+            case PROCESSING -> order.getDeliveryMethod() == DeliveryMethod.SELF_PICKUP
+                    ? Set.of(OrderStatus.DELIVERED)
+                    : Set.of(OrderStatus.SHIPPED);
             case SHIPPED -> Set.of(OrderStatus.DELIVERED);
             case DELIVERED, CANCELLED -> Set.of();
         };
     }
 
     private DeliveryMethod parseDeliveryMethod(String value) {
-        if (!DeliveryMethod.STANDARD_DELIVERY.name().equals(value)) {
+        try {
+            return DeliveryMethod.valueOf(value);
+        } catch (RuntimeException exception) {
             throw error(HttpStatus.BAD_REQUEST, "UNSUPPORTED_DELIVERY_METHOD", "Delivery method is not supported");
         }
-        return DeliveryMethod.STANDARD_DELIVERY;
+    }
+
+    private UserAddressEntity resolveAddress(Long addressId, Long customerId, DeliveryMethod deliveryMethod) {
+        if (deliveryMethod == DeliveryMethod.SELF_PICKUP) {
+            if (addressId != null) {
+                throw error(HttpStatus.BAD_REQUEST, "PICKUP_ADDRESS_NOT_ALLOWED", "Pickup orders must not include a delivery address");
+            }
+            return null;
+        }
+        if (addressId == null) {
+            throw error(HttpStatus.BAD_REQUEST, "DELIVERY_ADDRESS_REQUIRED", "Delivery address is required");
+        }
+        return addresses.findByIdAndUserId(addressId, customerId)
+                .orElseThrow(() -> error(HttpStatus.NOT_FOUND, "ADDRESS_NOT_FOUND", "Address was not found"));
     }
 
     private PaymentMethod parsePaymentMethod(String value) {
-        if (!PaymentMethod.CASH_ON_DELIVERY.name().equals(value)) {
+        try {
+            return PaymentMethod.valueOf(value);
+        } catch (RuntimeException exception) {
             throw error(HttpStatus.BAD_REQUEST, "UNSUPPORTED_PAYMENT_METHOD", "Payment method is not supported");
         }
-        return PaymentMethod.CASH_ON_DELIVERY;
     }
 
     private UUID parseIdempotencyKey(String value) {
@@ -199,4 +245,6 @@ public class OrderService {
     private ApiRequestException error(HttpStatus status, String code, String message) {
         return new ApiRequestException(status, code, message);
     }
+
+    public record OrderPlacement(Long orderId, OrderResponse order) {}
 }

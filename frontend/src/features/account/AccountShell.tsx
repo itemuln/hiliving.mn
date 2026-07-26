@@ -6,6 +6,7 @@ import { MobileBottomNav } from '../../components/layout/MobileBottomNav';
 
 const links = [
   ['/account', 'Тойм'],
+  ['/account/orders', 'Миний захиалгууд'],
   ['/account/profile', 'Хувийн мэдээлэл'],
   ['/account/addresses', 'Хүргэлтийн хаяг'],
   ['/account/security', 'Нууцлал'],

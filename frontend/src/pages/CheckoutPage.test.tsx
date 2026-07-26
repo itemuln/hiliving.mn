@@ -38,6 +38,12 @@ const quote = {
   valid: true,
 };
 
+const pickupQuote = {
+  ...quote,
+  shippingAmount: 0,
+  grandTotal: 9000,
+};
+
 const address = {
   id: 7,
   label: 'Home',
@@ -82,7 +88,7 @@ function renderCheckout(clearCart = vi.fn()) {
         <MemoryRouter initialEntries={['/checkout']}>
           <Routes>
             <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/checkout/success/:orderNumber" element={<span>success route</span>} />
+            <Route path="/checkout/payment/:orderNumber" element={<span>payment route</span>} />
           </Routes>
         </MemoryRouter>
       </CartContext.Provider>
@@ -111,6 +117,18 @@ function orderResponse() {
   };
 }
 
+function quoteResponse(init?: RequestInit) {
+  const request = JSON.parse(String(init?.body)) as { deliveryMethod: string };
+  return Promise.resolve(
+    new Response(
+      JSON.stringify({
+        data: request.deliveryMethod === 'SELF_PICKUP' ? pickupQuote : quote,
+      }),
+      { status: 200 }
+    )
+  );
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/';
@@ -120,11 +138,25 @@ describe('CheckoutPage', () => {
   it('selects the default address, prevents double submission, clears after success, and navigates', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
     const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url.endsWith('/api/v1/cart/quote')) return quoteResponse(init);
       if (url.includes('/account/addresses'))
         return Promise.resolve(new Response(JSON.stringify({ data: [address] }), { status: 200 }));
       if (url.endsWith('/api/v1/orders') && init?.method === 'POST')
         return Promise.resolve(
-          new Response(JSON.stringify({ data: orderResponse() }), { status: 201 })
+          new Response(
+            JSON.stringify({
+              data: {
+                order: {
+                  ...orderResponse(),
+                  orderStatus: 'PENDING_PAYMENT',
+                  paymentStatus: 'PENDING',
+                  paymentMethod: 'QPAY',
+                },
+                payment: { status: 'AWAITING_PAYMENT' },
+              },
+            }),
+            { status: 201 }
+          )
         );
       throw new Error(`Unexpected request: ${url}`);
     });
@@ -132,11 +164,12 @@ describe('CheckoutPage', () => {
     const clearCart = renderCheckout();
 
     expect(await screen.findByRole('radio', { name: /Home/ })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /QPay-аар төлөх/ })).toBeChecked();
     fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
     const placeButton = screen.getByRole('button', { name: 'Захиалга хийх' });
     fireEvent.click(placeButton);
     fireEvent.click(placeButton);
-    expect(await screen.findByText('success route')).toBeInTheDocument();
+    expect(await screen.findByText('payment route')).toBeInTheDocument();
     expect(clearCart).toHaveBeenCalledTimes(1);
     expect(
       fetchMock.mock.calls.filter(
@@ -144,13 +177,75 @@ describe('CheckoutPage', () => {
           String(url).endsWith('/api/v1/orders') && (init as RequestInit)?.method === 'POST'
       )
     ).toHaveLength(1);
+    const orderRequest = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        String(url).endsWith('/api/v1/orders') && (init as RequestInit)?.method === 'POST'
+    );
+    expect(JSON.parse(String((orderRequest?.[1] as RequestInit).body))).toMatchObject({
+      addressId: 7,
+      deliveryMethod: 'STANDARD_DELIVERY',
+    });
+  });
+
+  it('supports zero-fee self pickup without a customer delivery address', async () => {
+    document.cookie = 'XSRF-TOKEN=token; path=/';
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url.endsWith('/api/v1/cart/quote')) return quoteResponse(init);
+      if (url.includes('/account/addresses'))
+        return Promise.resolve(new Response(JSON.stringify({ data: [] }), { status: 200 }));
+      if (url.endsWith('/api/v1/orders') && init?.method === 'POST')
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: {
+                order: {
+                  ...orderResponse(),
+                  orderStatus: 'PENDING_PAYMENT',
+                  paymentStatus: 'PENDING',
+                  paymentMethod: 'QPAY',
+                  deliveryMethod: 'SELF_PICKUP',
+                  shippingTotal: 0,
+                  grandTotal: 9000,
+                },
+                payment: { status: 'AWAITING_PAYMENT' },
+              },
+            }),
+            { status: 201 }
+          )
+        );
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const clearCart = renderCheckout();
+
+    const pickup = await screen.findByRole('radio', { name: /Хүргэлтгүй — өөрөө авах/ });
+    fireEvent.click(pickup);
+
+    expect(await screen.findByText('Туршилтын байршил')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Хүргэлтийн хаяг' })).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: /өөрөө авах байршил зөв болохыг баталж байна/ })
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
+
+    expect(await screen.findByText('payment route')).toBeInTheDocument();
+    expect(clearCart).toHaveBeenCalledTimes(1);
+    const orderRequest = fetchMock.mock.calls.find(
+      ([url, init]) =>
+        String(url).endsWith('/api/v1/orders') && (init as RequestInit)?.method === 'POST'
+    );
+    expect(JSON.parse(String((orderRequest?.[1] as RequestInit).body))).toMatchObject({
+      addressId: null,
+      deliveryMethod: 'SELF_PICKUP',
+    });
   });
 
   it('keeps the cart when order placement fails', async () => {
     document.cookie = 'XSRF-TOKEN=token; path=/';
     vi.stubGlobal(
       'fetch',
-      vi.fn().mockImplementation((url: string) => {
+      vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+        if (url.endsWith('/api/v1/cart/quote')) return quoteResponse(init);
         if (url.includes('/account/addresses'))
           return Promise.resolve(
             new Response(JSON.stringify({ data: [address] }), { status: 200 })
@@ -170,6 +265,88 @@ describe('CheckoutPage', () => {
     expect(clearCart).not.toHaveBeenCalled();
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Захиалга хийх' })).toBeEnabled()
+    );
+  });
+
+  it('uses a fresh idempotency key after an explicit QPay initiation failure', async () => {
+    document.cookie = 'XSRF-TOKEN=token; path=/';
+    let orderRequests = 0;
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url.endsWith('/api/v1/cart/quote')) return quoteResponse(init);
+      if (url.includes('/account/addresses'))
+        return Promise.resolve(new Response(JSON.stringify({ data: [address] }), { status: 200 }));
+      if (url.endsWith('/api/v1/orders') && init?.method === 'POST') {
+        orderRequests += 1;
+        if (orderRequests === 1)
+          return Promise.resolve(
+            new Response(JSON.stringify({ error: { code: 'QPAY_AUTH_UNAVAILABLE' } }), {
+              status: 502,
+            })
+          );
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              data: {
+                order: {
+                  ...orderResponse(),
+                  orderStatus: 'PENDING_PAYMENT',
+                  paymentStatus: 'PENDING',
+                  paymentMethod: 'QPAY',
+                },
+                payment: { status: 'AWAITING_PAYMENT' },
+              },
+            }),
+            { status: 201 }
+          )
+        );
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    renderCheckout();
+
+    await screen.findByRole('radio', { name: /Home/ });
+    fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
+    await screen.findByRole('alert');
+    fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
+    expect(await screen.findByText('payment route')).toBeInTheDocument();
+
+    const requests = fetchMock.mock.calls.filter(
+      ([url, init]) =>
+        String(url).endsWith('/api/v1/orders') && (init as RequestInit)?.method === 'POST'
+    );
+    expect(requests).toHaveLength(2);
+    expect(new Headers((requests[0][1] as RequestInit).headers).get('Idempotency-Key')).not.toBe(
+      new Headers((requests[1][1] as RequestInit).headers).get('Idempotency-Key')
+    );
+  });
+
+  it('keeps the idempotency key when the response is network-ambiguous', async () => {
+    document.cookie = 'XSRF-TOKEN=token; path=/';
+    const fetchMock = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+      if (url.endsWith('/api/v1/cart/quote')) return quoteResponse(init);
+      if (url.includes('/account/addresses'))
+        return Promise.resolve(new Response(JSON.stringify({ data: [address] }), { status: 200 }));
+      return Promise.reject(new TypeError('Network unavailable'));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    renderCheckout();
+
+    await screen.findByRole('radio', { name: /Home/ });
+    fireEvent.click(screen.getByRole('checkbox', { name: /мэдээлэл болон хүргэлтийн хаяг зөв/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
+    await screen.findByRole('alert');
+    fireEvent.click(screen.getByRole('button', { name: 'Захиалга хийх' }));
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/v1/orders'))
+      ).toHaveLength(2)
+    );
+
+    const requests = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/api/v1/orders'));
+    expect(new Headers((requests[0][1] as RequestInit).headers).get('Idempotency-Key')).toBe(
+      new Headers((requests[1][1] as RequestInit).headers).get('Idempotency-Key')
     );
   });
 });

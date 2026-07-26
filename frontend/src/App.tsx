@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { CatalogShell } from './components/catalog/CatalogShell';
 import { ScrollToTop } from './components/layout/ScrollToTop';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 
@@ -31,6 +32,12 @@ const CheckoutPage = lazy(() =>
 );
 const OrderSuccessPage = lazy(() =>
   import('./pages/OrderSuccessPage').then((module) => ({ default: module.OrderSuccessPage }))
+);
+const PaymentPage = lazy(() =>
+  import('./pages/PaymentPage').then((module) => ({ default: module.PaymentPage }))
+);
+const OrdersPage = lazy(() =>
+  import('./pages/OrdersPage').then((module) => ({ default: module.OrdersPage }))
 );
 const LoginPage = lazy(() =>
   import('./pages/LoginPage').then((module) => ({ default: module.LoginPage }))
@@ -101,6 +108,14 @@ const AdminNewsEditorPage = lazy(() =>
     default: m.AdminNewsEditorPage,
   }))
 );
+const AdminOrdersPage = lazy(() =>
+  import('./features/admin/orders/AdminOrdersPage').then((m) => ({ default: m.AdminOrdersPage }))
+);
+const AdminOrderDetailPage = lazy(() =>
+  import('./features/admin/orders/AdminOrderDetailPage').then((m) => ({
+    default: m.AdminOrderDetailPage,
+  }))
+);
 
 export function App() {
   return (
@@ -111,10 +126,10 @@ export function App() {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/brands" element={<BrandProductsPage />} />
-          <Route path="/brands/:brandSlug" element={<BrandProductsPage />} />
-          <Route path="/categories" element={<CategoryProductsPage />} />
-          <Route path="/categories/:categorySlug" element={<CategoryProductsPage />} />
+          <Route element={<CatalogShell />}>
+            <Route path="/brands/:brandSlug?" element={<BrandProductsPage />} />
+            <Route path="/categories/:categorySlug?" element={<CategoryProductsPage />} />
+          </Route>
           <Route path="/products/:productSlug" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route
@@ -122,6 +137,14 @@ export function App() {
             element={
               <ProtectedRoute>
                 <CheckoutPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout/payment/:orderNumber"
+            element={
+              <ProtectedRoute>
+                <PaymentPage />
               </ProtectedRoute>
             }
           />
@@ -145,6 +168,22 @@ export function App() {
             element={
               <ProtectedRoute>
                 <AccountPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account/orders"
+            element={
+              <ProtectedRoute>
+                <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/account/orders/:orderNumber"
+            element={
+              <ProtectedRoute>
+                <OrderSuccessPage />
               </ProtectedRoute>
             }
           />
@@ -217,6 +256,22 @@ export function App() {
             element={
               <ProtectedRoute admin>
                 <AdminProductEditorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedRoute admin>
+                <AdminOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders/:orderNumber"
+            element={
+              <ProtectedRoute admin>
+                <AdminOrderDetailPage />
               </ProtectedRoute>
             }
           />

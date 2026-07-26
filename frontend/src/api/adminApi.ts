@@ -1,6 +1,8 @@
 import { apiRequest, apiUpload, type UploadOptions } from './accountApi';
 import type {
   AdminUser,
+  AdminOrderDetail,
+  AdminOrderSummary,
   Banner,
   BannerInput,
   Brand,
@@ -16,6 +18,7 @@ import type {
   Product,
   ProductInput,
 } from '../features/admin/admin.types';
+import type { CustomerOrder } from '../features/checkout/order.types';
 import type { Address } from '../features/account/account.types';
 
 const json = (method: string, body: unknown): RequestInit => ({
@@ -72,6 +75,15 @@ export const updateUserDiscount = (id: number, discountOverridePercentage: numbe
   );
 export const updateUserStatus = (id: number, status: string) =>
   apiRequest<AdminUser>(`/api/v1/admin/users/${id}/status`, json('PATCH', { status }));
+export const listAdminOrders = (filters: Record<string, unknown>) =>
+  apiRequest<Page<AdminOrderSummary>>(`/api/v1/admin/orders${query(filters)}`);
+export const getAdminOrder = (orderNumber: string) =>
+  apiRequest<AdminOrderDetail>(`/api/v1/admin/orders/${encodeURIComponent(orderNumber)}`);
+export const updateAdminOrderStatus = (orderNumber: string, status: string) =>
+  apiRequest<CustomerOrder>(
+    `/api/v1/admin/orders/${encodeURIComponent(orderNumber)}/status`,
+    json('PATCH', { status })
+  );
 export const listBanners = () => apiRequest<Banner[]>('/api/v1/admin/banners');
 export const createBanner = (input: BannerInput) =>
   apiRequest<Banner>('/api/v1/admin/banners', json('POST', input));

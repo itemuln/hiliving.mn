@@ -29,6 +29,6 @@ public class CartQuoteController {
             @Valid @RequestBody CartQuoteRequest request
     ) {
         UserEntity customer = principal == null ? null : users.findById(principal.id()).orElse(null);
-        return ApiResponse.of(pricing.quote(request.items(), customer));
+        return ApiResponse.of(pricing.quote(request.items(), customer, request.deliveryMethod()));
     }
 }

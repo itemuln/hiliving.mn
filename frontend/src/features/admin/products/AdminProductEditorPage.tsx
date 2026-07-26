@@ -489,7 +489,11 @@ export function AdminProductEditorPage() {
                     checked={form[key]}
                     onChange={(e) => set(key, e.target.checked)}
                   />
-                  {key === 'newProduct' ? 'New product' : key[0].toUpperCase() + key.slice(1)}
+                  {key === 'active'
+                    ? 'Visible'
+                    : key === 'newProduct'
+                    ? 'New product'
+                    : key[0].toUpperCase() + key.slice(1)}
                 </label>
               ))}
             </div>

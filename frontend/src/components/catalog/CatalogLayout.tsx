@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Container } from '../layout/Container';
+import { SectionReveal } from '../ui/SectionReveal';
 
 interface CatalogLayoutProps {
   readonly sidebar: ReactNode;
@@ -9,7 +10,7 @@ interface CatalogLayoutProps {
 
 export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLayoutProps) {
   return (
-    <section id="catalog-products" className="scroll-mt-4 py-8 md:py-12 lg:py-14">
+    <SectionReveal className="py-8 md:py-12 lg:py-14">
       <Container>
         <div className="px-6 md:px-0">
           <div className="md:hidden">{mobileNavigation}</div>
@@ -19,6 +20,6 @@ export function CatalogLayout({ sidebar, mobileNavigation, children }: CatalogLa
           </div>
         </div>
       </Container>
-    </section>
+    </SectionReveal>
   );
 }

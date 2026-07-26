@@ -27,7 +27,7 @@ const links = [
       { to: '/admin/products', label: 'All products', icon: Boxes, end: true },
     ],
   },
-  { label: 'Orders', icon: BarChart3, disabled: true },
+  { to: '/admin/orders', label: 'Orders', icon: BarChart3 },
   { to: '/admin/news', label: 'News', icon: Newspaper },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/banners', label: 'Banners', icon: Image },

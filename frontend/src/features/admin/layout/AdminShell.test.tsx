@@ -25,7 +25,7 @@ describe('admin shell', () => {
       </AuthContext.Provider>
     );
     expect(screen.getByText('HiLiving')).toBeInTheDocument();
-    expect(screen.getByText('Orders').closest('[aria-disabled="true"]')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Orders' })).toHaveAttribute('href', '/admin/orders');
     expect(screen.getByText('Pages').closest('[aria-disabled="true"]')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Open navigation' }));
     expect(screen.getByRole('button', { name: 'Close navigation overlay' })).toBeInTheDocument();

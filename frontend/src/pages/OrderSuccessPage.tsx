@@ -5,7 +5,9 @@ import { Container } from '../components/layout/Container';
 import { Footer } from '../components/layout/Footer';
 import { Header } from '../components/layout/Header';
 import { MobileBottomNav } from '../components/layout/MobileBottomNav';
+import { deliveryMethodLabel } from '../features/checkout/delivery';
 import type { CustomerOrder } from '../features/checkout/order.types';
+import { orderStatusLabel, paymentStatusLabel, statusTone } from '../features/checkout/orderStatus';
 
 const money = new Intl.NumberFormat('mn-MN');
 const date = new Intl.DateTimeFormat('mn-MN', { dateStyle: 'medium', timeStyle: 'short' });
@@ -46,11 +48,17 @@ export function OrderSuccessPage() {
             ) : (
               <article className="rounded-2xl border bg-white p-5 sm:p-8">
                 <div className="text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-2xl text-emerald-700">
-                    ✓
+                  <div
+                    className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl ${statusTone(
+                      order.orderStatus
+                    )}`}
+                  >
+                    {order.paymentStatus === 'PAID' ? '✓' : '•'}
                   </div>
-                  <p className="mt-4 text-sm font-medium text-emerald-700">
-                    Захиалга амжилттай үүслээ
+                  <p className="mt-4 text-sm font-medium text-neutral-600">
+                    {order.paymentStatus === 'PAID'
+                      ? 'Захиалга баталгаажлаа'
+                      : orderStatusLabel(order.orderStatus)}
                   </p>
                   <h1 className="mt-2 text-2xl font-semibold text-neutral-800">
                     {order.orderNumber}
@@ -59,28 +67,44 @@ export function OrderSuccessPage() {
                     {date.format(new Date(order.placedAt))}
                   </p>
                 </div>
-                <dl className="mt-8 grid gap-3 rounded-xl bg-neutral-50 p-4 text-sm sm:grid-cols-3">
+                <dl className="mt-8 grid gap-3 rounded-xl bg-neutral-50 p-4 text-sm sm:grid-cols-4">
                   <div>
                     <dt className="text-neutral-400">Захиалгын төлөв</dt>
-                    <dd className="mt-1 font-medium">{order.orderStatus}</dd>
+                    <dd className="mt-1 font-medium">{orderStatusLabel(order.orderStatus)}</dd>
                   </div>
                   <div>
                     <dt className="text-neutral-400">Төлбөрийн төлөв</dt>
-                    <dd className="mt-1 font-medium">{order.paymentStatus}</dd>
+                    <dd className="mt-1 font-medium">{paymentStatusLabel(order.paymentStatus)}</dd>
                   </div>
                   <div>
                     <dt className="text-neutral-400">Төлбөрийн хэлбэр</dt>
                     <dd className="mt-1 font-medium">{order.paymentMethod}</dd>
                   </div>
+                  <div>
+                    <dt className="text-neutral-400">Хүлээн авах хэлбэр</dt>
+                    <dd className="mt-1 font-medium">
+                      {deliveryMethodLabel(order.deliveryMethod)}
+                    </dd>
+                  </div>
                 </dl>
                 <section className="mt-8">
-                  <h2 className="font-semibold">Хүргэлтийн хаяг</h2>
+                  <h2 className="font-semibold">
+                    {order.deliveryMethod === 'SELF_PICKUP'
+                      ? 'Бараа авах байршил'
+                      : 'Хүргэлтийн хаяг'}
+                  </h2>
                   <p className="mt-2 text-sm leading-6 text-neutral-600">
                     {order.address.recipientName} · {order.address.recipientPhone}
                     <br />
                     {order.address.cityOrProvince}, {order.address.districtOrSoum},{' '}
                     {order.address.khorooOrBag ? `${order.address.khorooOrBag}, ` : ''}
                     {order.address.addressLine}
+                    {order.address.additionalDetails ? (
+                      <>
+                        <br />
+                        {order.address.additionalDetails}
+                      </>
+                    ) : null}
                   </p>
                 </section>
                 <section className="mt-8">
@@ -117,7 +141,7 @@ export function OrderSuccessPage() {
                     <dd>−{money.format(order.discountTotal)}₮</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt>Хүргэлт</dt>
+                    <dt>{order.deliveryMethod === 'SELF_PICKUP' ? 'Өөрөө авах' : 'Хүргэлт'}</dt>
                     <dd>{money.format(order.shippingTotal)}₮</dd>
                   </div>
                   <div className="flex justify-between border-t pt-3 text-base font-semibold">
@@ -126,6 +150,14 @@ export function OrderSuccessPage() {
                   </div>
                 </dl>
                 <div className="mt-8 text-center">
+                  {order.orderStatus === 'PENDING_PAYMENT' ? (
+                    <Link
+                      to={`/checkout/payment/${encodeURIComponent(order.orderNumber)}`}
+                      className="mr-3 inline-flex rounded-xl border border-brand-500 px-6 py-3 text-sm font-semibold text-brand-600"
+                    >
+                      Төлбөр төлөх
+                    </Link>
+                  ) : null}
                   <Link
                     to="/categories"
                     className="inline-flex rounded-xl bg-brand-500 px-6 py-3 text-sm font-semibold text-white"

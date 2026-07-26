@@ -1,0 +1,94 @@
+- generic [ref=e280]:
+  - banner [ref=e281]:
+    - generic [ref=e282]:
+      - link "Hiliving Mongolia нүүр хуудас" [ref=e283] [cursor=pointer]:
+        - /url: /
+        - img "Hiliving Mongolia" [ref=e284]
+      - generic [ref=e285]:
+        - generic [ref=e286]:
+          - generic [ref=e287]: QPay
+          - link "Миний бүртгэл" [ref=e288] [cursor=pointer]:
+            - /url: /account
+          - button "Гарах" [ref=e289] [cursor=pointer]
+        - generic [ref=e290]:
+          - navigation "Үндсэн цэс" [ref=e291]:
+            - link "Дэлгүүр хэсэх" [ref=e292] [cursor=pointer]:
+              - /url: /categories/
+            - link "Hiliving MGL" [ref=e293] [cursor=pointer]:
+              - /url: /#hiliving-mgl
+            - link "Брэндүүд" [ref=e294] [cursor=pointer]:
+              - /url: /brands
+            - link "Мэдээлэл" [ref=e295] [cursor=pointer]:
+              - /url: /news
+            - link "Холбоо барих" [ref=e296] [cursor=pointer]:
+              - /url: /#contact
+          - link "Сагс, 0 бараа" [ref=e297] [cursor=pointer]:
+            - /url: /cart
+  - main [ref=e299]:
+    - complementary [ref=e300]:
+      - navigation "Миний бүртгэл" [ref=e301]:
+        - link "Тойм" [ref=e302] [cursor=pointer]:
+          - /url: /account
+        - link "Миний захиалгууд" [ref=e303] [cursor=pointer]:
+          - /url: /account/orders
+        - link "Хувийн мэдээлэл" [ref=e304] [cursor=pointer]:
+          - /url: /account/profile
+        - link "Хүргэлтийн хаяг" [ref=e305] [cursor=pointer]:
+          - /url: /account/addresses
+        - link "Нууцлал" [ref=e306] [cursor=pointer]:
+          - /url: /account/security
+    - generic [ref=e307]:
+      - heading "Хүргэлтийн хаяг" [level=1] [ref=e308]
+      - generic [ref=e310]:
+        - paragraph [ref=e311]: Хүргэлтийн хаяг нэмээгүй байна.
+        - generic [ref=e312]:
+          - heading "Шинэ хаяг" [level=2] [ref=e313]
+          - generic [ref=e314]:
+            - generic [ref=e315]:
+              - text: Нэршил
+              - textbox "Нэршил" [ref=e316]:
+                - /placeholder: Гэр
+            - generic [ref=e317]:
+              - text: Хот / аймаг
+              - textbox "Хот / аймаг" [ref=e318]
+            - generic [ref=e319]:
+              - text: Дүүрэг / сум
+              - textbox "Дүүрэг / сум" [ref=e320]
+            - generic [ref=e321]:
+              - text: Хороо / баг
+              - textbox "Хороо / баг" [ref=e322]
+            - generic [ref=e323]:
+              - text: Дэлгэрэнгүй хаяг
+              - textbox "Дэлгэрэнгүй хаяг" [ref=e324]
+            - generic [ref=e325]:
+              - text: Нэмэлт тайлбар
+              - textbox "Нэмэлт тайлбар" [ref=e326]
+            - generic [ref=e327]:
+              - text: Хүлээн авагч
+              - textbox "Хүлээн авагч" [ref=e328]
+            - generic [ref=e329]:
+              - text: Хүлээн авагчийн утас
+              - textbox "Хүлээн авагчийн утас" [ref=e330]
+          - generic [ref=e331]:
+            - checkbox "Үндсэн хаяг болгох" [ref=e332]
+            - text: Үндсэн хаяг болгох
+          - button "Хадгалах" [ref=e334] [cursor=pointer]
+  - contentinfo [ref=e335]:
+    - generic [ref=e337]:
+      - img "Hiliving Mongolia" [ref=e338]
+      - generic [ref=e339]:
+        - link "YouTube" [ref=e340] [cursor=pointer]:
+          - /url: "#youtube"
+        - link "Instagram" [ref=e342] [cursor=pointer]:
+          - /url: "#instagram"
+        - link "Facebook" [ref=e344] [cursor=pointer]:
+          - /url: "#facebook"
+    - generic [ref=e346]:
+      - generic [ref=e347]:
+        - paragraph [ref=e348]: "Хаяг: Монгол Улс, Улаанбаатар хот, Хан-Уул дүүрэг, 17 дугаар хороо, Зайсангийн гүүрний урд, “Hiliving Mongolia” төв оффис, 17012"
+        - paragraph [ref=e349]: "И-мэйл: info@hilivingmgl.mn"
+        - paragraph [ref=e350]: Бүх эрх хуулиар баталгаажсан. ©2026
+      - generic [ref=e351]:
+        - paragraph [ref=e352]: Даваа – Бямба 10:00 - 20:00
+        - paragraph [ref=e353]: Ням амарна.
+        - paragraph [ref=e354]: "Утас: 7755-8888"

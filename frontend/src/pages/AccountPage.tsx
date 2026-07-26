@@ -2,6 +2,7 @@ import { AccountShell } from '../features/account/AccountShell';
 import { MembershipCard } from '../features/account/MembershipCard';
 import { EmailVerificationCard } from '../features/account/EmailVerificationCard';
 import { useAuth } from '../features/auth/useAuth';
+import { Link } from 'react-router-dom';
 
 export function AccountPage() {
   const { state } = useAuth();
@@ -15,9 +16,9 @@ export function AccountPage() {
           <p className="font-medium text-neutral-800">Бүртгэлийн мэдээлэл</p>
           <p className="mt-3 break-all">{state.user.email}</p>
           <p>{state.user.phoneNumber}</p>
-          <p className="mt-3 text-xs text-neutral-400">
-            Захиалгын түүх дараагийн үе шатанд нэмэгдэнэ.
-          </p>
+          <Link to="/account/orders" className="mt-4 inline-flex text-brand-600 underline">
+            Миний захиалгуудыг харах
+          </Link>
         </div>
       </div>
     </AccountShell>
