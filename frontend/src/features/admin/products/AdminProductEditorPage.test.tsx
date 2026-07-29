@@ -96,7 +96,9 @@ describe('admin product editor', () => {
   });
   it('shows image cards only after batch selection and validates publishing', async () => {
     render(page());
-    await waitFor(() => expect(screen.getByText('1. Бүтээгдэхүүний мэдээлэл')).toBeInTheDocument());
+    const productInformation = await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
+    expect(productInformation.closest('section')).toHaveTextContent('Бүтээгдэхүүний зураг');
+    expect(screen.queryByText('4. Бүтээгдэхүүний зураг')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Бүтээгдэхүүний зураг 1')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Бүтээгдэхүүний зураг нэмэх')).toHaveAttribute('multiple');
     expect(screen.queryByPlaceholderText('https://…')).not.toBeInTheDocument();

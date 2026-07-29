@@ -15,7 +15,7 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { AdminNumberInput } from '../components/AdminNumberInput';
-import { accountStatusLabel, membershipLabel } from '../adminLocale';
+import { membershipLabel } from '../adminLocale';
 export function AdminUserDetailPage() {
   const { id } = useParams();
   const userId = Number(id);
@@ -75,39 +75,33 @@ export function AdminUserDetailPage() {
         </button>
       }
     >
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_.9fr]">
+      <div className="grid gap-5">
         {error && (
-          <div className="xl:col-span-2">
+          <div>
             <ErrorNotice message={error} />
           </div>
         )}
         <section className={`${panel} p-5 sm:p-6`}>
           <h2 className="text-lg font-black">Гишүүнчлэл ба хөнгөлөлт</h2>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-slate-50 p-4">
               <div className="text-xs uppercase text-slate-400">Гишүүнчлэл</div>
               <div className="mt-1 text-xl font-black">{membershipLabel(user.membership.code)}</div>
             </div>
             <div className="rounded-xl bg-slate-50 p-4">
-              <div className="text-xs uppercase text-slate-400">Үндсэн хөнгөлөлт</div>
+              <div className="text-xs uppercase text-slate-400">Гишүүнчлэлийн үндсэн хөнгөлөлт</div>
               <div className="mt-1 text-xl font-black">
                 {user.membership.defaultDiscountPercentage}%
               </div>
             </div>
             <div className="rounded-xl bg-slate-50 p-4">
-              <div className="text-xs uppercase text-slate-400">Тусгай хөнгөлөлт</div>
+              <div className="text-xs uppercase text-slate-400">Хэрэглэгчид үйлчлэх хөнгөлөлт</div>
               <div className="mt-1 text-xl font-black">
-                {user.membership.discountOverridePercentage === null
-                  ? 'Байхгүй'
-                  : `${user.membership.discountOverridePercentage}%`}
-              </div>
-            </div>
-            <div className="rounded-xl bg-brand-50 p-4">
-              <div className="text-xs uppercase text-brand-500">Үйлчлэх хөнгөлөлт</div>
-              <div className="mt-1 text-xl font-black text-brand-600">
                 {user.membership.effectiveDiscountPercentage}%
               </div>
             </div>
+          </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(12rem,.7fr)_minmax(0,1.3fr)]">
             <Field label="Гишүүнчлэл сонгох">
               <select
                 className={input}
@@ -125,20 +119,22 @@ export function AdminUserDetailPage() {
               </select>
             </Field>
             <Field
-              label="Хэрэглэгчийн тусгай хөнгөлөлт"
-              hint="Гишүүнчлэлийн үндсэн хөнгөлөлтийг ашиглах бол хоосолж цэвэрлэнэ үү."
+              label="Үйлчлэх хөнгөлөлт тохируулах"
+              hint={`Цэвэрлэхэд гишүүнчлэлийн үндсэн ${user.membership.defaultDiscountPercentage}% хөнгөлөлт үйлчилнэ.`}
             >
-              <div className="flex gap-2">
+              <div className="grid gap-2 sm:grid-cols-[minmax(12rem,1fr)_auto_auto]">
                 <AdminNumberInput
                   min="0"
                   max="100"
                   step="0.01"
                   className={input}
+                  placeholder="Жишээ: 5"
                   value={discount}
                   nullable
                   onValueChange={setDiscount}
                 />
                 <button
+                  type="button"
                   className={primaryButton}
                   disabled={saving}
                   onClick={() => void mutate(() => api.updateUserDiscount(userId, discount))}
@@ -146,6 +142,7 @@ export function AdminUserDetailPage() {
                   Тохируулах
                 </button>
                 <button
+                  type="button"
                   className={secondaryButton}
                   disabled={saving}
                   onClick={() => {
@@ -161,20 +158,10 @@ export function AdminUserDetailPage() {
         </section>
         <section className={`${panel} p-5 sm:p-6`}>
           <h2 className="text-lg font-black">Бүртгэлийн төлөв</h2>
-          <div className="mt-5 flex items-center justify-between rounded-xl bg-slate-50 p-4">
-            <StatusBadge
-              tone={
-                user.status === 'ACTIVE'
-                  ? 'success'
-                  : user.status === 'DISABLED'
-                  ? 'danger'
-                  : 'warning'
-              }
-            >
-              {accountStatusLabel(user.status)}
-            </StatusBadge>
+          <div className="mt-5 max-w-sm">
             <select
-              className={`${input} max-w-44`}
+              aria-label="Бүртгэлийн төлөв"
+              className={input}
               value={user.status}
               disabled={saving}
               onChange={(e) => void mutate(() => api.updateUserStatus(userId, e.target.value))}
@@ -202,7 +189,7 @@ export function AdminUserDetailPage() {
             </dl>
           </div>
         </section>
-        <section className={`${panel} p-5 sm:p-6 xl:col-span-2`}>
+        <section className={`${panel} p-5 sm:p-6`}>
           <h2 className="text-lg font-black">Хэрэглэгчийн хаяг</h2>
           {addresses.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">Хадгалсан хаяг алга.</p>

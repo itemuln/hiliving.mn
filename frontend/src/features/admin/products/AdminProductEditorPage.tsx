@@ -360,6 +360,100 @@ export function AdminProductEditorPage() {
               />
             </Field>
           </div>
+          <div className="mt-6 border-t border-slate-200 pt-6">
+            <div className="mb-5">
+              <h3 className="text-base font-black">Бүтээгдэхүүний зураг</h3>
+              <p className="text-xs text-slate-500">
+                Зургаа хүртэл зураг сонгоод үндсэн зураг болон дарааллыг тохируулна уу.
+              </p>
+              {form.images.length < MAX_PRODUCT_IMAGES && (
+                <div className="mt-3">
+                  <input
+                    ref={batchInput}
+                    id={batchInputId}
+                    aria-label="Бүтээгдэхүүний зураг нэмэх"
+                    type="file"
+                    multiple
+                    className="sr-only"
+                    accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                    disabled={saving || batchUploading}
+                    onChange={(event) => void addPhotos(event.currentTarget.files)}
+                  />
+                  <label
+                    htmlFor={batchInputId}
+                    className={`${secondaryButton} cursor-pointer ${
+                      saving || batchUploading ? 'pointer-events-none opacity-50' : ''
+                    }`}
+                  >
+                    <ImagePlus size={16} className="mr-2" />
+                    {batchUploading ? 'Зураг байршуулж байна…' : 'Зураг нэмэх'}
+                  </label>
+                </div>
+              )}
+            </div>
+            <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+              {form.images.map((image, index) => (
+                <div key={`${image.imageUrl}-${index}`} className="min-w-0">
+                  <ImageUploadControl
+                    label={`Бүтээгдэхүүний зураг ${index + 1}`}
+                    purpose="PRODUCT"
+                    value={image.imageUrl}
+                    onChange={(url) => setSlot(index, url)}
+                    onPendingChange={(pending) =>
+                      setPendingUploads((value) => Math.max(0, value + (pending ? 1 : -1)))
+                    }
+                    disabled={saving}
+                  />
+                  <input
+                    aria-label={`Зургийн тайлбар ${index + 1}`}
+                    placeholder="Зургийн тайлбар"
+                    className={`${input} mt-2`}
+                    value={image.altText ?? ''}
+                    onChange={(e) => updateImage(index, { altText: e.target.value })}
+                  />
+                  <div className="mt-2 flex items-center justify-between">
+                    <label className="text-xs font-bold">
+                      <input
+                        type="radio"
+                        name="primary"
+                        checked={image.primaryImage}
+                        onChange={() => updateImage(index, { primaryImage: true })}
+                      />{' '}
+                      Үндсэн зураг
+                    </label>
+                    <div>
+                      <button
+                        type="button"
+                        className="p-2"
+                        disabled={index === 0}
+                        onClick={() => move(index, -1)}
+                        aria-label="Зургийг дээш зөөх"
+                      >
+                        <ArrowUp size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2"
+                        disabled={index === form.images.length - 1}
+                        onClick={() => move(index, 1)}
+                        aria-label="Зургийг доош зөөх"
+                      >
+                        <ArrowDown size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2 text-rose-500"
+                        onClick={() => setSlot(index, '')}
+                        aria-label="Зургийг устгах"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </section>
         <section className={`${panel} p-5 sm:p-6`}>
           <h2 className="mb-5 text-lg font-black">2. Үнийн мэдээлэл</h2>
@@ -503,100 +597,6 @@ export function AdminProductEditorPage() {
                 </label>
               ))}
             </div>
-          </div>
-        </section>
-        <section className={`${panel} p-5 sm:p-6`}>
-          <div className="mb-5">
-            <h2 className="text-lg font-black">4. Бүтээгдэхүүний зураг</h2>
-            <p className="text-xs text-slate-500">
-              Зургаа хүртэл зураг сонгоод үндсэн зураг болон дарааллыг тохируулна уу.
-            </p>
-            {form.images.length < MAX_PRODUCT_IMAGES && (
-              <div className="mt-3">
-                <input
-                  ref={batchInput}
-                  id={batchInputId}
-                  aria-label="Бүтээгдэхүүний зураг нэмэх"
-                  type="file"
-                  multiple
-                  className="sr-only"
-                  accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-                  disabled={saving || batchUploading}
-                  onChange={(event) => void addPhotos(event.currentTarget.files)}
-                />
-                <label
-                  htmlFor={batchInputId}
-                  className={`${secondaryButton} cursor-pointer ${
-                    saving || batchUploading ? 'pointer-events-none opacity-50' : ''
-                  }`}
-                >
-                  <ImagePlus size={16} className="mr-2" />
-                  {batchUploading ? 'Зураг байршуулж байна…' : 'Зураг нэмэх'}
-                </label>
-              </div>
-            )}
-          </div>
-          <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-            {form.images.map((image, index) => (
-              <div key={`${image.imageUrl}-${index}`} className="min-w-0">
-                <ImageUploadControl
-                  label={`Бүтээгдэхүүний зураг ${index + 1}`}
-                  purpose="PRODUCT"
-                  value={image.imageUrl}
-                  onChange={(url) => setSlot(index, url)}
-                  onPendingChange={(pending) =>
-                    setPendingUploads((value) => Math.max(0, value + (pending ? 1 : -1)))
-                  }
-                  disabled={saving}
-                />
-                <input
-                  aria-label={`Зургийн тайлбар ${index + 1}`}
-                  placeholder="Зургийн тайлбар"
-                  className={`${input} mt-2`}
-                  value={image.altText ?? ''}
-                  onChange={(e) => updateImage(index, { altText: e.target.value })}
-                />
-                <div className="mt-2 flex items-center justify-between">
-                  <label className="text-xs font-bold">
-                    <input
-                      type="radio"
-                      name="primary"
-                      checked={image.primaryImage}
-                      onChange={() => updateImage(index, { primaryImage: true })}
-                    />{' '}
-                    Үндсэн зураг
-                  </label>
-                  <div>
-                    <button
-                      type="button"
-                      className="p-2"
-                      disabled={index === 0}
-                      onClick={() => move(index, -1)}
-                      aria-label="Зургийг дээш зөөх"
-                    >
-                      <ArrowUp size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className="p-2"
-                      disabled={index === form.images.length - 1}
-                      onClick={() => move(index, 1)}
-                      aria-label="Зургийг доош зөөх"
-                    >
-                      <ArrowDown size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      className="p-2 text-rose-500"
-                      onClick={() => setSlot(index, '')}
-                      aria-label="Зургийг устгах"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
         <section className={`${panel} flex flex-wrap justify-end gap-3 p-5`}>

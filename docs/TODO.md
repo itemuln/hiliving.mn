@@ -28,6 +28,9 @@
 
 ## Completed
 
+- [x] Replace the sparse local storefront presentation with exactly nine production-looking demo products across the existing nine categories, licensed managed photos, two banners, four published news articles, and a source/license ledger without changing accounts or orders.
+- [x] Make administration dashboard summaries navigable, use the HiLiving logo-only sidebar lockup, and simplify the full-width customer discount/status layout without duplicate summaries or status badges.
+- [x] Move product photo selection and image management into the opening administration product-information panel.
 - [x] Run security, performance, and React best-practices checks; patch PostgreSQL JDBC CVE-2026-54291, remove the vulnerable lint dependency chain, add weekly npm/Maven monitoring, optimize immutable media/image loading, and verify the full frontend/backend suites.
 - [x] Compact the account overview, combine email verification with registration information, link profile editing, remove the duplicate orders shortcut, and simplify verified-email/contact presentation.
 - [x] Add a fifth mobile `Цэс` action with a minimal accessible text sheet and one active highlight while keeping product categories isolated under `Ангилал`.
