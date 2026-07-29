@@ -64,3 +64,19 @@ Sample catalog data is created only when the `local` profile is active and the c
 Registration queues email verification while preserving the existing login and checkout behavior for unverified customers. Password recovery is available only to active accounts with a verified email. Public recovery endpoints remain CSRF-protected, return generic request responses, and use the configured `APP_PUBLIC_URL` rather than request host headers. Email delivery is asynchronous through the PostgreSQL outbox and disabled by default.
 
 See [`../docs/TRANSACTIONAL_EMAIL.md`](../docs/TRANSACTIONAL_EMAIL.md) for SMTP configuration, retry operations, token/session security, endpoint details, and the manual test command.
+
+## Security controls
+
+Sessions are server-side with an HttpOnly, `SameSite=Lax` cookie. `SESSION_COOKIE_SECURE` defaults to true; set it to `false` only for plain-HTTP local development. The security filter chain emits a locked-down `Content-Security-Policy` (`default-src 'none'`), `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive `Permissions-Policy`, and HSTS (effective over HTTPS), in addition to the framework `nosniff` and `X-Frame-Options: DENY` defaults.
+
+Login and registration apply pre-credential abuse throttles before any password work: login is limited per source IP and per submitted identifier, registration per source IP. Exceeding a limit returns `429 RATE_LIMITED` with `Retry-After`. Limits are configurable and default to login `15`/IP and `10`/identifier per 5 minutes and registration `20`/IP per hour:
+
+| Property | Env override | Default |
+| --- | --- | --- |
+| `hiliving.security.rate-limit.login-ip-limit` | `LOGIN_IP_RATE_LIMIT` | `15` |
+| `hiliving.security.rate-limit.login-identifier-limit` | `LOGIN_IDENTIFIER_RATE_LIMIT` | `10` |
+| `hiliving.security.rate-limit.login-window` | `LOGIN_RATE_WINDOW` | `5m` |
+| `hiliving.security.rate-limit.register-ip-limit` | `REGISTER_IP_RATE_LIMIT` | `20` |
+| `hiliving.security.rate-limit.register-window` | `REGISTER_RATE_WINDOW` | `1h` |
+
+These throttles share the same in-memory, per-instance store as the email/recovery limits and must move to a shared backend (for example Redis) before multi-node deployment. Password recovery, self-service password change, and login-email change all revoke every existing session through the per-user session version.
