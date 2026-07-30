@@ -18,9 +18,10 @@
 - [ ] **P1:** define Ebarimt 3.0 invoice/receipt timing, tax classification, organization/customer data, retry, and correction policy before connecting the supplied Ebarimt contract.
 - [ ] **P1:** provision the production upload root and NGINX read-only `/media/` alias, then rehearse paired PostgreSQL/filesystem backup and restore before deployment.
 - [ ] **P2:** add reference-aware media deletion/orphan reporting after defining retention and recovery policy; do not delete shared or externally hosted URLs.
+- [ ] **P2:** move the auth rate-limit store from the in-memory per-instance counter to a shared backend (for example Redis with atomic counters and TTLs) before any multi-node deployment, so throttle limits are not multiplied across replicas; revisit the account-lockout DoS with CAPTCHA or soft-backoff at the same time.
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
 - [ ] **P2:** decide whether browser-local carts need authenticated cross-device synchronization, expiry, abandoned-cart handling, or inventory reservation; do not add them without a concrete business requirement.
-- [x] **P1:** invalidate prior sessions after password recovery through a database-backed per-user session version; ordinary authenticated password change keeps its current behavior.
+- [x] **P1:** invalidate prior sessions after password recovery through a database-backed per-user session version. As of 2026-07-29 the same revocation also applies to self-service password change and login-email change.
 - [ ] **P2:** define a redirect/alias and migration policy before ever introducing an exceptional product-slug correction or import tool; normal product editing keeps generated slugs immutable.
 - [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
@@ -28,6 +29,7 @@
 
 ## Completed
 
+- [x] Conduct an authenticated whitebox/dynamic security assessment of the backend and remediate confirmed findings: add configurable login (per IP and per identifier) and registration (per IP) rate limiting, default `SESSION_COOKIE_SECURE` to true, add CSP/Referrer-Policy/Permissions-Policy/HSTS headers, and extend session-version revocation to self-service password and email change. Assessed and confirmed already-controlled: QPay callback forgery, order IDOR, price tampering, SQL injection, upload/path-traversal, SSRF, admin authorization, and secret exposure. Re-validated live; all 65 backend tests pass.
 - [x] Replace the sparse local storefront presentation with exactly nine production-looking demo products across the existing nine categories, licensed managed photos, two banners, four published news articles, and a source/license ledger without changing accounts or orders.
 - [x] Make administration dashboard summaries navigable, use the HiLiving logo-only sidebar lockup, and simplify the full-width customer discount/status layout without duplicate summaries or status badges.
 - [x] Move product photo selection and image management into the opening administration product-information panel.

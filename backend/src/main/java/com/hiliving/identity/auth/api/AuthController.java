@@ -50,7 +50,7 @@ public class AuthController {
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse
     ) {
-        UserEntity user = authService.login(request);
+        UserEntity user = authService.login(request, clientIp(servletRequest));
         UserPrincipal principal = UserPrincipal.from(user);
         UsernamePasswordAuthenticationToken authentication = UsernamePasswordAuthenticationToken.authenticated(
                 principal, null, principal.getAuthorities()

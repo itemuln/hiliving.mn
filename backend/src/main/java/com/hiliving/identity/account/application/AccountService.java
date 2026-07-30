@@ -46,7 +46,13 @@ public class AccountService {
         if (users.existsByPhoneNumberAndIdNot(phone, userId)) {
             throw new ApiRequestException(HttpStatus.CONFLICT, "PHONE_ALREADY_REGISTERED", "Phone number is already registered");
         }
+        boolean emailChanged = !email.equals(user.getEmail());
         user.updateProfile(request.firstName().trim(), request.lastName().trim(), email, phone);
+        // Changing the login email is an account-takeover-relevant event; revoke all
+        // existing sessions so a stolen/old session cannot ride the new credentials.
+        if (emailChanged) {
+            user.invalidateSessions();
+        }
         return AccountResponse.from(users.save(user));
     }
 
@@ -58,6 +64,9 @@ public class AccountService {
         }
         passwordPolicy.validate(request.newPassword());
         user.changePassword(passwordEncoder.encode(request.newPassword()));
+        // Mirror the password-reset flow: a password change must revoke every existing
+        // session (including any attacker's), forcing a fresh sign-in with the new secret.
+        user.invalidateSessions();
         users.save(user);
     }
 

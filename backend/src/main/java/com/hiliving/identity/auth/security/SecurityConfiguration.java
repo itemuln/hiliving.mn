@@ -48,7 +48,7 @@ public class SecurityConfiguration {
             ApiSecurityErrorWriter errors,
             SecurityContextRepository securityContextRepository,
             SessionVersionFilter sessionVersionFilter,
-            @Value("${server.servlet.session.cookie.secure:false}") boolean secureCookies
+            @Value("${server.servlet.session.cookie.secure:true}") boolean secureCookies
     ) throws Exception {
         CookieCsrfTokenRepository csrfRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfRepository.setCookieCustomizer(cookie -> cookie.sameSite("Lax").path("/").secure(secureCookies));
@@ -57,6 +57,20 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfRepository)
                         .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                )
+                .headers(headers -> headers
+                        // API/media responses are JSON or images and never a document context:
+                        // lock the CSP all the way down and forbid framing entirely.
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"))
+                        .referrerPolicy(referrer -> referrer.policy(
+                                org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        .permissionsPolicyHeader(permissions -> permissions.policy(
+                                "geolocation=(), microphone=(), camera=(), payment=(), usb=()"))
+                        // Effective only over HTTPS; harmless on plain-HTTP local dev.
+                        .httpStrictTransportSecurity(hsts -> hsts
+                                .includeSubDomains(true)
+                                .maxAgeInSeconds(31536000))
                 )
                 .cors(Customizer.withDefaults())
                 .securityContext(context -> context

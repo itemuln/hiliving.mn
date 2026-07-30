@@ -29,6 +29,15 @@ spring:
       "[mail.smtp.writetimeout]": ${MAIL_WRITE_TIMEOUT_MS:10000}
 
 hiliving:
+  security:
+    rate-limit:
+      # Pre-credential abuse throttles for auth endpoints (brute-force, spraying,
+      # account-lockout DoS, and mass registration/enumeration). Tune per deployment.
+      login-ip-limit: ${LOGIN_IP_RATE_LIMIT:15}
+      login-identifier-limit: ${LOGIN_IDENTIFIER_RATE_LIMIT:10}
+      login-window: ${LOGIN_RATE_WINDOW:5m}
+      register-ip-limit: ${REGISTER_IP_RATE_LIMIT:20}
+      register-window: ${REGISTER_RATE_WINDOW:1h}
   checkout:
     standard-shipping-fee: ${HILIVING_STANDARD_SHIPPING_FEE:5000.00}
   qpay:
@@ -79,7 +88,8 @@ server:
       cookie:
         http-only: true
         same-site: lax
-        secure: ${SESSION_COOKIE_SECURE:false}
+        # Fail closed: cookies are Secure unless explicitly disabled for plain-HTTP local dev.
+        secure: ${SESSION_COOKIE_SECURE:true}
 
 management:
   health:

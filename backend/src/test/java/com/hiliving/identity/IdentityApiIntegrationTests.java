@@ -144,6 +144,10 @@ class IdentityApiIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.firstName").value("Updated"))
                 .andExpect(jsonPath("$.data.phoneNumber").value("+97699110007"));
+        // Changing the login email revokes all existing sessions, so the prior session is
+        // now unauthenticated; re-authenticate with the new email before continuing.
+        mockMvc.perform(get("/api/v1/account/me").session(session)).andExpect(status().isUnauthorized());
+        session = login("updated@example.com", "StrongPass123");
         mockMvc.perform(post("/api/v1/account/password").with(realCsrf()).session(session)
                         .contentType("application/json").content("{\"currentPassword\":\"bad\",\"newPassword\":\"NewStrong456\"}"))
                 .andExpect(status().isBadRequest()).andExpect(jsonPath("$.error.code").value("CURRENT_PASSWORD_INVALID"));
