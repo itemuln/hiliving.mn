@@ -65,18 +65,10 @@ export function AdminShell({
   const location = useLocation();
   const sidebar = (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#17202b] to-[#101720] text-slate-200">
-      <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
-        <Link
-          to="/admin"
-          onClick={() => setOpen(false)}
-          className="rounded-lg bg-white px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-          aria-label="HiLiving удирдлагын нүүр"
-        >
-          <img src="/hiLivingLogo.svg" alt="HiLiving" className="h-6 w-auto" />
-        </Link>
+      <div className="flex h-16 items-center justify-end border-b border-white/10 px-4 lg:hidden">
         <button
           onClick={() => setOpen(false)}
-          className="rounded-lg p-2 lg:hidden"
+          className="rounded-lg p-2"
           aria-label="Цэс хаах"
         >
           <X size={20} />

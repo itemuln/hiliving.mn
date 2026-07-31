@@ -56,7 +56,7 @@ export function ProductCard({
             type="button"
             onClick={onAddToCart}
             aria-label={`${product.name} бүтээгдэхүүнийг сагсанд нэмэх`}
-            className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-brand-500 transition-colors duration-200 hover:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 md:h-7 md:w-7"
+            className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-sm bg-brand-500 transition duration-200 hover:bg-brand-600 active:scale-95 motion-reduce:transform-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 md:h-7 md:w-7"
           >
             <img
               src="/icons/cart.svg"

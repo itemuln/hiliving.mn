@@ -10,6 +10,10 @@ Password registrations remain able to log in and check out while unverified for 
 
 Password reset increments `users.session_version` in the same transaction as the password update. Authenticated sessions contain their original version and are rejected/inactivated on the next request if it differs. This invalidates all prior sessions for the reset user without affecting another user and retains Spring Security session authentication.
 
+## Branding and message compatibility
+
+Every SMTP message is multipart with a plain-text alternative and a conservative table-based HTML body using only inline styles. The approved storefront asset `frontend/public/hiLivingLogo.svg` is rasterized into `backend/src/main/resources/email/hiliving-logo.png` at high resolution and attached with the stable `hiliving-logo` content ID. Templates reference that inline image rather than a remote URL or SVG, so branding remains available in clients that block remote images or do not render SVG. Visible headings, coral action buttons, raw fallback links, expiry/security notices, support contact details, and readable order item/totals tables are shared across message types. User-controlled content and URLs remain HTML-escaped.
+
 ## Migrations
 
 - V8 creates `email_outbox`, unique event idempotency, retry/poll indexes, JSONB payloads, and bounded states.
@@ -23,6 +27,8 @@ Copy `.env.example` to the ignored `.env`. Required for real delivery: `MAIL_HOS
 SMTP behavior is controlled by `MAIL_SMTP_AUTH`, `MAIL_SMTP_STARTTLS_ENABLED`, `MAIL_CONNECTION_TIMEOUT_MS`, `MAIL_READ_TIMEOUT_MS`, and `MAIL_WRITE_TIMEOUT_MS`. Outbox batch, poll, lease, maximum attempts, and exponential delay are controlled by the `EMAIL_OUTBOX_*` variables. Token expiry and bounded single-instance rate limits use `EMAIL_VERIFICATION_EXPIRY`, `PASSWORD_RESET_EXPIRY`, `EMAIL_RATE_LIMIT_MAX_ENTRIES`, `EMAIL_VERIFICATION_RATE_*`, and `PASSWORD_RESET_*_RATE_*`.
 
 `EMAIL_DELIVERY_ENABLED=false` is the default and is used by automated tests. Events remain pending; no test contacts an external SMTP server. Failed delivery never rolls back registration, checkout, or a completed password reset.
+
+Hostinger staging explicitly overrides the default with Brevo SMTP on port 587 after verifying the sender, credentials, fixed VPS IP authorization, application health, outbox completion, and mailbox delivery. Provider credentials remain only in `/etc/hiliving/hiliving.env`; the staging sender and shared credentials must be replaced with an authenticated final-domain sender and rotated owner-controlled keys before production cutover.
 
 ## Endpoints and frontend routes
 

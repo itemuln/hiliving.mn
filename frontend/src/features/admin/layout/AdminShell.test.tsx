@@ -24,10 +24,7 @@ describe('admin shell', () => {
         </MemoryRouter>
       </AuthContext.Provider>
     );
-    expect(screen.getByRole('img', { name: 'HiLiving' })).toHaveAttribute(
-      'src',
-      '/hiLivingLogo.svg'
-    );
+    expect(screen.queryByRole('img', { name: 'HiLiving' })).not.toBeInTheDocument();
     expect(screen.queryByText('Удирдлагын хэсэг')).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Захиалга' })).toHaveAttribute('href', '/admin/orders');
     expect(screen.getByRole('link', { name: 'Нүүр хуудас руу буцах' })).toHaveAttribute(

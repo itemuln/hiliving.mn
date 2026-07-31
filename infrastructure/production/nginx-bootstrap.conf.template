@@ -1,0 +1,18 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __SERVER_NAME__;
+
+    root /opt/hiliving/frontend/current;
+    index index.html;
+    server_tokens off;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

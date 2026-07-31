@@ -64,6 +64,6 @@ Verify the backend at <http://localhost:8080/actuator/health>. Public catalog re
 
 If another local service such as Jenkins already uses port 8080, override the backend for that run with `SERVER_PORT`, for example `SERVER_PORT=18080 ./mvnw spring-boot:run`.
 
-## Production target
+## Hostinger deployment
 
-The future Contabo Ubuntu LTS deployment will use NGINX for static assets and HTTPS, Spring Boot on localhost port 8080 under systemd, locally bound PostgreSQL, environment-based secrets, and off-server backups. Production deployment remains intentionally deferred.
+The complete stack is deployed at `https://hilivingmgl.mn` on a Hostinger Ubuntu 24.04 VPS. `www.hilivingmgl.mn` and the original Hostinger hostname redirect to the canonical domain. NGINX serves versioned frontend assets and HTTPS, Spring Boot runs on localhost port 8080 under systemd, PostgreSQL 17 runs in Docker on localhost, and secrets remain in the restricted server environment. Reviewed deployment assets and operating notes live in `infrastructure/production/`. Accepting production payments still requires durable scheduled off-server backups, rotated owner-controlled integration credentials, QPay rehearsals, final business details, and an authenticated sender domain.

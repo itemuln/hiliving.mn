@@ -27,3 +27,4 @@ backend/.settings/
 
 # Local persistent media (external to both application build trees)
 infrastructure/data/uploads/
+output/backups/

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { AnimatedCartIcon } from '../cart/AnimatedCartIcon';
 import { useOptionalAuth } from '../../features/auth/useAuth';
 import { useOptionalCart } from '../../features/cart/useCart';
 
@@ -146,7 +147,11 @@ export function MobileBottomNav() {
                 }`}
               >
                 <span className={isActive ? 'rounded-full bg-brand-50 p-1.5' : 'p-1.5'}>
-                  <img src={icon} alt="" aria-hidden="true" className="h-5 w-5" />
+                  {section === 'cart' ? (
+                    <AnimatedCartIcon itemCount={cartCount} />
+                  ) : (
+                    <img src={icon} alt="" aria-hidden="true" className="h-5 w-5" />
+                  )}
                 </span>
                 {section === 'cart' && cartCount > 0 ? (
                   <span className="absolute left-1/2 top-1 ml-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[9px] text-white">

@@ -234,7 +234,7 @@ export function ProductDetailPage() {
                         addItem(product.slug, quantity, product.availableQuantity);
                         setAdded(true);
                       }}
-                      className="min-h-12 flex-1 rounded-xl bg-brand-500 px-6 py-3 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-neutral-300 sm:flex-none"
+                      className="min-h-12 flex-1 rounded-xl bg-brand-500 px-6 py-3 text-sm font-semibold text-white transition-transform active:scale-[0.98] motion-reduce:transform-none hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-neutral-300 sm:flex-none"
                     >
                       {available ? 'Сагсанд нэмэх' : 'Нөөц дууссан'}
                     </button>

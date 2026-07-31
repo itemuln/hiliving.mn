@@ -3,6 +3,7 @@ package com.hiliving.email;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -66,6 +67,8 @@ public class SmtpTransactionalEmailService implements TransactionalEmailService 
             helper.setTo(recipient);
             helper.setSubject(content.subject());
             helper.setText(content.textBody(), content.htmlBody());
+            helper.addInline(EmailTemplateRenderer.LOGO_CONTENT_ID,
+                    new ClassPathResource("email/hiliving-logo.png"), "image/png");
             mailSender.send(message);
         } catch (MessagingException | UnsupportedEncodingException exception) {
             throw new IllegalStateException("Unable to construct transactional email", exception);

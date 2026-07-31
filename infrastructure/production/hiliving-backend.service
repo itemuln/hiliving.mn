@@ -1,0 +1,32 @@
+[Unit]
+Description=HiLiving Spring Boot backend
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=hiliving
+Group=hiliving
+EnvironmentFile=/etc/hiliving/hiliving.env
+WorkingDirectory=/opt/hiliving/backend/current
+ExecStart=/usr/bin/java -XX:+ExitOnOutOfMemoryError -XX:MaxRAMPercentage=50 -jar /opt/hiliving/backend/current/hiliving-backend.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0027
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/hiliving/uploads
+
+[Install]
+WantedBy=multi-user.target

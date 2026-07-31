@@ -1,6 +1,7 @@
 import { type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Container } from './Container';
+import { AnimatedCartIcon } from '../cart/AnimatedCartIcon';
 import { useOptionalAuth } from '../../features/auth/useAuth';
 import { useOptionalCart } from '../../features/cart/useCart';
 
@@ -110,7 +111,7 @@ export function Header() {
               aria-label={`Сагс, ${cartCount} бараа`}
               className="relative mb-2 ml-2 flex h-10 w-10 items-center justify-center rounded-full bg-neutral-100 hover:bg-brand-50"
             >
-              <img src="/icons/cart.svg" alt="" aria-hidden="true" className="h-5 w-5" />
+              <AnimatedCartIcon itemCount={cartCount} />
               {cartCount > 0 ? (
                 <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] text-white">
                   {cartCount > 99 ? '99+' : cartCount}

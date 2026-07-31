@@ -2,21 +2,26 @@
 
 ## Active
 
-- No active implementation task. Failed QPay initiation cleanup, historical local-data repair, and application-owned 15-minute invoice expiry are complete; the next P1 work is real paid/expiry verification and stable staging HTTPS.
+- The Hostinger stack, canonical `hilivingmgl.mn` origin, reviewed admin accounts, public demo catalog, and branded Brevo transactional email are live over HTTPS. Next: configure durable scheduled off-server backups, rotate/authenticate final production mail credentials/domain, then complete QPay and business verification before accepting production payments.
 
 ## Planned
 
 - [x] **P1 - Phase 4B/7C:** implement email verification and password-reset tokens, expiry, one-time use, abuse protection, session invalidation, and transactional SMTP/outbox delivery. Phone/SMS verification remains out of scope.
+- [x] **P1:** activate Hostinger staging SMTP through Brevo, authorize the VPS, verify sender and mailbox delivery, embed the HiLiving logo inline, and deploy the professional multipart email layout.
+- [ ] **P1:** rotate the staging API/SMTP credentials, authenticate the final `hilivingmgl.mn` sending domain, and complete real verification, password-reset, and order-notification mailbox checks before accepting production payments.
 - [x] **P1 - Phase 7:** add ADMIN-only order list/detail workflows, validated fulfillment/status transitions, operational audit events, and customer order history before enabling the Orders navigation item.
 - [ ] **P1 - Phase 7:** define cancellation, rejection, and stock-restoration rules, including idempotent transitions and concurrency behavior, before allowing order cancellation.
 - [x] **P1:** implement the QPay Merchant V2 invoice/check lifecycle with server-verified callbacks, durable attempts, secret-safe configuration, expiry stock restoration, and explicit reconciliation failures. Settlement reporting and refunds remain planned separately.
 - [ ] **P1:** complete one real paid QPay callback/check and one real application-managed provider cancellation/expiry rehearsal without changing the actual order amount; QR/deeplink creation is already proven against the live Merchant V2 endpoint.
-- [ ] **P1:** replace the testing-only Quick Tunnel with stable `api.hiliving.mn` HTTPS. The owner must choose public NGINX/Let's Encrypt ingress or a named Cloudflare Tunnel and provide the required VPS, Cloudflare, and authoritative DNS access while preserving existing mail records.
+- [x] **P1:** replace the testing-only Quick Tunnel with stable Hostinger staging HTTPS using public NGINX/Let's Encrypt ingress; homepage, deep links, API proxy, secure CSRF cookie, renewal, reboot recovery, and firewall exposure are verified.
+- [x] **P1:** cut the Datacom-managed web origin over to `hilivingmgl.mn`, retain its existing nameservers, issue renewable HTTPS for the apex and `www`, redirect legacy hosts to the apex, and update application/email-link plus disabled QPay callback origins.
 - [ ] **P1:** rotate the shared test credential before production, install only owner-controlled merchant values in the restricted server environment, and keep QPay disabled in committed defaults.
-- [ ] **P1:** install/use an exact Java 21 runtime and repeat the full backend verification before release; the latest local run passed on JDK 26 targeting compiler release 21.
+- [x] **P1:** install/use exact Java 21 and repeat the full backend verification; all 65 tests and JAR packaging pass on Temurin Java 21.0.11, and Hostinger runs OpenJDK 21.
 - [ ] **P1:** replace the deliberately marked self-pickup sample address, business hours, and phone with owner-confirmed production collection details before launch.
 - [ ] **P1:** define Ebarimt 3.0 invoice/receipt timing, tax classification, organization/customer data, retry, and correction policy before connecting the supplied Ebarimt contract.
-- [ ] **P1:** provision the production upload root and NGINX read-only `/media/` alias, then rehearse paired PostgreSQL/filesystem backup and restore before deployment.
+- [x] **P1:** provision `/var/lib/hiliving/uploads` under the restricted service account and route `/media/` through the localhost backend with immutable caching and NGINX request-size enforcement.
+- [x] **P1:** create a coordinated PostgreSQL/media backup, copy it off the VPS into restricted ignored workstation storage, and verify exact database/media recovery in isolated PostgreSQL 17/filesystem targets.
+- [ ] **P1:** replace manual workstation backup copies with scheduled encrypted backups to a durable owner-controlled off-server destination, with monitoring and retention, before accepting production payments.
 - [ ] **P2:** add reference-aware media deletion/orphan reporting after defining retention and recovery policy; do not delete shared or externally hosted URLs.
 - [ ] **P2:** move the auth rate-limit store from the in-memory per-instance counter to a shared backend (for example Redis with atomic counters and TTLs) before any multi-node deployment, so throttle limits are not multiplied across replicas; revisit the account-lockout DoS with CAPTCHA or soft-backoff at the same time.
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
@@ -25,10 +30,14 @@
 - [ ] **P2:** define a redirect/alias and migration policy before ever introducing an exceptional product-slug correction or import tool; normal product editing keeps generated slugs immutable.
 - [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
-- [ ] **P3:** design production NGINX, systemd, HTTPS, restricted environment files, SPA fallback, `/api` proxying, and off-server backups in a later phase.
+- [x] **P1:** deploy reviewed NGINX, systemd, HTTPS renewal, restricted environment files, SPA fallback, `/api` and `/media` proxying, PostgreSQL 17 persistence, firewall rules, and reboot recovery to Hostinger staging. Off-server backup/restore remains the separate P1 gate above.
 
 ## Completed
 
+- [x] Cut `hilivingmgl.mn` and `www` web DNS over from Datacom's previous endpoint to Hostinger, install renewable HTTPS, establish the apex as canonical, update public/callback origins, and verify deep links, API, health, redirects, headers, and renewal.
+- [x] Deploy a reduced-motion-aware cart count-increase animation, remove the admin sidebar logo, promote the two specifically requested registered admin accounts, and live-verify the cart plus branded verification delivery.
+- [x] Selectively migrate only the public demo catalog/content and 15 referenced media files to Hostinger staging; verify exact public counts and zero users, orders, payments, and email rows.
+- [x] Deploy the complete single-node Hostinger staging stack at `https://srv1869478.hstgr.cloud`, verify exact Java 21 backend tests, frontend tests/lint/build, valid renewable HTTPS, API/deep links/security headers, localhost-only application/data services, UFW, Ubuntu updates, and automatic recovery after reboot while keeping QPay/email disabled and private workstation data out.
 - [x] Conduct an authenticated whitebox/dynamic security assessment of the backend and remediate confirmed findings: add configurable login (per IP and per identifier) and registration (per IP) rate limiting, default `SESSION_COOKIE_SECURE` to true, add CSP/Referrer-Policy/Permissions-Policy/HSTS headers, and extend session-version revocation to self-service password and email change. Assessed and confirmed already-controlled: QPay callback forgery, order IDOR, price tampering, SQL injection, upload/path-traversal, SSRF, admin authorization, and secret exposure. Re-validated live; all 65 backend tests pass.
 - [x] Replace the sparse local storefront presentation with exactly nine production-looking demo products across the existing nine categories, licensed managed photos, two banners, four published news articles, and a source/license ledger without changing accounts or orders.
 - [x] Make administration dashboard summaries navigable, use the HiLiving logo-only sidebar lockup, and simplify the full-width customer discount/status layout without duplicate summaries or status badges.
