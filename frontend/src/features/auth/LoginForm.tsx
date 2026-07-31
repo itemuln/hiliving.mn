@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { authErrorMessage } from './authErrorMessage';
 import { fieldClass, primaryButtonClass } from './AuthPageShell';
 import { safeReturnTo } from './returnTo';

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Archive, Edit3, Plus, RotateCcw } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as api from '../../../api/adminApi';
 import type { Brand, Category, Page, Product } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';

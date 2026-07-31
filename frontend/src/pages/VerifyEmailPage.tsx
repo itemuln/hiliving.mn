@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { confirmEmailVerification, requestEmailVerification } from '../api/accountApi';
 import { authErrorMessage } from '../features/auth/authErrorMessage';
 import { AuthPageShell, primaryButtonClass } from '../features/auth/AuthPageShell';

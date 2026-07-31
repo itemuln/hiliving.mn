@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useCategories } from '../../features/catalog/useCatalog';
 import { CatalogEmptyState } from '../catalog/CatalogEmptyState';
 import { CatalogErrorState } from '../catalog/CatalogErrorState';

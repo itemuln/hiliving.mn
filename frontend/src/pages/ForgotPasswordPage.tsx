@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { requestPasswordReset } from '../api/accountApi';
 import { authErrorMessage } from '../features/auth/authErrorMessage';
 import { AuthPageShell, fieldClass, primaryButtonClass } from '../features/auth/AuthPageShell';

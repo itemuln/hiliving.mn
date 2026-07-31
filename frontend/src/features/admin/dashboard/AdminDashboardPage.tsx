@@ -10,7 +10,7 @@ import {
   Tags,
   Users,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as api from '../../../api/adminApi';
 import type { DashboardCounts } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';

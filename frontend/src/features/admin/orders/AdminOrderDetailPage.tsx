@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import { getAdminOrder, updateAdminOrderStatus } from '../../../api/adminApi';
 import { cartErrorMessage } from '../../cart/cartErrorMessage';
 import { orderStatusLabel, paymentStatusLabel, statusTone } from '../../checkout/orderStatus';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import * as api from '../../../api/adminApi';
 import type { Address } from '../../account/account.types';
 import type { AdminUser } from '../admin.types';

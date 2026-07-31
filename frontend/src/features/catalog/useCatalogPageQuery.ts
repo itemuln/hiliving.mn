@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import type { ProductSort } from './catalog.types';
 
 const productSorts: readonly ProductSort[] = ['newest', 'price_asc', 'price_desc', 'name_asc'];

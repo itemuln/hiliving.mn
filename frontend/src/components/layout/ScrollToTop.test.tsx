@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { Link, MemoryRouter } from 'react-router-dom';
+import { Link, MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ScrollToTop } from './ScrollToTop';
 
@@ -9,7 +9,12 @@ function NavigationHarness() {
   return (
     <>
       <ScrollToTop />
-      <div id="catalog-products" ref={(node) => node && (node.scrollIntoView = scrollIntoView)} />
+      <div
+        id="catalog-products"
+        ref={(node) => {
+          if (node) node.scrollIntoView = scrollIntoView;
+        }}
+      />
       <Link to="/brands/example-brand">Open brand</Link>
       <Link to="/products/example-product">Open product</Link>
     </>

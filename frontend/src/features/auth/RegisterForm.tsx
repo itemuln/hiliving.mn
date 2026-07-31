@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { authErrorMessage } from './authErrorMessage';
 import { fieldClass, primaryButtonClass } from './AuthPageShell';
 import { useAuth } from './useAuth';

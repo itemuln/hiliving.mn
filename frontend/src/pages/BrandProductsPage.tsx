@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { CatalogEmptyState } from '../components/catalog/CatalogEmptyState';
 import { CatalogErrorState } from '../components/catalog/CatalogErrorState';
 import { CatalogLayout } from '../components/catalog/CatalogLayout';

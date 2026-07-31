@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { getPublicNewsArticle } from '../api/contentApi';
 import type { News } from '../features/admin/admin.types';
 import { Header } from '../components/layout/Header';

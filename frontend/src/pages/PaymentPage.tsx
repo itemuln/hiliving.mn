@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { checkPayment, getPayment } from '../api/commerceApi';
 import { Container } from '../components/layout/Container';
 import { Footer } from '../components/layout/Footer';

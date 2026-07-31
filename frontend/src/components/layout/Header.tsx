@@ -1,5 +1,5 @@
 import { type FormEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { Container } from './Container';
 import { useOptionalAuth } from '../../features/auth/useAuth';
 import { useOptionalCart } from '../../features/cart/useCart';

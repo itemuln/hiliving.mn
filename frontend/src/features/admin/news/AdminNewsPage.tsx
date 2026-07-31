@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Edit3, Plus, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as api from '../../../api/adminApi';
 import type { News } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';

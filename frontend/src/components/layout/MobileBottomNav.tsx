@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { useOptionalAuth } from '../../features/auth/useAuth';
 import { useOptionalCart } from '../../features/cart/useCart';
 

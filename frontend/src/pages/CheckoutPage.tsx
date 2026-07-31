@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { AccountApiError, createAddress, getAddresses } from '../api/accountApi';
 import { placeOrder, quoteCart } from '../api/commerceApi';
 import { Container } from '../components/layout/Container';

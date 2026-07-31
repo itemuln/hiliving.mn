@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { NewsCardProps } from '../ui/NewsCard';
 
 const isCatalogPath = (pathname: string) => /^\/(categories|brands)(\/|$)/.test(pathname);

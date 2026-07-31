@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { ArrowDown, ArrowUp, ImagePlus, Trash2 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import * as api from '../../../api/adminApi';
 import type { Brand, Category, ProductInput, ProductLifecycle } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';

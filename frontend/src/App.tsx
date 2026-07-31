@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { CatalogShell } from './components/catalog/CatalogShell';
 import { ScrollToTop } from './components/layout/ScrollToTop';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';

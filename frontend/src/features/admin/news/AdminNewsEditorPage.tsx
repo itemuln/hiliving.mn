@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import * as api from '../../../api/adminApi';
 import type { NewsInput } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';

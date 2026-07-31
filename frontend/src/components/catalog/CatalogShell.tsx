@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 import { HeroCarousel } from '../home/HeroCarousel';
 import { Footer } from '../layout/Footer';
 import { Header } from '../layout/Header';

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { accountJson, authenticatedUser } from '../../test/accountFixtures';
 import { AuthContext, type AuthContextValue } from '../auth/AuthContext';

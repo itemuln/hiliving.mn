@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router';
 import { confirmPasswordReset } from '../api/accountApi';
 import { authErrorMessage } from '../features/auth/authErrorMessage';
 import { AuthPageShell, fieldClass, primaryButtonClass } from '../features/auth/AuthPageShell';

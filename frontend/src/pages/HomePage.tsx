@@ -1,5 +1,5 @@
 import { lazy, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { CategorySection } from '../components/home/CategorySection';
 import { HeroCarousel } from '../components/home/HeroCarousel';
 import { ProductSection } from '../components/home/ProductSection';

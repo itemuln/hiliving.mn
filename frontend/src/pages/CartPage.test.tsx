@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import { AccountApiError } from '../api/accountApi';
 import { CartContext, type CartContextValue } from '../features/cart/CartContext';

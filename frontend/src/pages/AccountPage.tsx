@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { CircleCheck } from 'lucide-react';
 import { AccountShell } from '../features/account/AccountShell';
 import { EmailVerificationStatus } from '../features/account/EmailVerificationStatus';
