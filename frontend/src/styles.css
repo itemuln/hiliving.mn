@@ -26,6 +26,13 @@ input {
   -webkit-tap-highlight-color: transparent;
 }
 
+.admin-shell,
+.admin-shell * {
+  font-family: 'Roboto', Arial, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+}
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,

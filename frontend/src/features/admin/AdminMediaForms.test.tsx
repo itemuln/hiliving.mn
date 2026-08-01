@@ -18,6 +18,33 @@ vi.mock('../../api/adminApi', () => ({
   uploadMediaImage: vi.fn(),
 }));
 
+vi.mock('./components/RichTextEditor', () => ({
+  RichTextEditor: ({
+    value,
+    mediaPurpose,
+    onChange,
+    onReady,
+  }: {
+    value: string;
+    mediaPurpose: string;
+    onChange: (value: string) => void;
+    onReady: (editor: {
+      getContent: () => string;
+      uploadImages: () => Promise<readonly { status: boolean }[]>;
+    }) => void;
+  }) => {
+    onReady({ getContent: () => value, uploadImages: async () => [] });
+    return (
+      <textarea
+        aria-label="Мэдээний агуулга"
+        data-media-purpose={mediaPurpose}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    );
+  },
+}));
+
 const asset = (purpose: string) => ({
   id: 1,
   storageKey: `${purpose}/generated.png`,
@@ -95,6 +122,28 @@ describe('admin media forms', () => {
     expect(vi.mocked(api.createBrand).mock.calls[0][0]).not.toHaveProperty('sortOrder');
   });
 
+  it('lists a brand without exposing its routing slug', async () => {
+    vi.mocked(api.listBrands).mockResolvedValueOnce([
+      {
+        id: 1,
+        name: 'Bluwell',
+        slug: 'bluwell',
+        logoUrl: null,
+        bannerImageUrl: null,
+        description: null,
+        sortOrder: 0,
+        active: true,
+        productCount: 1,
+      },
+    ]);
+
+    render(page(<AdminBrandsPage />));
+
+    expect(await screen.findByText('Bluwell')).toBeInTheDocument();
+    expect(screen.queryByText('/bluwell')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Нэрээр хайх')).toBeInTheDocument();
+  });
+
   it('uploads desktop and mobile banner photos in one two-file batch', async () => {
     vi.mocked(api.uploadMediaImage).mockImplementation(async (selectedFile, purpose) => ({
       ...asset(purpose.toLowerCase()),
@@ -145,13 +194,21 @@ describe('admin media forms', () => {
     );
   });
 
-  it('uploads and persists a news thumbnail while body authoring stays text based', async () => {
+  it('uploads a news thumbnail and authors rich content with NEWS media', async () => {
     render(page(<AdminNewsEditorPage />));
     expect(document.querySelectorAll('input[type="file"]')).toHaveLength(1);
     expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Товч тайлбар')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Ангилал')).toHaveValue('GENERAL');
-    expect(screen.getByLabelText('Тайлбар')).toHaveAttribute('rows', '12');
+    expect(screen.getByLabelText('Ангилал')).toHaveValue('NEWS');
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual([
+      'Сургалт',
+      'Мэдээ',
+      'Мэдээлэл',
+    ]);
+    expect(screen.getByLabelText('Мэдээний агуулга')).toHaveAttribute(
+      'data-media-purpose',
+      'NEWS'
+    );
     expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
@@ -163,13 +220,16 @@ describe('admin media forms', () => {
       )
     );
     fireEvent.change(screen.getByLabelText('Гарчиг'), { target: { value: 'Uploaded news' } });
-    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: 'HEALTH' } });
-    fireEvent.change(screen.getByLabelText('Тайлбар'), { target: { value: 'Content' } });
+    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: 'INFORMATION' } });
+    fireEvent.change(screen.getByLabelText('Мэдээний агуулга'), {
+      target: { value: '<p>Content</p>' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Нийтлэх' }));
     await waitFor(() =>
       expect(api.createNews).toHaveBeenCalledWith(
         expect.objectContaining({
-          category: 'HEALTH',
+          category: 'INFORMATION',
+          content: '<p>Content</p>',
           thumbnailUrl: '/media/news/generated.png',
           published: true,
         })

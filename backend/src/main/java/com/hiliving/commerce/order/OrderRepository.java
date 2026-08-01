@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 import jakarta.persistence.LockModeType;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,6 +22,19 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     Optional<OrderEntity> findByOrderNumberAndCustomerId(String orderNumber, Long customerId);
 
     Page<OrderEntity> findByCustomerIdOrderByPlacedAtDescIdDesc(Long customerId, Pageable pageable);
+
+    long countByCustomerIdAndOrderStatus(Long customerId, OrderStatus orderStatus);
+
+    @Query("""
+            select order.customer.id as customerId,
+                   count(order) as orderCount,
+                   coalesce(sum(case when order.paymentStatus = :paidStatus then order.grandTotal else 0 end), 0) as totalPaid
+            from OrderEntity order
+            where order.customer.id in :customerIds
+            group by order.customer.id
+            """)
+    List<CustomerOrderMetrics> findCustomerMetrics(@Param("customerIds") List<Long> customerIds,
+                                                   @Param("paidStatus") PaymentStatus paidStatus);
 
     @EntityGraph(attributePaths = {"items", "addressSnapshot"})
     Optional<OrderEntity> findByOrderNumber(String orderNumber);

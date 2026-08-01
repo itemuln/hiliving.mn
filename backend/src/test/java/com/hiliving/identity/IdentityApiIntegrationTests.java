@@ -215,7 +215,15 @@ class IdentityApiIntegrationTests {
         MockHttpSession adminSession = login("admin@example.com", "StrongPass123");
         var customerUser = users.findByEmail("customer@example.com").orElseThrow();
         mockMvc.perform(get("/api/v1/admin/users").session(adminSession).param("search", "customer"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.data.totalElements").value(1));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.totalElements").value(1))
+                .andExpect(jsonPath("$.data.items[0].orderCount").value(0))
+                .andExpect(jsonPath("$.data.items[0].totalPaid").value(0));
+        mockMvc.perform(get("/api/v1/admin/users/{id}/orders", customerUser.getId()).session(adminSession))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cancelledCount").value(0))
+                .andExpect(jsonPath("$.data.shippedCount").value(0))
+                .andExpect(jsonPath("$.data.orders.totalElements").value(0));
         mockMvc.perform(patch("/api/v1/admin/users/{id}/membership", customerUser.getId()).with(realCsrf()).session(adminSession)
                         .contentType("application/json").content("{\"membershipCode\":\"GOLD\"}"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.membership.effectiveDiscountPercentage").value(10.0));

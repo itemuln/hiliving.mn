@@ -2,6 +2,7 @@ package com.hiliving.content.page;
 
 import com.hiliving.admin.audit.AuditService;
 import com.hiliving.api.error.ApiRequestException;
+import com.hiliving.content.HtmlContentSanitizer;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,12 +19,12 @@ public class ContentPageService {
     );
 
     private final ContentPageRepository pages;
-    private final ContentPageHtmlSanitizer sanitizer;
+    private final HtmlContentSanitizer sanitizer;
     private final AuditService audit;
 
     public ContentPageService(
             ContentPageRepository pages,
-            ContentPageHtmlSanitizer sanitizer,
+            HtmlContentSanitizer sanitizer,
             AuditService audit
     ) {
         this.pages = pages;

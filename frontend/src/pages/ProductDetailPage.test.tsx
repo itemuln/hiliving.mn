@@ -71,6 +71,7 @@ describe('ProductDetailPage', () => {
   it('renders authoritative pricing, switches images, bounds quantity, and adds to cart', async () => {
     const detail = {
       ...productDetailDto,
+      description: '<p>Rich <strong>product details</strong></p>',
       images: [
         ...productDetailDto.images,
         {
@@ -93,6 +94,7 @@ describe('ProductDetailPage', () => {
     const heading = await screen.findByRole('heading', { name: detail.name });
     expect(heading.closest('section')).toHaveClass('md:self-start');
     expect(screen.getByText('45,000₮')).toBeInTheDocument();
+    expect(screen.getByText('product details').tagName).toBe('STRONG');
     expect(screen.queryByText(/Нөөцөд байна|Цөөн үлдсэн/)).not.toBeInTheDocument();
     expect(
       screen.queryByText('Нэвтэрсэн хэрэглэгчийн гишүүнчлэлийн хөнгөлөлт автоматаар тооцогдоно.')

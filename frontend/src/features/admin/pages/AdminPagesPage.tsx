@@ -60,9 +60,6 @@ export function AdminPagesPage() {
                   >
                     <td className="p-4">
                       <div className="font-bold text-slate-900">{page.title}</div>
-                      <div className="mt-1 text-xs uppercase tracking-wide text-slate-400">
-                        {page.navigationLabel}
-                      </div>
                     </td>
                     <td>
                       <StatusBadge tone={page.published ? 'success' : 'warning'}>

@@ -1,15 +1,23 @@
 package com.hiliving.identity.admin.application;
 
-import com.hiliving.api.PagedResponse;
 import com.hiliving.admin.audit.AuditService;
+import com.hiliving.api.PagedResponse;
 import com.hiliving.api.error.ApiRequestException;
+import com.hiliving.commerce.order.CustomerOrderMetrics;
+import com.hiliving.commerce.order.OrderEntity;
+import com.hiliving.commerce.order.OrderRepository;
+import com.hiliving.commerce.order.OrderStatus;
+import com.hiliving.commerce.order.OrderSummaryResponse;
+import com.hiliving.commerce.order.PaymentStatus;
 import com.hiliving.identity.account.api.AccountResponse;
+import com.hiliving.identity.account.api.AddressResponse;
+import com.hiliving.identity.admin.api.AdminUserOrderOverviewResponse;
+import com.hiliving.identity.admin.api.AdminUserSummaryResponse;
 import com.hiliving.identity.user.persistence.MembershipTierRepository;
+import com.hiliving.identity.user.persistence.UserAddressRepository;
 import com.hiliving.identity.user.persistence.UserEntity;
 import com.hiliving.identity.user.persistence.UserRepository;
 import com.hiliving.identity.user.persistence.UserStatus;
-import com.hiliving.identity.user.persistence.UserAddressRepository;
-import com.hiliving.identity.account.api.AddressResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,9 +26,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.List;
 
 @Service
 public class AdminUserService {
@@ -33,22 +42,37 @@ public class AdminUserService {
     private final UserRepository users;
     private final MembershipTierRepository memberships;
     private final UserAddressRepository addresses;
+    private final OrderRepository orders;
     private final AuditService audit;
 
-    public AdminUserService(UserRepository users, MembershipTierRepository memberships, UserAddressRepository addresses, AuditService audit) {
+    public AdminUserService(UserRepository users, MembershipTierRepository memberships,
+                            UserAddressRepository addresses, OrderRepository orders, AuditService audit) {
         this.users = users;
         this.memberships = memberships;
         this.addresses = addresses;
+        this.orders = orders;
         this.audit = audit;
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<AccountResponse> search(int page, int size, String search, String membership, String status, String sort) {
+    public PagedResponse<AdminUserSummaryResponse> search(int page, int size, String search, String membership, String status, String sort) {
         Sort selected = SORTS.get(sort);
         if (selected == null) throw new ApiRequestException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "Unsupported sort value");
         Page<UserEntity> result = users.searchAdmin(search == null ? "" : search.trim(), upper(membership), upper(status), PageRequest.of(page, size, selected));
+        Map<Long, CustomerOrderMetrics> metricsByCustomer = new HashMap<>();
+        if (!result.isEmpty()) {
+            orders.findCustomerMetrics(result.getContent().stream().map(UserEntity::getId).toList(), PaymentStatus.PAID)
+                    .forEach(metrics -> metricsByCustomer.put(metrics.getCustomerId(), metrics));
+        }
         return new PagedResponse<>(
-                result.getContent().stream().map(AccountResponse::from).toList(),
+                result.getContent().stream().map(user -> {
+                    CustomerOrderMetrics metrics = metricsByCustomer.get(user.getId());
+                    return AdminUserSummaryResponse.from(
+                            user,
+                            metrics == null ? 0 : metrics.getOrderCount(),
+                            metrics == null ? BigDecimal.ZERO : metrics.getTotalPaid()
+                    );
+                }).toList(),
                 result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages(),
                 result.isFirst(), result.isLast()
         );
@@ -61,6 +85,23 @@ public class AdminUserService {
     public List<AddressResponse> addresses(Long userId) {
         required(userId);
         return addresses.findAllByUserIdOrderByDefaultAddressDescCreatedAtAscIdAsc(userId).stream().map(AddressResponse::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AdminUserOrderOverviewResponse orderOverview(Long userId, int page, int size) {
+        required(userId);
+        Page<OrderEntity> result =
+                orders.findByCustomerIdOrderByPlacedAtDescIdDesc(userId, PageRequest.of(page, size));
+        PagedResponse<OrderSummaryResponse> orderPage = new PagedResponse<>(
+                result.getContent().stream().map(OrderSummaryResponse::from).toList(),
+                result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages(),
+                result.isFirst(), result.isLast()
+        );
+        return new AdminUserOrderOverviewResponse(
+                orders.countByCustomerIdAndOrderStatus(userId, OrderStatus.CANCELLED),
+                orders.countByCustomerIdAndOrderStatus(userId, OrderStatus.SHIPPED),
+                orderPage
+        );
     }
 
     @Transactional

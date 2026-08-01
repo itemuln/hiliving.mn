@@ -37,6 +37,13 @@
 
 ## Completed
 
+- [x] Set the single-news detail title to exactly 20px in Roboto Regular without affecting other storefront headings.
+- [x] Rework administration Users to the supplied list/detail layouts with order counts, paid totals, membership and registration columns, profile/status summaries, paginated customer order history, and admin-scoped Roboto Regular typography.
+- [x] Replace the seven topical news categories with `Сургалт`, `Мэдээ`, and `Мэдээлэл` through the editor, typed API, Flyway V18 data migration/constraint, public metadata, and working section-filter buttons.
+- [x] Reuse TinyMCE for add/edit `Мэдээ/Мэдээлэл` with managed NEWS inline images, upload-safe saves, backend HTML sanitization, meaningful-content validation, and rich public detail rendering.
+- [x] Simplify add/edit product authoring with shared TinyMCE product descriptions, managed inline PRODUCT images, one optional direct sale price where empty means no sale, and publication controls without stock/threshold fields.
+- [x] Remove generated product slugs and the `НУУЦ` visibility suffix from the All products list while preserving routing and visibility behavior.
+- [x] Remove `/slug` secondary text from category and brand lists, keep banner administration slug-free, and remove the repeated navigation label from the Pages list.
 - [x] Replace the Hiliving MGL home anchor with four fixed responsive content sections and activate administration Pages with TinyMCE Visual/HTML editing, managed PAGE images, draft/public state, server sanitization, and focused public/admin/security coverage.
 - [x] Add bounded per-photo display scaling across product administration, catalog cards, and the ordered product gallery; persist drag/button ordering and scale through Flyway V16 and the typed API contracts.
 - [x] Add controlled common news categories across admin, API, enum persistence, and Flyway V17; show category/date metadata and reference-matched serif headlines on the public information list.

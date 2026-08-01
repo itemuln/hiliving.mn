@@ -116,7 +116,7 @@ export function AdminBrandsPage() {
             label="Брэнд хайх"
             value={search}
             onChange={setSearch}
-            placeholder="Нэр эсвэл slug-аар хайх"
+            placeholder="Нэрээр хайх"
           />
         </div>
       </div>
@@ -158,10 +158,7 @@ export function AdminBrandsPage() {
                         ) : (
                           <div className="h-10 w-10 rounded-lg bg-slate-100" />
                         )}
-                        <div>
-                          <div className="font-bold">{item.name}</div>
-                          <div className="text-xs text-slate-400">/{item.slug}</div>
-                        </div>
+                        <div className="font-bold">{item.name}</div>
                       </div>
                     </td>
                     <td>{item.productCount}</td>

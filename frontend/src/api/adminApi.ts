@@ -1,6 +1,8 @@
 import { apiRequest, apiUpload, type UploadOptions } from './accountApi';
 import type {
   AdminUser,
+  AdminUserOrderOverview,
+  AdminUserSummary,
   AdminOrderDetail,
   AdminOrderSummary,
   Banner,
@@ -64,10 +66,12 @@ export const archiveProduct = (id: number) =>
 export const restoreProduct = (id: number) =>
   apiRequest<Product>(`/api/v1/admin/products/${id}/restore`, { method: 'POST' });
 export const listUsers = (filters: Record<string, unknown>) =>
-  apiRequest<Page<AdminUser>>(`/api/v1/admin/users${query(filters)}`);
+  apiRequest<Page<AdminUserSummary>>(`/api/v1/admin/users${query(filters)}`);
 export const getUser = (id: number) => apiRequest<AdminUser>(`/api/v1/admin/users/${id}`);
 export const getUserAddresses = (id: number) =>
   apiRequest<Address[]>(`/api/v1/admin/users/${id}/addresses`);
+export const getUserOrders = (id: number, page = 0, size = 20) =>
+  apiRequest<AdminUserOrderOverview>(`/api/v1/admin/users/${id}/orders${query({ page, size })}`);
 export const updateUserMembership = (id: number, membershipCode: string) =>
   apiRequest<AdminUser>(`/api/v1/admin/users/${id}/membership`, json('PATCH', { membershipCode }));
 export const updateUserDiscount = (id: number, discountOverridePercentage: number | null) =>

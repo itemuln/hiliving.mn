@@ -14,7 +14,7 @@ vi.mock('../../../api/adminApi', () => ({
   updateContentPage: vi.fn(),
 }));
 
-vi.mock('./RichTextEditor', () => ({
+vi.mock('../components/RichTextEditor', () => ({
   RichTextEditor: ({
     value,
     onChange,
@@ -78,6 +78,7 @@ describe('administration pages', () => {
     );
 
     expect(await screen.findByText('Гишүүнчлэл')).toBeInTheDocument();
+    expect(screen.queryByText('ГИШҮҮНЧЛЭЛ')).not.toBeInTheDocument();
     expect(screen.getByText('Ноорог')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Гишүүнчлэл засах' })).toHaveAttribute(
       'href',

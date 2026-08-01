@@ -12,8 +12,8 @@ import {
   primaryButton,
   secondaryButton,
 } from '../components/AdminUi';
+import { RichTextEditor, type RichTextEditorHandle } from '../components/RichTextEditor';
 import { AdminShell } from '../layout/AdminShell';
-import { RichTextEditor, type RichTextEditorHandle } from './RichTextEditor';
 
 const emptyForm: ContentPageInput = { title: '', contentHtml: '', published: false };
 
@@ -161,6 +161,7 @@ export function AdminPageEditorPage() {
           </div>
           <RichTextEditor
             value={form.contentHtml}
+            mediaPurpose="PAGE"
             disabled={saving}
             onReady={(instance) => {
               editor.current = instance;

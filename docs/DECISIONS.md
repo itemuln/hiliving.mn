@@ -563,3 +563,51 @@
 **Decision:** Replace the anchor with the dedicated `/hiliving-mgl/:sectionSlug?` React route and retain application ownership of the outer layout and responsive section navigation. Create four fixed section identities—company history, philosophy, membership, and awards—through Flyway V15; administrators may edit only title, rich HTML, and draft/published state. Use the official TinyMCE React integration loaded from Tiny Cloud with an environment-only `VITE_TINYMCE_API_KEY` and free/core plugins, including code view. Reuse managed media with a new `PAGE` purpose and require editor uploads to finish before save. Sanitize HTML with a backend allowlist before persistence, expose only published sections publicly, reject empty publication, and audit page state changes.
 
 **Consequences:** Content editors get a familiar rich editor without control over application code or storefront chrome. Public pages keep the current white/neutral/coral responsive system and render only server-sanitized content. TinyMCE Cloud must be configured with the deployment key and allowed domain at build/deployment time; missing configuration fails visibly in the admin editor. Drafts may be empty, but publication requires text or an image. Page images use immutable same-origin managed URLs and share the existing backup, orphan-retention, and storage-boundary requirements.
+
+## 2026-08-01 - Simplified product rich-content, pricing, and publication authoring
+
+**Context:** Product authoring exposed percentage/final-price discount modes and inventory controls that were unnecessary for the requested add-product workflow, while its description remained plain text despite TinyMCE already being available for managed pages. Product descriptions can contain administrator-authored HTML and inline images, so moving the editor without extending the server trust boundary would create stored-XSS and broken Base64-image risks.
+
+**Decision:** Reuse the shared TinyMCE component for product descriptions with managed media purpose `PRODUCT`, flush pending uploads before save, and sanitize product HTML through the shared backend allowlist on both writes and public reads. Derive catalog summaries as plain text from the sanitized description. Replace the discount toggle and percentage conversion UI with one nullable direct sale-price input: empty means `discountPrice=null`, and a provided value must be lower than the base price. Remove stock quantity and low-stock threshold controls from the normal product form while retaining lifecycle and visibility flags; preserve stored inventory values on edit and use the established zero/five defaults on creation.
+
+**Consequences:** The add/edit product workflow matches the supplied compact layout, administrators can format descriptions and add managed inline images, and the storefront can safely render that formatting. There is no implicit sale state or client-side percentage conversion. Newly created products remain out of stock until inventory is adjusted through the inventory workflow, and editing a product no longer changes stock or alert thresholds accidentally.
+
+## 2026-08-01 - Shared TinyMCE authoring for news content
+
+**Context:** News administration still used a plain textarea after the page and product editors adopted TinyMCE. Editors need the same headings, formatting, tables, links, and inline managed images for `Мэдээ/Мэдээлэл`, but news content is rendered publicly and therefore cannot trust browser-produced HTML.
+
+**Decision:** Reuse the shared TinyMCE component in add/edit news with media purpose `NEWS`, flush pending inline images before save, reject embedded Base64 images, and keep the separate NEWS cover-image control. Sanitize news HTML through the shared backend allowlist before persistence and again on reads to protect legacy rows. Reject content that contains neither visible text nor an allowed image, and render the sanitized result through the existing rich-content storefront styles on news detail.
+
+**Consequences:** News editors receive the same Visual/HTML tools as page and product authors without a second editor implementation. Inline and cover images remain purpose-scoped managed media, save actions cannot race uploads, unsafe markup is removed, and existing plain-text news remains readable as valid HTML text.
+
+## 2026-08-01 - Three news sections replace topical categories
+
+**Context:** The seven topical news choices such as general, economy, and health did not match the public information area's three intended sections. Keeping them only in persistence while hiding them in administration would leave incompatible API values and make the public section controls ambiguous.
+
+**Decision:** Replace the category contract end-to-end with `TRAINING`, `NEWS`, and `INFORMATION`, displayed as `Сургалт`, `Мэдээ`, and `Мэдээлэл`. Flyway V18 maps education to training, general to news, and the remaining old topical values to information before replacing the database constraint. Use the same typed values for administration choices, card metadata, and functional public filter buttons; reject all old values at API and database boundaries.
+
+**Consequences:** Administrators see only the three requested choices, old rows remain readable under a deterministic new section, and the public controls switch the article list instead of acting as decorative labels. Deploying V18 is forward-only; code rollback to the seven-value enum is incompatible after migration.
+
+## 2026-08-01 - Keep routing metadata out of administration lists
+
+**Context:** Product slugs are backend-owned stable routing identifiers, but All products displayed them beside the product code and appended `НУУЦ` to the lifecycle badge for the separate visibility flag. Category and brand lists also repeated their `/slug` routing values beneath each name, while Pages repeated a fixed navigation label beneath the editable page title. Banner administration has no slug display.
+
+**Decision:** Show only the product code beneath each product name, describe product search as name-or-code search, and keep product list status limited to publication lifecycle. Remove `/slug` secondary text and slug wording from category and brand list search, but retain their existing routing fields in edit forms. Show only the public title in the Pages list instead of repeating its navigation label. Preserve all slug-based public routing and the separate product-editor visibility control.
+
+**Consequences:** Administration lists no longer expose implementation-oriented `/slug` text, a mixed `НУУЦ` lifecycle label, or duplicate page labels. Existing routes, taxonomy editing, and storefront visibility behavior remain unchanged.
+
+## 2026-08-01 - Backend-owned customer metrics in administration Users
+
+**Context:** The administration Users list needed the supplied order/payment presentation plus membership and registration columns, while the user detail reference required customer-specific order status summaries and history. The existing account response had no order metrics, and calculating totals from browser-visible pages would be incomplete and financially unreliable.
+
+**Decision:** Keep the account response unchanged and introduce a dedicated admin user summary containing order count and the sum of `PAID` order grand totals. Load metrics for the current user page with one grouped order query. Add a customer-specific admin order-overview endpoint with cancelled and shipped counts plus paginated order summaries. Retain membership, discount, account-status, address, and order-detail ownership in their existing APIs. Bundle Roboto Regular locally and scope it to the admin shell at normal weight.
+
+**Consequences:** The Users list and detail screen match the requested compact hierarchy without trusting client-side financial calculations or issuing an order query per row. Paid totals exclude unpaid, failed, expired, cancelled, and refunded payments. Order history remains bounded by pagination, order details continue to use the established administration order route, and the storefront font is unaffected.
+
+## 2026-08-01 - Compact single-news title typography
+
+**Context:** The single-news detail route rendered its article title as a responsive 30–48px heavy heading, which was oversized for the requested compact article presentation.
+
+**Decision:** Render only the single-news article title at exactly 20px using the locally bundled Roboto Regular face. Keep list-card and missing-state heading typography unchanged.
+
+**Consequences:** Opening an individual news article now has a consistent compact title without changing typography elsewhere in the storefront.

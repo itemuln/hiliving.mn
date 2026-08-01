@@ -152,7 +152,7 @@ class MediaApiIntegrationTests {
                 {"title":"Media banner","imageUrl":"%s","placement":"HERO","sortOrder":0,"active":true}
                 """.formatted(bannerUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.imageUrl").value(bannerUrl));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Media news","category":"HEALTH","content":"Content","thumbnailUrl":"%s","published":true}
+                {"title":"Media news","category":"INFORMATION","content":"Content","thumbnailUrl":"%s","published":true}
                 """.formatted(newsUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.thumbnailUrl").value(newsUrl));
         var pages = mvc.perform(get("/api/v1/admin/pages").with(admin()))
                 .andExpect(status().isOk()).andReturn();

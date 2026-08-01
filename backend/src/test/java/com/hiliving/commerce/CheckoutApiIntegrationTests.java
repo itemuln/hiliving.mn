@@ -141,6 +141,17 @@ class CheckoutApiIntegrationTests {
                 .andExpect(jsonPath("$.data.items[0].orderNumber").value(orderNumber))
                 .andExpect(jsonPath("$.data.items[0].orderStatus").value("CONFIRMED"))
                 .andExpect(jsonPath("$.data.items[0].paymentStatus").value("PAID"));
+        var buyerUser = users.findByEmail("qpay-buyer@example.com").orElseThrow();
+        mockMvc.perform(get("/api/v1/admin/users").session(adminSession).param("search", "qpay-buyer"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items[0].orderCount").value(1))
+                .andExpect(jsonPath("$.data.items[0].totalPaid").value(14000.00));
+        mockMvc.perform(get("/api/v1/admin/users/{userId}/orders", buyerUser.getId()).session(adminSession))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.cancelledCount").value(0))
+                .andExpect(jsonPath("$.data.shippedCount").value(0))
+                .andExpect(jsonPath("$.data.orders.totalElements").value(1))
+                .andExpect(jsonPath("$.data.orders.items[0].orderNumber").value(orderNumber));
         assertThat(emailOutbox.findAll().stream()
                 .filter(email -> email.getEventType() == EmailEventType.ORDER_CONFIRMATION)).hasSize(1);
     }

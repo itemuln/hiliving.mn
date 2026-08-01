@@ -14,6 +14,7 @@ import com.hiliving.catalog.product.persistence.ProductRepository;
 import com.hiliving.catalog.product.persistence.ProductSpecifications;
 import com.hiliving.catalog.product.persistence.ProductStatus;
 import com.hiliving.commerce.pricing.PricingService;
+import com.hiliving.content.HtmlContentSanitizer;
 import com.hiliving.identity.user.persistence.UserEntity;
 import com.hiliving.identity.user.persistence.UserRepository;
 import org.springframework.data.domain.Page;
@@ -30,11 +31,14 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final UserRepository users;
     private final PricingService pricing;
+    private final HtmlContentSanitizer htmlSanitizer;
 
-    public ProductService(ProductRepository productRepository, UserRepository users, PricingService pricing) {
+    public ProductService(ProductRepository productRepository, UserRepository users, PricingService pricing,
+                          HtmlContentSanitizer htmlSanitizer) {
         this.productRepository = productRepository;
         this.users = users;
         this.pricing = pricing;
+        this.htmlSanitizer = htmlSanitizer;
     }
 
     @Transactional(readOnly = true)
@@ -119,7 +123,7 @@ public class ProductService {
                 product.getName(),
                 product.getSlug(),
                 product.getShortDescription(),
-                product.getDescription(),
+                htmlSanitizer.sanitize(product.getDescription()),
                 product.getProductCode(),
                 product.getPrice(),
                 product.getDiscountPrice(),

@@ -1,8 +1,9 @@
 import { Editor } from '@tinymce/tinymce-react';
 import { useRef, useState } from 'react';
-import { environment } from '../../../config/environment';
 import { uploadMediaImage } from '../../../api/adminApi';
-import { ErrorNotice } from '../components/AdminUi';
+import { environment } from '../../../config/environment';
+import type { MediaPurpose } from '../admin.types';
+import { ErrorNotice } from './AdminUi';
 
 export interface RichTextEditorHandle {
   getContent: () => string;
@@ -15,21 +16,26 @@ interface TinyMceBlobInfo {
 }
 
 type ImagePickerCallback = (url: string, metadata: { alt?: string }) => void;
+type RichTextMediaPurpose = Extract<MediaPurpose, 'PAGE' | 'PRODUCT' | 'NEWS'>;
 
 interface Props {
   value: string;
+  mediaPurpose: RichTextMediaPurpose;
   onChange: (value: string) => void;
   onReady: (editor: RichTextEditorHandle) => void;
   onUploadStateChange: (uploading: boolean) => void;
   disabled?: boolean;
+  height?: number;
 }
 
 export function RichTextEditor({
   value,
+  mediaPurpose,
   onChange,
   onReady,
   onUploadStateChange,
   disabled = false,
+  height = 560,
 }: Props) {
   const uploadCount = useRef(0);
   const [configurationError, setConfigurationError] = useState('');
@@ -47,7 +53,7 @@ export function RichTextEditor({
 
   const uploadImage = async (file: File, progress?: (percentage: number) => void) =>
     trackUpload(async () => {
-      const asset = await uploadMediaImage(file, 'PAGE', { onProgress: progress });
+      const asset = await uploadMediaImage(file, mediaPurpose, { onProgress: progress });
       return asset.url;
     });
 
@@ -77,7 +83,7 @@ export function RichTextEditor({
           )
         }
         init={{
-          height: 560,
+          height,
           menubar: 'edit view insert format tools table help',
           plugins: [
             'advlist',

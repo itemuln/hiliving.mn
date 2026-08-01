@@ -3,13 +3,19 @@ import { getPublicNews } from '../../api/contentApi';
 import type { News } from '../../features/admin/admin.types';
 import { Container } from '../layout/Container';
 import { NewsCard } from './NewsCard';
+import type { NewsCategory } from '../../features/news/newsCategories';
 
-const informationSections = ['Мэдээ', 'Мэдээлэл', 'Сургалт'] as const;
+const informationSections: ReadonlyArray<{ label: string; category: NewsCategory }> = [
+  { label: 'Мэдээ', category: 'NEWS' },
+  { label: 'Мэдээлэл', category: 'INFORMATION' },
+  { label: 'Сургалт', category: 'TRAINING' },
+];
 
 export function NewsGrid() {
   const [items, setItems] = useState<News[] | null>(null);
   const [loadFailed, setLoadFailed] = useState(false);
   const [requestVersion, setRequestVersion] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<NewsCategory>('INFORMATION');
 
   useEffect(() => {
     let isCurrent = true;
@@ -28,6 +34,8 @@ export function NewsGrid() {
       isCurrent = false;
     };
   }, [requestVersion]);
+
+  const visibleItems = items?.filter((article) => article.category === activeCategory) ?? [];
 
   return (
     <section
@@ -48,19 +56,22 @@ export function NewsGrid() {
               className="mt-5 grid grid-cols-3 border-y border-neutral-100 lg:mt-7 lg:block lg:border-0"
             >
               {informationSections.map((section) => {
-                const isActive = section === 'Мэдээлэл';
+                const isActive = section.category === activeCategory;
                 return (
-                  <span
-                    key={section}
+                  <button
+                    key={section.category}
+                    type="button"
                     aria-current={isActive ? 'page' : undefined}
-                    className={`flex min-h-12 items-center justify-center px-3 py-3 text-center text-xs uppercase tracking-wide lg:justify-start lg:px-6 lg:text-left lg:text-sm ${
+                    aria-pressed={isActive}
+                    onClick={() => setActiveCategory(section.category)}
+                    className={`flex min-h-12 w-full items-center justify-center px-3 py-3 text-center text-xs uppercase tracking-wide transition-colors lg:justify-start lg:px-6 lg:text-left lg:text-sm ${
                       isActive
                         ? 'bg-brand-500 font-medium text-white'
-                        : 'text-neutral-400'
+                        : 'text-neutral-400 hover:bg-neutral-50 hover:text-neutral-700'
                     }`}
                   >
-                    {section}
-                  </span>
+                    {section.label}
+                  </button>
                 );
               })}
             </nav>
@@ -95,15 +106,15 @@ export function NewsGrid() {
               </div>
             ) : null}
 
-            {items?.length === 0 ? (
+            {items !== null && visibleItems.length === 0 ? (
               <p className="py-16 text-center text-neutral-500">
                 Одоогоор нийтлэгдсэн мэдээлэл алга.
               </p>
             ) : null}
 
-            {items?.length ? (
+            {visibleItems.length ? (
               <div className="divide-y divide-neutral-100">
-                {items.map((article, index) => (
+                {visibleItems.map((article, index) => (
                   <NewsCard
                     key={article.id}
                     article={{

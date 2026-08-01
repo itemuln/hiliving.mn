@@ -118,7 +118,7 @@ export function AdminProductsPage() {
           <SearchInput
             value={filters.search}
             onChange={(value) => change('search', value)}
-            placeholder="Нэр, код эсвэл slug"
+            placeholder="Нэр эсвэл код"
             label="Бүтээгдэхүүн хайх"
           />
         </div>
@@ -234,9 +234,7 @@ export function AdminProductsPage() {
                           )}
                           <div>
                             <div className="font-bold">{p.name}</div>
-                            <div className="text-xs text-slate-400">
-                              {p.productCode} · /{p.slug}
-                            </div>
+                            <div className="text-xs text-slate-400">{p.productCode}</div>
                           </div>
                         </div>
                       </td>
@@ -271,7 +269,7 @@ export function AdminProductsPage() {
                       <td>
                         <StatusBadge
                           tone={
-                            p.lifecycle === 'ACTIVE' && p.active
+                            p.lifecycle === 'ACTIVE'
                               ? 'success'
                               : p.lifecycle === 'ARCHIVED'
                               ? 'danger'
@@ -279,7 +277,6 @@ export function AdminProductsPage() {
                           }
                         >
                           {lifecycleLabel(p.lifecycle)}
-                          {!p.active ? ' · НУУЦ' : ''}
                         </StatusBadge>
                       </td>
                       <td>{p.membershipDiscountEligible ? 'Хамаарна' : 'Хамаарахгүй'}</td>

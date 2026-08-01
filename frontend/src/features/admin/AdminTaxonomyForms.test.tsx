@@ -52,6 +52,8 @@ describe('admin taxonomy forms', () => {
     );
 
     await screen.findByText('Home');
+    expect(screen.queryByText('/home')).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Нэрээр хайх')).toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Parent' })).not.toBeInTheDocument();
     expect(screen.queryByRole('columnheader', { name: 'Children' })).not.toBeInTheDocument();
 

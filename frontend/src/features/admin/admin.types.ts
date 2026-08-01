@@ -1,5 +1,6 @@
 import type { AuthenticatedUser } from '../auth/auth.types';
 import type { CustomerOrder } from '../checkout/order.types';
+import type { OrderSummary } from '../checkout/order.types';
 import type { NewsCategory } from '../news/newsCategories';
 
 export interface DashboardCounts {
@@ -149,6 +150,15 @@ export interface ContentPage {
 }
 export type ContentPageInput = Pick<ContentPage, 'title' | 'contentHtml' | 'published'>;
 export type AdminUser = AuthenticatedUser;
+export interface AdminUserSummary extends AuthenticatedUser {
+  orderCount: number;
+  totalPaid: number;
+}
+export interface AdminUserOrderOverview {
+  cancelledCount: number;
+  shippedCount: number;
+  orders: Page<OrderSummary>;
+}
 export type MediaPurpose = 'PRODUCT' | 'BRAND' | 'BANNER' | 'NEWS' | 'PAGE';
 export interface MediaUpload {
   id: number;

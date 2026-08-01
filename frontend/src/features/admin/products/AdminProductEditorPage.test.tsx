@@ -37,6 +37,24 @@ vi.mock('../../../api/adminApi', () => ({
   }),
 }));
 
+vi.mock('../components/RichTextEditor', () => ({
+  RichTextEditor: ({
+    value,
+    onChange,
+    onReady,
+  }: {
+    value: string;
+    onChange: (value: string) => void;
+    onReady: (editor: {
+      getContent: () => string;
+      uploadImages: () => Promise<readonly { status: boolean }[]>;
+    }) => void;
+  }) => {
+    onReady({ getContent: () => value, uploadImages: async () => [] });
+    return <textarea value={value} onChange={(event) => onChange(event.target.value)} />;
+  },
+}));
+
 const auth: AuthContextValue = {
   state: { status: 'authenticated', user: { ...authenticatedUser, role: 'ADMIN' } },
   hydrationError: false,
@@ -232,76 +250,44 @@ describe('admin product editor', () => {
     render(page());
     await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
     const basePrice = screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' });
-    const stockQuantity = screen.getByRole('spinbutton', { name: 'Үлдэгдэл тоо' });
 
     fireEvent.change(basePrice, { target: { value: '023' } });
-    fireEvent.change(stockQuantity, { target: { value: '01' } });
     expect(basePrice).toHaveValue(23);
-    expect(stockQuantity).toHaveValue(1);
 
     fireEvent.change(basePrice, { target: { value: '0.25' } });
     expect(basePrice).toHaveValue(0.25);
   });
 
-  it('shows an invalid state instead of a negative discount percentage', async () => {
+  it('uses one optional sale-price field and treats an empty value as no sale', async () => {
     render(page());
     await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
 
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
-      target: { value: '100' },
-    });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Хямдарсан үнээр' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' }), {
-      target: { value: '14930' },
-    });
-
-    expect(screen.getByText('Зөв хөнгөлөлт оруулна уу')).toBeInTheDocument();
-    expect(screen.queryByText('-14830%')).not.toBeInTheDocument();
-  });
-
-  it('keeps discount fields hidden until enabled and accepts a percentage', async () => {
-    render(page());
-    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
-
-    const discountToggle = screen.getByRole('checkbox', {
-      name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй',
-    });
-    expect(discountToggle).not.toBeChecked();
-    expect(screen.queryByRole('spinbutton', { name: 'Хөнгөлөлтийн хувь' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('spinbutton', { name: 'Хямдарсан үнэ' })).not.toBeInTheDocument();
-
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
-      target: { value: '1000' },
-    });
-    fireEvent.click(discountToggle);
-    expect(screen.getByRole('radio', { name: 'Хувиар' })).toBeChecked();
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'Хөнгөлөлтийн хувь' }), {
-      target: { value: '25' },
-    });
-
-    expect(screen.getByText('₮ 750')).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' })).toHaveValue(null);
+    expect(screen.getByText('Хоосон орхивол бүтээгдэхүүн хямдралгүй байна.')).toBeInTheDocument();
+    expect(screen.queryByText('Хөнгөлөлт оруулах хэлбэр')).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('checkbox', { name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй' })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: 'Үлдэгдэл тоо' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton', { name: 'Нөөц багассаны босго' })).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.createProduct).toHaveBeenCalledTimes(1));
-    expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBe(750);
+    expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBeNull();
   });
 
-  it('accepts a final discounted price and calculates its percentage', async () => {
+  it('submits a directly entered sale price', async () => {
     render(page());
     await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
 
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
       target: { value: '200' },
     });
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Хямдарсан үнээр' }));
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' }), {
       target: { value: '150' },
     });
 
-    expect(screen.getByText('25%')).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
@@ -309,7 +295,26 @@ describe('admin product editor', () => {
     expect(vi.mocked(api.createProduct).mock.calls[0][0].discountPrice).toBe(150);
   });
 
-  it('loads an existing discount and removes it when the checkbox is cleared', async () => {
+  it('rejects a sale price that is not lower than the base price', async () => {
+    render(page());
+    await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');
+
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Үндсэн үнэ' }), {
+      target: { value: '100' },
+    });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' }), {
+      target: { value: '100' },
+    });
+    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Хямдарсан үнэ үндсэн үнээс бага байх ёстой.'
+    );
+    expect(api.createProduct).not.toHaveBeenCalled();
+  });
+
+  it('loads an existing sale price and removes the sale when cleared', async () => {
     vi.mocked(api.getProduct).mockResolvedValue({
       ...existingProduct,
       discountPrice: 80,
@@ -317,16 +322,9 @@ describe('admin product editor', () => {
     render(page('/admin/products/42/edit'));
 
     expect(await screen.findByDisplayValue('Existing product')).toBeInTheDocument();
-    const discountToggle = screen.getByRole('checkbox', {
-      name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй',
-    });
-    expect(discountToggle).toBeChecked();
-    expect(screen.getByRole('radio', { name: 'Хямдарсан үнээр' })).toBeChecked();
-    expect(screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' })).toHaveValue(80);
-    expect(screen.getByText('20%')).toBeInTheDocument();
-
-    fireEvent.click(discountToggle);
-    expect(screen.queryByRole('spinbutton', { name: 'Хямдарсан үнэ' })).not.toBeInTheDocument();
+    const salePrice = screen.getByRole('spinbutton', { name: 'Хямдарсан үнэ' });
+    expect(salePrice).toHaveValue(80);
+    fireEvent.change(salePrice, { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 
     await waitFor(() => expect(api.updateProduct).toHaveBeenCalledTimes(1));

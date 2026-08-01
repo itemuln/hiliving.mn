@@ -138,7 +138,7 @@ export function AdminShell({
     </div>
   );
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
+    <div className="admin-shell min-h-screen bg-slate-50 text-slate-800">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 lg:block">{sidebar}</aside>
       {open && (
         <>

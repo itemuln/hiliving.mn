@@ -14,7 +14,7 @@ describe('NewsSection', () => {
         id: 1,
         title: 'Шинэ мэдээ',
         slug: 'shine-medee',
-        category: 'GENERAL',
+        category: 'NEWS',
         content: 'Дэлгэрэнгүй агуулга',
         thumbnailUrl: '/news.jpg',
         published: true,

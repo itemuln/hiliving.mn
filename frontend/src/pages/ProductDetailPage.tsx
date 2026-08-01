@@ -239,9 +239,10 @@ export function ProductDetailPage() {
               {product.description ? (
                 <section className="mx-6 mt-12 border-t border-neutral-100 pt-8 md:mx-0">
                   <h2 className="text-xl font-semibold text-neutral-800">Бүтээгдэхүүний тайлбар</h2>
-                  <p className="mt-4 max-w-4xl whitespace-pre-line text-sm leading-7 text-neutral-600">
-                    {product.description}
-                  </p>
+                  <div
+                    className="content-page-html mt-4 max-w-4xl text-neutral-600"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
                 </section>
               ) : null}
 

@@ -114,7 +114,7 @@ export function AdminCategoriesPage() {
             label="Ангилал хайх"
             value={search}
             onChange={setSearch}
-            placeholder="Нэр эсвэл slug-аар хайх"
+            placeholder="Нэрээр хайх"
           />
         </div>
       </div>
@@ -147,7 +147,6 @@ export function AdminCategoriesPage() {
                   >
                     <td className="p-4">
                       <div className="font-bold text-slate-900">{item.name}</div>
-                      <div className="text-xs text-slate-400">/{item.slug}</div>
                     </td>
                     <td>{item.productCount}</td>
                     <td>

@@ -15,26 +15,15 @@ import {
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
 import { AdminNumberInput } from '../components/AdminNumberInput';
+import { RichTextEditor, type RichTextEditorHandle } from '../components/RichTextEditor';
 
 type ImageDraft = ProductInput['images'][number];
-type DiscountMode = 'PERCENTAGE' | 'PRICE';
 const MAX_PRODUCT_IMAGES = 6;
 const visibilityOptions = [
   ['active', 'Харагдах'],
   ['featured', 'Онцлох'],
   ['newProduct', 'Шинэ бүтээгдэхүүн'],
 ] as const;
-
-function discountedPriceFromPercentage(basePrice: number, percentage: number | null) {
-  if (basePrice <= 0 || percentage === null || percentage <= 0 || percentage > 100) return null;
-  return Math.round(basePrice * (1 - percentage / 100) * 100) / 100;
-}
-
-function percentageFromDiscountedPrice(basePrice: number, discountPrice: number | null) {
-  if (basePrice <= 0 || discountPrice === null || discountPrice < 0 || discountPrice >= basePrice)
-    return null;
-  return Math.round((1 - discountPrice / basePrice) * 10_000) / 100;
-}
 
 const blank: ProductInput = {
   name: '',
@@ -62,14 +51,13 @@ export function AdminProductEditorPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(Boolean(editId));
   const [saving, setSaving] = useState(false);
-  const [discountEnabled, setDiscountEnabled] = useState(false);
-  const [discountMode, setDiscountMode] = useState<DiscountMode>('PERCENTAGE');
-  const [discountPercentage, setDiscountPercentage] = useState<number | null>(null);
   const [pendingUploads, setPendingUploads] = useState(0);
+  const [descriptionUploading, setDescriptionUploading] = useState(false);
   const [batchUploading, setBatchUploading] = useState(false);
   const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
   const [error, setError] = useState('');
   const batchInput = useRef<HTMLInputElement>(null);
+  const descriptionEditor = useRef<RichTextEditorHandle | null>(null);
   const batchInputId = useId();
   useEffect(() => {
     let active = true;
@@ -105,9 +93,6 @@ export function AdminProductEditorPage() {
               displayScale: i.displayScale,
             })),
           });
-          setDiscountEnabled(p.discountPrice !== null);
-          setDiscountMode('PRICE');
-          setDiscountPercentage(percentageFromDiscountedPrice(p.basePrice, p.discountPrice));
         }
         setLoading(false);
       })
@@ -121,38 +106,8 @@ export function AdminProductEditorPage() {
       active = false;
     };
   }, [editId]);
-  const calculatedPercentage = percentageFromDiscountedPrice(form.basePrice, form.discountPrice);
-  const discount = {
-    percentage: calculatedPercentage,
-    invalid: discountEnabled && calculatedPercentage === null,
-  };
   const set = <K extends keyof ProductInput>(key: K, value: ProductInput[K]) =>
     setForm((current) => ({ ...current, [key]: value }));
-  const setBasePrice = (basePrice: number) =>
-    setForm((current) => ({
-      ...current,
-      basePrice,
-      discountPrice:
-        discountEnabled && discountMode === 'PERCENTAGE'
-          ? discountedPriceFromPercentage(basePrice, discountPercentage)
-          : current.discountPrice,
-    }));
-  const toggleDiscount = (enabled: boolean) => {
-    setDiscountEnabled(enabled);
-    setDiscountMode('PERCENTAGE');
-    setDiscountPercentage(null);
-    set('discountPrice', null);
-  };
-  const selectDiscountMode = (mode: DiscountMode) => {
-    if (mode === 'PERCENTAGE') {
-      setDiscountPercentage(percentageFromDiscountedPrice(form.basePrice, form.discountPrice));
-    }
-    setDiscountMode(mode);
-  };
-  const setDiscountFromPercentage = (percentage: number | null) => {
-    setDiscountPercentage(percentage);
-    set('discountPrice', discountedPriceFromPercentage(form.basePrice, percentage));
-  };
   const setImages = (images: ImageDraft[]) =>
     set(
       'images',
@@ -232,51 +187,48 @@ export function AdminProductEditorPage() {
   };
   const save = async (lifecycle: ProductLifecycle) => {
     setError('');
-    if (pendingUploads > 0) {
+    if (pendingUploads > 0 || descriptionUploading) {
       setError('Бүх зураг байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     setSaving(true);
-    const payload = {
-      ...form,
-      lifecycle,
-      discountPrice: discountEnabled ? form.discountPrice : null,
-    };
-    if (discountEnabled && payload.discountPrice === null) {
-      setError('Зөв хөнгөлөлтийн хувь эсвэл хямдарсан үнэ оруулна уу.');
-      setSaving(false);
-      return;
-    }
-    if (payload.basePrice < 0 || (payload.discountPrice !== null && payload.discountPrice < 0)) {
-      setError('Үнэ сөрөг байж болохгүй.');
-      setSaving(false);
-      return;
-    }
-    if (payload.discountPrice !== null && payload.discountPrice >= payload.basePrice) {
-      setError('Хямдарсан үнэ үндсэн үнээс бага байх ёстой.');
-      setSaving(false);
-      return;
-    }
-    if (payload.stockQuantity < 0 || payload.lowStockThreshold < 0) {
-      setError('Нөөцийн утга сөрөг байж болохгүй.');
-      setSaving(false);
-      return;
-    }
-    if (
-      lifecycle === 'ACTIVE' &&
-      payload.active &&
-      payload.images.filter((i) => i.primaryImage).length !== 1
-    ) {
-      setError('Нийтлэхийн тулд яг нэг үндсэн зураг сонгоно уу.');
-      setSaving(false);
-      return;
-    }
     try {
+      const uploads = await descriptionEditor.current?.uploadImages();
+      if (uploads?.some((upload) => !upload.status)) {
+        throw new Error('One or more product-description images failed to upload');
+      }
+      const description = descriptionEditor.current?.getContent() ?? form.description;
+      if (/src=["']data:image\//i.test(description)) {
+        throw new Error('Embedded Base64 images are not allowed');
+      }
+      const payload = { ...form, description, lifecycle };
+      if (payload.basePrice < 0 || (payload.discountPrice !== null && payload.discountPrice < 0)) {
+        setError('Үнэ сөрөг байж болохгүй.');
+        return;
+      }
+      if (payload.discountPrice !== null && payload.discountPrice >= payload.basePrice) {
+        setError('Хямдарсан үнэ үндсэн үнээс бага байх ёстой.');
+        return;
+      }
+      if (payload.stockQuantity < 0 || payload.lowStockThreshold < 0) {
+        setError('Нөөцийн утга сөрөг байж болохгүй.');
+        return;
+      }
+      if (
+        lifecycle === 'ACTIVE' &&
+        payload.active &&
+        payload.images.filter((i) => i.primaryImage).length !== 1
+      ) {
+        setError('Нийтлэхийн тулд яг нэг үндсэн зураг сонгоно уу.');
+        return;
+      }
       if (editId) await api.updateProduct(editId, payload);
       else await api.createProduct(payload);
       navigate('/admin/products');
     } catch {
-      setError('Бүтээгдэхүүнийг хадгалж чадсангүй. Үнэ, нөөц болон зургийн мэдээллийг шалгана уу.');
+      setError(
+        'Бүтээгдэхүүнийг хадгалж чадсангүй. Үнэ, тайлбар болон зургийн мэдээллийг шалгана уу.'
+      );
     } finally {
       setSaving(false);
     }
@@ -356,11 +308,16 @@ export function AdminProductEditorPage() {
               />
             </Field>
             <Field label="Тайлбар" wide>
-              <textarea
-                rows={6}
-                className={input}
+              <RichTextEditor
                 value={form.description}
-                onChange={(e) => set('description', e.target.value)}
+                mediaPurpose="PRODUCT"
+                height={340}
+                disabled={saving}
+                onReady={(editor) => {
+                  descriptionEditor.current = editor;
+                }}
+                onChange={(description) => set('description', description)}
+                onUploadStateChange={setDescriptionUploading}
               />
             </Field>
           </div>
@@ -511,84 +468,24 @@ export function AdminProductEditorPage() {
                 step="0.01"
                 className={input}
                 value={form.basePrice}
-                onValueChange={(basePrice) => setBasePrice(basePrice ?? 0)}
+                onValueChange={(basePrice) => set('basePrice', basePrice ?? 0)}
               />
             </Field>
-            <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold">
-              <input
-                type="checkbox"
-                checked={discountEnabled}
-                onChange={(e) => toggleDiscount(e.target.checked)}
+            <Field label="Хямдарсан үнэ">
+              <AdminNumberInput
+                aria-label="Хямдарсан үнэ"
+                aria-describedby="product-sale-price-hint"
+                min="0"
+                step="0.01"
+                className={input}
+                value={form.discountPrice}
+                nullable
+                onValueChange={(discountPrice) => set('discountPrice', discountPrice)}
               />
-              Энэ бүтээгдэхүүн хөнгөлөлттэй
-            </label>
-            {discountEnabled && (
-              <div className="space-y-4 rounded-xl border border-slate-200 p-4 sm:col-span-2">
-                <fieldset>
-                  <legend className="mb-2 text-sm font-bold text-slate-700">
-                    Хөнгөлөлт оруулах хэлбэр
-                  </legend>
-                  <div className="flex flex-wrap gap-4 text-sm font-semibold">
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="discountMode"
-                        checked={discountMode === 'PERCENTAGE'}
-                        onChange={() => selectDiscountMode('PERCENTAGE')}
-                      />
-                      Хувиар
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="discountMode"
-                        checked={discountMode === 'PRICE'}
-                        onChange={() => selectDiscountMode('PRICE')}
-                      />
-                      Хямдарсан үнээр
-                    </label>
-                  </div>
-                </fieldset>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {discountMode === 'PERCENTAGE' ? (
-                    <Field label="Хөнгөлөлтийн хувь">
-                      <AdminNumberInput
-                        min="0.01"
-                        max="100"
-                        step="0.01"
-                        className={input}
-                        value={discountPercentage}
-                        nullable
-                        onValueChange={setDiscountFromPercentage}
-                      />
-                    </Field>
-                  ) : (
-                    <Field label="Хямдарсан үнэ">
-                      <AdminNumberInput
-                        min="0"
-                        step="0.01"
-                        className={input}
-                        value={form.discountPrice}
-                        nullable
-                        onValueChange={(discountPrice) => set('discountPrice', discountPrice)}
-                      />
-                    </Field>
-                  )}
-                  <div className="rounded-xl bg-slate-50 p-4 text-sm">
-                    <span className="text-slate-500">
-                      {discountMode === 'PERCENTAGE' ? 'Хямдарсан үнэ' : 'Хөнгөлөлтийн хувь'}
-                    </span>
-                    <strong className={`float-right ${discount.invalid ? 'text-rose-600' : ''}`}>
-                      {discount.invalid
-                        ? 'Зөв хөнгөлөлт оруулна уу'
-                        : discountMode === 'PERCENTAGE'
-                        ? `₮ ${form.discountPrice?.toLocaleString()}`
-                        : `${discount.percentage}%`}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-            )}
+              <p id="product-sale-price-hint" className="mt-1 text-xs text-slate-500">
+                Хоосон орхивол бүтээгдэхүүн хямдралгүй байна.
+              </p>
+            </Field>
             <label className="flex items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-semibold">
               <input
                 type="checkbox"
@@ -600,26 +497,8 @@ export function AdminProductEditorPage() {
           </div>
         </section>
         <section className={`${panel} p-5 sm:p-6`}>
-          <h2 className="mb-5 text-lg font-black">3. Нөөц ба харагдах байдал</h2>
+          <h2 className="mb-5 text-lg font-black">3. Нийтлэх ба харагдах байдал</h2>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Үлдэгдэл тоо">
-              <AdminNumberInput
-                min="0"
-                className={input}
-                value={form.stockQuantity}
-                onValueChange={(stockQuantity) => set('stockQuantity', stockQuantity ?? 0)}
-              />
-            </Field>
-            <Field label="Нөөц багассаны босго">
-              <AdminNumberInput
-                min="0"
-                className={input}
-                value={form.lowStockThreshold}
-                onValueChange={(lowStockThreshold) =>
-                  set('lowStockThreshold', lowStockThreshold ?? 0)
-                }
-              />
-            </Field>
             <Field label="Нийтлэлийн төлөв">
               <select
                 className={input}
@@ -656,7 +535,7 @@ export function AdminProductEditorPage() {
           {editId && (
             <button
               type="button"
-              disabled={saving || pendingUploads > 0}
+              disabled={saving || pendingUploads > 0 || descriptionUploading}
               className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-bold text-rose-600"
               onClick={() => void archive()}
             >
@@ -665,7 +544,7 @@ export function AdminProductEditorPage() {
           )}
           <button
             type="button"
-            disabled={saving || pendingUploads > 0}
+            disabled={saving || pendingUploads > 0 || descriptionUploading}
             className={secondaryButton}
             onClick={() => void save('DRAFT')}
           >
@@ -673,11 +552,15 @@ export function AdminProductEditorPage() {
           </button>
           <button
             type="button"
-            disabled={saving || pendingUploads > 0}
+            disabled={saving || pendingUploads > 0 || descriptionUploading}
             className={primaryButton}
             onClick={() => void save('ACTIVE')}
           >
-            {pendingUploads > 0 ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Нийтлэх'}
+            {pendingUploads > 0 || descriptionUploading
+              ? 'Байршуулж байна…'
+              : saving
+              ? 'Хадгалж байна…'
+              : 'Нийтлэх'}
           </button>
         </section>
       </form>

@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
 import type { NewsInput } from '../admin.types';
@@ -13,10 +13,11 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
+import { RichTextEditor, type RichTextEditorHandle } from '../components/RichTextEditor';
 import { NEWS_CATEGORY_OPTIONS } from '../../news/newsCategories';
 const blank: NewsInput = {
   title: '',
-  category: 'GENERAL',
+  category: 'NEWS',
   content: '',
   thumbnailUrl: '',
   published: false,
@@ -30,7 +31,9 @@ export function AdminNewsEditorPage() {
   const [loading, setLoading] = useState(Boolean(editId));
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [contentUploading, setContentUploading] = useState(false);
   const [error, setError] = useState('');
+  const contentEditor = useRef<RichTextEditorHandle | null>(null);
   useEffect(() => {
     if (!editId) return;
     let active = true;
@@ -59,18 +62,27 @@ export function AdminNewsEditorPage() {
     };
   }, [editId]);
   const save = async (published: boolean) => {
-    if (uploading) {
-      setError('Нүүр зураг байршуулж дуустал түр хүлээнэ үү.');
+    if (uploading || contentUploading) {
+      setError('Бүх зураг байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     setSaving(true);
     setError('');
-    const payload = {
-      ...form,
-      published,
-      publishedAt: published ? form.publishedAt ?? new Date().toISOString() : form.publishedAt,
-    };
     try {
+      const uploads = await contentEditor.current?.uploadImages();
+      if (uploads?.some((upload) => !upload.status)) {
+        throw new Error('One or more news-content images failed to upload');
+      }
+      const content = contentEditor.current?.getContent() ?? form.content;
+      if (/src=["']data:image\//i.test(content)) {
+        throw new Error('Embedded Base64 images are not allowed');
+      }
+      const payload = {
+        ...form,
+        content,
+        published,
+        publishedAt: published ? form.publishedAt ?? new Date().toISOString() : form.publishedAt,
+      };
       if (editId) await api.updateNews(editId, payload);
       else await api.createNews(payload);
       navigate('/admin/news');
@@ -93,7 +105,7 @@ export function AdminNewsEditorPage() {
   return (
     <AdminShell
       title={editId ? 'Мэдээ засах' : 'Мэдээ нэмэх'}
-      description="Мэдээний агуулга энгийн бичвэрээр, нүүр зураг аюулгүй байршуулалтаар хадгалагдана."
+      description="Мэдээний агуулгыг форматлаж, нүүр болон доторх зургийг аюулгүй байршуулна."
       actions={
         <button className={secondaryButton} onClick={() => navigate('/admin/news')}>
           Цуцлах
@@ -131,12 +143,16 @@ export function AdminNewsEditorPage() {
           </select>
         </Field>
         <Field label="Тайлбар" wide>
-          <textarea
-            required
-            rows={12}
-            className={input}
+          <RichTextEditor
             value={form.content}
-            onChange={(e) => setForm({ ...form, content: e.target.value })}
+            mediaPurpose="NEWS"
+            height={420}
+            disabled={saving}
+            onReady={(editor) => {
+              contentEditor.current = editor;
+            }}
+            onChange={(content) => setForm((current) => ({ ...current, content }))}
+            onUploadStateChange={setContentUploading}
           />
         </Field>
         <div className="sm:col-span-2">
@@ -168,7 +184,7 @@ export function AdminNewsEditorPage() {
           </button>
           <button
             type="button"
-            disabled={saving || uploading}
+            disabled={saving || uploading || contentUploading}
             className={secondaryButton}
             onClick={() => void save(false)}
           >
@@ -176,11 +192,15 @@ export function AdminNewsEditorPage() {
           </button>
           <button
             type="button"
-            disabled={saving || uploading}
+            disabled={saving || uploading || contentUploading}
             className={primaryButton}
             onClick={() => void save(true)}
           >
-            {uploading ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Нийтлэх'}
+            {uploading || contentUploading
+              ? 'Байршуулж байна…'
+              : saving
+              ? 'Хадгалж байна…'
+              : 'Нийтлэх'}
           </button>
         </div>
       </form>

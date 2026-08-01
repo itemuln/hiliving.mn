@@ -13,7 +13,7 @@ public record OrderSummaryResponse(
         String currency,
         int itemCount
 ) {
-    static OrderSummaryResponse from(OrderEntity order) {
+    public static OrderSummaryResponse from(OrderEntity order) {
         return new OrderSummaryResponse(
                 order.getOrderNumber(), order.getPlacedAt(), order.getOrderStatus().name(),
                 order.getPaymentStatus().name(), order.getPaymentMethod().name(), order.getGrandTotal(),

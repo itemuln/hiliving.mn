@@ -26,7 +26,7 @@ public class AdminUserController {
     public AdminUserController(AdminUserService adminUserService) { this.adminUserService = adminUserService; }
 
     @GetMapping
-    public ApiResponse<PagedResponse<AccountResponse>> search(
+    public ApiResponse<PagedResponse<AdminUserSummaryResponse>> search(
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
             @RequestParam(required = false) @Size(max = 100) String search,
@@ -43,6 +43,15 @@ public class AdminUserController {
     @GetMapping("/{userId}/addresses")
     public ApiResponse<java.util.List<com.hiliving.identity.account.api.AddressResponse>> addresses(@PathVariable @Min(1) Long userId) {
         return ApiResponse.of(adminUserService.addresses(userId));
+    }
+
+    @GetMapping("/{userId}/orders")
+    public ApiResponse<AdminUserOrderOverviewResponse> orders(
+            @PathVariable @Min(1) Long userId,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+    ) {
+        return ApiResponse.of(adminUserService.orderOverview(userId, page, size));
     }
 
     @PatchMapping("/{userId}/status")

@@ -43,12 +43,13 @@ export function NewsDetailPage() {
                   ? new Date(article.publishedAt).toLocaleDateString('mn-MN')
                   : ''}
               </p>
-              <h1 className="mt-3 text-3xl font-black text-neutral-900 md:text-5xl">
+              <h1 className="mt-3 font-['Roboto'] text-[20px] font-normal text-neutral-900">
                 {article.title}
               </h1>
-              <div className="mt-10 whitespace-pre-wrap leading-8 text-neutral-700">
-                {article.content}
-              </div>
+              <div
+                className="content-page-html mt-10 whitespace-pre-wrap text-neutral-700"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
             </article>
           )}
         </Container>

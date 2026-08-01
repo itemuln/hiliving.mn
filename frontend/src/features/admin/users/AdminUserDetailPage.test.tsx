@@ -9,6 +9,7 @@ import { AdminUserDetailPage } from './AdminUserDetailPage';
 vi.mock('../../../api/adminApi', () => ({
   getUser: vi.fn(),
   getUserAddresses: vi.fn(),
+  getUserOrders: vi.fn(),
   updateUserMembership: vi.fn(),
   updateUserDiscount: vi.fn(),
   updateUserStatus: vi.fn(),
@@ -28,9 +29,33 @@ describe('admin user detail', () => {
   beforeEach(() => {
     vi.mocked(api.getUser).mockResolvedValue(authenticatedUser);
     vi.mocked(api.getUserAddresses).mockResolvedValue([]);
+    vi.mocked(api.getUserOrders).mockResolvedValue({
+      cancelledCount: 2,
+      shippedCount: 1,
+      orders: {
+        items: [
+          {
+            orderNumber: 'HL-2026-0042',
+            placedAt: '2026-07-30T10:00:00Z',
+            orderStatus: 'SHIPPED',
+            paymentStatus: 'PAID',
+            paymentMethod: 'QPAY',
+            grandTotal: 130350,
+            currency: 'MNT',
+            itemCount: 3,
+          },
+        ],
+        page: 0,
+        size: 20,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true,
+      },
+    });
   });
 
-  it('shows only the membership default and applied discount with a readable editor', async () => {
+  it('shows the customer profile, order summary, history, and account controls', async () => {
     render(
       <AuthContext.Provider value={auth}>
         <MemoryRouter initialEntries={['/admin/users/42']}>
@@ -42,31 +67,19 @@ describe('admin user detail', () => {
     );
 
     const discountInput = await screen.findByRole('spinbutton', {
-      name: /Үйлчлэх хөнгөлөлт тохируулах/,
+      name: /Үйлчлэх хөнгөлөлт/,
     });
     expect(discountInput).toHaveAttribute('placeholder', 'Жишээ: 5');
-    expect(discountInput.parentElement).toHaveClass('sm:grid-cols-[minmax(12rem,1fr)_auto_auto]');
-
-    expect(screen.queryByText('Тусгай хөнгөлөлт')).not.toBeInTheDocument();
-    const baseDiscount = screen.getByText('Гишүүнчлэлийн үндсэн хөнгөлөлт').parentElement;
-    const effectiveDiscount = screen.getByText('Хэрэглэгчид үйлчлэх хөнгөлөлт').parentElement;
-    expect(baseDiscount).toHaveClass('bg-slate-50');
-    expect(effectiveDiscount).toHaveClass('bg-slate-50');
-    expect(
-      screen.getByText('Цэвэрлэхэд гишүүнчлэлийн үндсэн 5% хөнгөлөлт үйлчилнэ.')
-    ).toBeVisible();
-
-    const membershipPanel = screen.getByRole('heading', {
-      name: 'Гишүүнчлэл ба хөнгөлөлт',
-    }).parentElement;
-    const statusPanel = screen.getByRole('heading', { name: 'Бүртгэлийн төлөв' }).parentElement;
-    expect(membershipPanel?.parentElement).not.toHaveClass('xl:grid-cols-[1.1fr_.9fr]');
-    expect(
-      membershipPanel && statusPanel
-        ? membershipPanel.compareDocumentPosition(statusPanel) & Node.DOCUMENT_POSITION_FOLLOWING
-        : 0
-    ).toBeTruthy();
+    expect(screen.getByText('Хоосон бол үндсэн 5% хөнгөлөлт үйлчилнэ.')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Temuulen Ikhmandal' })).toBeVisible();
+    expect(screen.getByText('Хадгалсан хаяг алга')).toBeVisible();
+    expect(screen.getByText('2 захиалга')).toBeVisible();
+    expect(screen.getByText('1 захиалга')).toBeVisible();
+    expect(screen.getByText('HL-2026-0042')).toBeVisible();
+    expect(screen.getByText('3 ширхэг')).toBeVisible();
+    expect(screen.getByText('Хүргэлтэд гарсан')).toBeVisible();
+    expect(screen.getByText('Төлөгдсөн')).toBeVisible();
     expect(screen.getByRole('combobox', { name: 'Бүртгэлийн төлөв' })).toHaveValue('ACTIVE');
-    expect(screen.getAllByText('Идэвхтэй')).toHaveLength(1);
+    expect(screen.getByRole('heading', { name: 'Бүртгэл удирдах' })).toBeVisible();
   });
 });

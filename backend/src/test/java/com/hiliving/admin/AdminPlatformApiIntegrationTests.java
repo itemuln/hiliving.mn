@@ -74,7 +74,7 @@ class AdminPlatformApiIntegrationTests {
     void productRulesExposeInventoryMembershipAndArchiveVisibility() throws Exception {
         CategoryEntity category=categories.save(CategoryEntity.create("Admin Product","admin-product",null,0,true));
         String active="""
-                {"name":"Монгол Өргөө","description":"Managed product details","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":5,"featured":true,"newProduct":true,"active":true,"membershipDiscountEligible":false,"images":[{"imageUrl":"https://example.com/product.jpg","altText":"Product","sortOrder":0,"primaryImage":true,"displayScale":125}]}
+                {"name":"Монгол Өргөө","description":"<p>Managed <strong>product</strong> details</p><script>alert(1)</script>","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":5,"featured":true,"newProduct":true,"active":true,"membershipDiscountEligible":false,"images":[{"imageUrl":"https://example.com/product.jpg","altText":"Product","sortOrder":0,"primaryImage":true,"displayScale":125}]}
                 """.formatted(category.getId());
         var result=mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(active))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.data.inventoryState").value("LOW_STOCK"))
@@ -82,7 +82,8 @@ class AdminPlatformApiIntegrationTests {
                 .andExpect(jsonPath("$.data.slug").value("mongol-orgoo"))
                 .andExpect(jsonPath("$.data.productCode").value(org.hamcrest.Matchers.matchesPattern("PRD-[0-9]{6,}")))
                 .andExpect(jsonPath("$.data.shortDescription").value("Managed product details"))
-                .andExpect(jsonPath("$.data.description").value("Managed product details"))
+                .andExpect(jsonPath("$.data.description").value(org.hamcrest.Matchers.containsString("<strong>product</strong>")))
+                .andExpect(jsonPath("$.data.description").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script"))))
                 .andExpect(jsonPath("$.data.images[0].displayScale").value(125))
                 .andReturn();
         long id=((Number)com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(),"$.data.id")).longValue();
@@ -95,7 +96,10 @@ class AdminPlatformApiIntegrationTests {
                 .andExpect(jsonPath("$.data.productCode").value(org.hamcrest.Matchers.not(productCode)));
 
         org.assertj.core.api.Assertions.assertThat(products.findPublicBySlug("mongol-orgoo", ProductStatus.ACTIVE)).isPresent();
-        mvc.perform(get("/api/v1/products/mongol-orgoo")).andExpect(status().isOk());
+        mvc.perform(get("/api/v1/products/mongol-orgoo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.description").value(org.hamcrest.Matchers.containsString("<strong>product</strong>")))
+                .andExpect(jsonPath("$.data.description").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script"))));
         mvc.perform(get("/api/v1/admin/products").with(admin()).param("search",productCode))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.data.items.length()").value(1))
                 .andExpect(jsonPath("$.data.items[0].productCode").value(productCode));
@@ -152,12 +156,19 @@ class AdminPlatformApiIntegrationTests {
                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+        mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"title":"Removed category","category":"GENERAL","content":"Content","published":false}
+                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
         var draft = mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Шинэ мэдээ","category":"ECONOMY","content":"Content","published":false}
+                {"title":"Шинэ мэдээ","category":"NEWS","content":"<p>Rich <strong>news</strong></p><script>alert(1)</script>","published":false}
                 """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.data.slug").value("shine-medee"))
-                .andExpect(jsonPath("$.data.category").value("ECONOMY"))
+                .andExpect(jsonPath("$.data.category").value("NEWS"))
+                .andExpect(jsonPath("$.data.content").value(org.hamcrest.Matchers.containsString("<strong>news</strong>")))
+                .andExpect(jsonPath("$.data.content").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script"))))
                 .andExpect(jsonPath("$.data.summary").doesNotExist())
                 .andReturn();
         long newsId = ((Number) com.jayway.jsonpath.JsonPath.read(
@@ -166,24 +177,29 @@ class AdminPlatformApiIntegrationTests {
         mvc.perform(patch("/api/v1/admin/news/{id}", newsId).with(admin()).with(csrf())
                         .contentType("application/json")
                         .content("""
-                                {"title":"Зассан мэдээ","category":"BUSINESS","content":"Updated content","published":false}
+                                {"title":"Зассан мэдээ","category":"INFORMATION","content":"Updated content","published":false}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Зассан мэдээ"))
-                .andExpect(jsonPath("$.data.category").value("BUSINESS"))
+                .andExpect(jsonPath("$.data.category").value("INFORMATION"))
                 .andExpect(jsonPath("$.data.slug").value("shine-medee"));
         mvc.perform(get("/api/v1/news")).andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Older news","category":"GENERAL","content":"Content","published":true,"publishedAt":"2020-01-01T00:00:00Z"}
+                {"title":"Older news","category":"NEWS","content":"Content","published":true,"publishedAt":"2020-01-01T00:00:00Z"}
                 """)).andExpect(status().isCreated());
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Newer news","category":"GENERAL","content":"Content","published":true,"publishedAt":"2021-01-01T00:00:00Z"}
+                {"title":"Newer news","category":"INFORMATION","content":"Content","published":true,"publishedAt":"2021-01-01T00:00:00Z"}
                 """)).andExpect(status().isCreated());
         mvc.perform(get("/api/v1/news")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].title").value("Newer news"))
                 .andExpect(jsonPath("$.data[1].title").value("Older news"));
         mvc.perform(get("/api/v1/news/newer-news")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.title").value("Newer news"));
+        mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"title":"Empty news","category":"TRAINING","content":"<p><br></p>","published":false}
+                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("NEWS_CONTENT_REQUIRED"));
     }
 
     @Test @WithMockUser(username="admin@example.com",roles="ADMIN")

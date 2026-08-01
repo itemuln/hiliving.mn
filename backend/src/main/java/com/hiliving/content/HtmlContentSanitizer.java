@@ -1,11 +1,11 @@
-package com.hiliving.content.page;
+package com.hiliving.content;
 
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-class ContentPageHtmlSanitizer {
+public class HtmlContentSanitizer {
     private static final PolicyFactory POLICY = new HtmlPolicyBuilder()
             .allowElements(
                     "p", "div", "span", "br", "hr",
@@ -26,7 +26,7 @@ class ContentPageHtmlSanitizer {
             .requireRelNofollowOnLinks()
             .toFactory();
 
-    String sanitize(String html) {
+    public String sanitize(String html) {
         return POLICY.sanitize(html == null ? "" : html.trim());
     }
 }
