@@ -29,6 +29,9 @@ export function ProductDetailPage() {
 
   const product = resource.data;
   const available = product ? product.availableQuantity > 0 : false;
+  const selectedImageScale =
+    product?.images.find((image) => image.imageUrl === (selectedImage || product.imageUrl))
+      ?.displayScale ?? 100;
 
   return (
     <div id="top" className="min-h-screen bg-white">
@@ -94,9 +97,9 @@ export function ProductDetailPage() {
                       src={selectedImage || product.imageUrl}
                       alt={product.name}
                       loading="eager"
-                      fetchPriority="high"
                       decoding="async"
                       className="h-full w-full object-contain"
+                      style={{ transform: `scale(${selectedImageScale / 100})` }}
                     />
                   </div>
                   {product.images.length > 1 ? (
@@ -124,6 +127,7 @@ export function ProductDetailPage() {
                             loading="lazy"
                             decoding="async"
                             className="h-full w-full object-contain"
+                            style={{ transform: `scale(${image.displayScale / 100})` }}
                           />
                         </button>
                       ))}
@@ -131,7 +135,7 @@ export function ProductDetailPage() {
                   ) : null}
                 </section>
 
-                <section className="self-center">
+                <section className="md:self-start">
                   {product.brand ? (
                     <Link
                       to={`/brands/${product.brand.slug}`}
@@ -165,24 +169,7 @@ export function ProductDetailPage() {
                       Гишүүнчлэлийн {product.membershipDiscountPercentage}% хөнгөлөлтөөр{' '}
                       {priceFormatter.format(product.membershipSavings)}₮ хэмнэнэ.
                     </p>
-                  ) : product.membershipDiscountEligible ? (
-                    <p className="mt-2 text-xs text-neutral-500">
-                      Нэвтэрсэн хэрэглэгчийн гишүүнчлэлийн хөнгөлөлт автоматаар тооцогдоно.
-                    </p>
                   ) : null}
-
-                  <p
-                    className={`mt-5 text-sm font-medium ${
-                      available ? 'text-emerald-700' : 'text-red-600'
-                    }`}
-                    role="status"
-                  >
-                    {product.inventoryStatus === 'OUT_OF_STOCK'
-                      ? 'Нөөц дууссан'
-                      : product.inventoryStatus === 'LOW_STOCK'
-                      ? `Цөөн үлдсэн (${product.availableQuantity})`
-                      : `Нөөцөд байна (${product.availableQuantity})`}
-                  </p>
 
                   <div className="mt-6 flex flex-wrap items-center gap-4">
                     <div

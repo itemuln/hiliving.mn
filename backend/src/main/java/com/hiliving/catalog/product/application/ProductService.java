@@ -80,9 +80,8 @@ public class ProductService {
     }
 
     private ProductSummaryResponse toSummaryResponse(ProductEntity product) {
-        String primaryImageUrl = product.getImages().stream()
+        ProductImageEntity primaryImage = product.getImages().stream()
                 .filter(ProductImageEntity::isPrimaryImage)
-                .map(ProductImageEntity::getImageUrl)
                 .findFirst()
                 .orElse(null);
         return new ProductSummaryResponse(
@@ -95,7 +94,8 @@ public class ProductService {
                 toReference(product.getCategory()),
                 toReference(product.getBrand()),
                 product.isFeatured(),
-                primaryImageUrl,
+                primaryImage == null ? null : primaryImage.getImageUrl(),
+                primaryImage == null ? 100 : primaryImage.getDisplayScale(),
                 product.getCreatedAt(),
                 product.getUpdatedAt()
         );
@@ -148,7 +148,8 @@ public class ProductService {
                 image.getImageUrl(),
                 image.getAltText(),
                 image.getDisplayOrder(),
-                image.isPrimaryImage()
+                image.isPrimaryImage(),
+                image.getDisplayScale()
         );
     }
 

@@ -9,6 +9,8 @@ import type {
   BrandInput,
   Category,
   CategoryInput,
+  ContentPage,
+  ContentPageInput,
   DashboardCounts,
   MediaPurpose,
   MediaUpload,
@@ -100,6 +102,10 @@ export const updateNews = (id: number, input: NewsInput) =>
   apiRequest<News>(`/api/v1/admin/news/${id}`, json('PATCH', input));
 export const deleteNews = (id: number) =>
   apiRequest<void>(`/api/v1/admin/news/${id}`, { method: 'DELETE' });
+export const listContentPages = () => apiRequest<ContentPage[]>('/api/v1/admin/pages');
+export const getContentPage = (id: number) => apiRequest<ContentPage>(`/api/v1/admin/pages/${id}`);
+export const updateContentPage = (id: number, input: ContentPageInput) =>
+  apiRequest<ContentPage>(`/api/v1/admin/pages/${id}`, json('PATCH', input));
 export const uploadMediaImage = (
   file: File,
   purpose: MediaPurpose,

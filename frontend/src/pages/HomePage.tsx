@@ -1,5 +1,4 @@
-import { lazy, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { lazy } from 'react';
 import { CategorySection } from '../components/home/CategorySection';
 import { HeroCarousel } from '../components/home/HeroCarousel';
 import { ProductSection } from '../components/home/ProductSection';
@@ -21,17 +20,10 @@ const BrandsSection = lazy(() =>
 );
 
 export function HomePage() {
-  const { hash } = useLocation();
-
-  useEffect(() => {
-    if (hash !== '#hiliving-mgl') return;
-    document.getElementById('hiliving-mgl')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [hash]);
-
   return (
     <div id="top" className="min-h-screen bg-white">
       <Header />
-      <main id="hiliving-mgl">
+      <main>
         <HeroCarousel />
         <CategorySection />
         <ProductSection />

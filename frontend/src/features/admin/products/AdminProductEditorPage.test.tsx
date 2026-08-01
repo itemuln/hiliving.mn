@@ -178,6 +178,56 @@ describe('admin product editor', () => {
     expect(screen.queryByLabelText('Бүтээгдэхүүний зураг нэмэх')).not.toBeInTheDocument();
   });
 
+  it('persists the chosen image scale and order', async () => {
+    vi.mocked(api.getProduct).mockResolvedValue({
+      ...existingProduct,
+      images: [
+        {
+          id: 1,
+          imageUrl: '/media/products/front.png',
+          altText: 'Front',
+          displayOrder: 0,
+          primaryImage: true,
+          displayScale: 100,
+        },
+        {
+          id: 2,
+          imageUrl: '/media/products/detail.png',
+          altText: 'Detail',
+          displayOrder: 1,
+          primaryImage: false,
+          displayScale: 90,
+        },
+      ],
+    });
+    render(page('/admin/products/42/edit'));
+
+    const frontPreview = await screen.findByAltText('Бүтээгдэхүүний зураг 1 харагдац');
+    fireEvent.change(
+      screen.getByRole('slider', { name: 'Бүтээгдэхүүний зураг 1 харагдах хэмжээ' }),
+      { target: { value: '125' } }
+    );
+    expect(frontPreview).toHaveStyle({ transform: 'scale(1.25)' });
+
+    fireEvent.click(screen.getByRole('button', { name: '1-р зургийг хойш зөөх' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
+
+    await waitFor(() => expect(api.updateProduct).toHaveBeenCalledTimes(1));
+    expect(vi.mocked(api.updateProduct).mock.calls[0][1].images).toEqual([
+      expect.objectContaining({
+        imageUrl: '/media/products/detail.png',
+        sortOrder: 0,
+        displayScale: 90,
+      }),
+      expect.objectContaining({
+        imageUrl: '/media/products/front.png',
+        sortOrder: 1,
+        primaryImage: true,
+        displayScale: 125,
+      }),
+    ]);
+  });
+
   it('normalizes product number inputs without breaking decimal prices', async () => {
     render(page());
     await screen.findByText('1. Бүтээгдэхүүний мэдээлэл');

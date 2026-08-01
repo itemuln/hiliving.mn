@@ -5,6 +5,7 @@ public record ProductImageResponse(
         String imageUrl,
         String altText,
         int displayOrder,
-        boolean primaryImage
+        boolean primaryImage,
+        int displayScale
 ) {
 }

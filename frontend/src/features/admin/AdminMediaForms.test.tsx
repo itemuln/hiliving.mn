@@ -148,7 +148,10 @@ describe('admin media forms', () => {
   it('uploads and persists a news thumbnail while body authoring stays text based', async () => {
     render(page(<AdminNewsEditorPage />));
     expect(document.querySelectorAll('input[type="file"]')).toHaveLength(1);
-    expect(screen.getByLabelText('Агуулга')).toHaveAttribute('rows', '12');
+    expect(screen.queryByLabelText('Slug')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Товч тайлбар')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Ангилал')).toHaveValue('GENERAL');
+    expect(screen.getByLabelText('Тайлбар')).toHaveAttribute('rows', '12');
     expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },
@@ -160,15 +163,20 @@ describe('admin media forms', () => {
       )
     );
     fireEvent.change(screen.getByLabelText('Гарчиг'), { target: { value: 'Uploaded news' } });
-    fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'uploaded-news' } });
-    fireEvent.change(screen.getByLabelText('Товч тайлбар'), { target: { value: 'Summary' } });
-    fireEvent.change(screen.getByLabelText('Агуулга'), { target: { value: 'Content' } });
+    fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: 'HEALTH' } });
+    fireEvent.change(screen.getByLabelText('Тайлбар'), { target: { value: 'Content' } });
     fireEvent.click(screen.getByRole('button', { name: 'Нийтлэх' }));
     await waitFor(() =>
       expect(api.createNews).toHaveBeenCalledWith(
-        expect.objectContaining({ thumbnailUrl: '/media/news/generated.png', published: true })
+        expect.objectContaining({
+          category: 'HEALTH',
+          thumbnailUrl: '/media/news/generated.png',
+          published: true,
+        })
       )
     );
+    expect(vi.mocked(api.createNews).mock.calls[0][0]).not.toHaveProperty('slug');
+    expect(vi.mocked(api.createNews).mock.calls[0][0]).not.toHaveProperty('summary');
     expect(vi.mocked(api.createNews).mock.calls[0][0]).not.toHaveProperty('sortOrder');
   });
 });

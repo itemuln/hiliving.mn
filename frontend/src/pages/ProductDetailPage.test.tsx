@@ -79,18 +79,27 @@ describe('ProductDetailPage', () => {
           altText: 'Second view',
           displayOrder: 1,
           primaryImage: false,
+          displayScale: 125,
         },
       ],
       availableQuantity: 2,
+      membershipSavings: 0,
+      membershipDiscountPercentage: 0,
     };
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ data: detail })));
     const addItem = vi.fn();
     renderPage({ addItem });
 
-    expect(await screen.findByRole('heading', { name: detail.name })).toBeInTheDocument();
+    const heading = await screen.findByRole('heading', { name: detail.name });
+    expect(heading.closest('section')).toHaveClass('md:self-start');
     expect(screen.getByText('45,000₮')).toBeInTheDocument();
+    expect(screen.queryByText(/Нөөцөд байна|Цөөн үлдсэн/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Нэвтэрсэн хэрэглэгчийн гишүүнчлэлийн хөнгөлөлт автоматаар тооцогдоно.')
+    ).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: `${detail.name} зураг 2` }));
     expect(screen.getByAltText(detail.name)).toHaveAttribute('src', '/product-second.png');
+    expect(screen.getByAltText(detail.name)).toHaveStyle({ transform: 'scale(1.25)' });
     fireEvent.click(screen.getByRole('button', { name: 'Тоо ширхэг нэмэх' }));
     expect(screen.getByRole('spinbutton', { name: 'Тоо ширхэг' })).toHaveValue(2);
     expect(screen.getByRole('button', { name: 'Тоо ширхэг нэмэх' })).toBeDisabled();

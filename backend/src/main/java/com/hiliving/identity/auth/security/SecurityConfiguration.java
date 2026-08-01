@@ -82,7 +82,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.GET,
                                 "/api/v1/categories/**", "/api/v1/brands/**", "/api/v1/products/**",
-                                "/api/v1/banners/**", "/api/v1/news/**",
+                                "/api/v1/banners/**", "/api/v1/news/**", "/api/v1/pages/**",
                                 "/media/**",
                                 "/api/v1/auth/csrf", "/actuator/health", "/actuator/health/**"
                         ).permitAll()

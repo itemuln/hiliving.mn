@@ -52,6 +52,7 @@ export interface ProductSummaryDto {
   readonly brand: CatalogReferenceDto | null;
   readonly featured: boolean;
   readonly primaryImageUrl: string | null;
+  readonly primaryImageScale: number;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -62,9 +63,11 @@ export interface ProductImageDto {
   readonly altText: string | null;
   readonly displayOrder: number;
   readonly primaryImage: boolean;
+  readonly displayScale: number;
 }
 
-export interface ProductDetailDto extends Omit<ProductSummaryDto, 'primaryImageUrl'> {
+export interface ProductDetailDto
+  extends Omit<ProductSummaryDto, 'primaryImageUrl' | 'primaryImageScale'> {
   readonly description: string | null;
   readonly sku: string;
   readonly effectiveCustomerPrice: number;

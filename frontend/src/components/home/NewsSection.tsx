@@ -24,7 +24,6 @@ export function NewsSection() {
               item={{
                 id: String(item.id),
                 title: item.title,
-                description: item.summary,
                 image: item.thumbnailUrl ?? '/news-team.svg',
                 slug: item.slug,
               }}

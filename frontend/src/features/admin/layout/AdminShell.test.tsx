@@ -14,7 +14,7 @@ const context: AuthContextValue = {
   replaceUser: vi.fn(),
 };
 describe('admin shell', () => {
-  it('renders the separate navigation, disabled future items, and mobile drawer control', () => {
+  it('renders the separate navigation, pages destination, and mobile drawer control', () => {
     render(
       <AuthContext.Provider value={context}>
         <MemoryRouter initialEntries={['/admin']}>
@@ -31,7 +31,7 @@ describe('admin shell', () => {
       'href',
       '/'
     );
-    expect(screen.getByText('Хуудас').closest('[aria-disabled="true"]')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Хуудас' })).toHaveAttribute('href', '/admin/pages');
     fireEvent.click(screen.getByRole('button', { name: 'Цэс нээх' }));
     expect(screen.getByRole('button', { name: 'Цэсний дэвсгэр хаах' })).toBeInTheDocument();
     expect(screen.getByText('Counts')).toBeInTheDocument();

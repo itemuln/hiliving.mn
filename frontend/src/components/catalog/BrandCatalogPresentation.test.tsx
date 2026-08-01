@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import { BrandProductsPage } from '../../pages/BrandProductsPage';
+import { CatalogPagination } from './CatalogPagination';
 import { CatalogToolbar } from './CatalogToolbar';
 import { Sidebar } from './Sidebar';
 
@@ -66,21 +67,20 @@ describe('brand catalog presentation', () => {
     ).toBeNull();
   });
 
-  it('keeps brand search and sorting in the inline mobile layout', () => {
-    render(
-      <CatalogToolbar
-        search=""
-        sort="newest"
-        onSearch={vi.fn()}
-        onSort={vi.fn()}
-        mobileLayout="inline"
-      />
-    );
+  it('hides catalog search and pagination on mobile while retaining sorting', () => {
+    render(<CatalogToolbar search="" sort="newest" onSearch={vi.fn()} onSort={vi.fn()} />);
 
-    const search = screen.getByRole('search');
-    const toolbar = search.parentElement;
-    expect(toolbar).toHaveClass('flex-row', 'items-center');
-    expect(toolbar).toContainElement(screen.getByLabelText('Бүтээгдэхүүн эрэмбэлэх'));
+    expect(screen.getByRole('search', { hidden: true })).toHaveClass('hidden', 'sm:flex');
+    expect(screen.getByLabelText('Бүтээгдэхүүн эрэмбэлэх')).toBeInTheDocument();
+
+    render(
+      <MemoryRouter>
+        <CatalogPagination currentPage={1} totalPages={3} />
+      </MemoryRouter>
+    );
+    expect(
+      screen.getByRole('navigation', { name: 'Бүтээгдэхүүний хуудас', hidden: true })
+    ).toHaveClass('hidden', 'md:flex');
   });
 
   it('renders the managed banner for the selected brand', () => {

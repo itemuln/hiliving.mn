@@ -4,7 +4,8 @@ public enum MediaPurpose {
     PRODUCT("products", 5L * 1024 * 1024, 4000, 4000, 1600, 1600),
     BRAND("brands", 2L * 1024 * 1024, 3000, 3000, 1000, 1000),
     BANNER("banners", 8L * 1024 * 1024, 6000, 4000, 2400, 1600),
-    NEWS("news", 5L * 1024 * 1024, 4000, 3000, 1600, 1200);
+    NEWS("news", 5L * 1024 * 1024, 4000, 3000, 1600, 1200),
+    PAGE("pages", 8L * 1024 * 1024, 6000, 4000, 2400, 1600);
 
     private final String directory;
     private final long maxBytes;

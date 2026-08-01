@@ -27,6 +27,9 @@ describe('BrandsSection', () => {
 
     const links = screen.getAllByRole('link', { name: /Brand/ });
     expect(links).toHaveLength(7);
-    links.forEach((link) => expect(link).not.toHaveClass('md:hidden'));
+    links.forEach((link) => {
+      expect(link).not.toHaveClass('md:hidden');
+      expect(link).toHaveClass('border-neutral-200/40');
+    });
   });
 });

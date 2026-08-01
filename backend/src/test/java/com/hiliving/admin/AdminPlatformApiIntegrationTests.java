@@ -34,6 +34,12 @@ class AdminPlatformApiIntegrationTests {
                 .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
         mvc.perform(get("/api/v1/admin/dashboard").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("customer").roles("CUSTOMER")))
                 .andExpect(status().isForbidden()).andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
+        mvc.perform(get("/api/v1/admin/pages"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code").value("AUTHENTICATION_REQUIRED"));
+        mvc.perform(get("/api/v1/admin/pages").with(user("customer").roles("CUSTOMER")))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error.code").value("ACCESS_DENIED"));
     }
 
     @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
@@ -68,7 +74,7 @@ class AdminPlatformApiIntegrationTests {
     void productRulesExposeInventoryMembershipAndArchiveVisibility() throws Exception {
         CategoryEntity category=categories.save(CategoryEntity.create("Admin Product","admin-product",null,0,true));
         String active="""
-                {"name":"Монгол Өргөө","description":"Managed product details","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":5,"featured":true,"newProduct":true,"active":true,"membershipDiscountEligible":false,"images":[{"imageUrl":"https://example.com/product.jpg","altText":"Product","sortOrder":0,"primaryImage":true}]}
+                {"name":"Монгол Өргөө","description":"Managed product details","basePrice":100,"discountPrice":80,"categoryId":%d,"brandId":null,"lifecycle":"ACTIVE","stockQuantity":3,"lowStockThreshold":5,"featured":true,"newProduct":true,"active":true,"membershipDiscountEligible":false,"images":[{"imageUrl":"https://example.com/product.jpg","altText":"Product","sortOrder":0,"primaryImage":true,"displayScale":125}]}
                 """.formatted(category.getId());
         var result=mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content(active))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.data.inventoryState").value("LOW_STOCK"))
@@ -77,6 +83,7 @@ class AdminPlatformApiIntegrationTests {
                 .andExpect(jsonPath("$.data.productCode").value(org.hamcrest.Matchers.matchesPattern("PRD-[0-9]{6,}")))
                 .andExpect(jsonPath("$.data.shortDescription").value("Managed product details"))
                 .andExpect(jsonPath("$.data.description").value("Managed product details"))
+                .andExpect(jsonPath("$.data.images[0].displayScale").value(125))
                 .andReturn();
         long id=((Number)com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(),"$.data.id")).longValue();
         String productCode=com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(),"$.data.productCode");
@@ -101,7 +108,8 @@ class AdminPlatformApiIntegrationTests {
                 .andExpect(jsonPath("$.data.productCode").value(productCode))
                 .andExpect(jsonPath("$.data.images[0].imageUrl").value("https://example.com/product.jpg"));
         mvc.perform(get("/api/v1/products/mongol-orgoo")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.name").value("Шинэ Бүтээгдэхүүн"));
+                .andExpect(jsonPath("$.data.name").value("Шинэ Бүтээгдэхүүн"))
+                .andExpect(jsonPath("$.data.images[0].displayScale").value(125));
         mvc.perform(get("/api/v1/products/shine-buteegdehuun")).andExpect(status().isNotFound());
 
         mvc.perform(post("/api/v1/admin/products/{id}/archive",id).with(admin()).with(csrf())).andExpect(status().isOk())
@@ -140,19 +148,94 @@ class AdminPlatformApiIntegrationTests {
                 .andExpect(jsonPath("$.data.length()").value(1))
                 .andExpect(jsonPath("$.data[0].title").value("Promotional banner"));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Draft","slug":"draft-news","summary":"Summary","content":"Content","published":false}
-                """)).andExpect(status().isCreated());
+                {"title":"Invalid category","category":"OTHER","content":"Content","published":false}
+                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("VALIDATION_ERROR"));
+        var draft = mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"title":"Шинэ мэдээ","category":"ECONOMY","content":"Content","published":false}
+                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.slug").value("shine-medee"))
+                .andExpect(jsonPath("$.data.category").value("ECONOMY"))
+                .andExpect(jsonPath("$.data.summary").doesNotExist())
+                .andReturn();
+        long newsId = ((Number) com.jayway.jsonpath.JsonPath.read(
+                draft.getResponse().getContentAsString(), "$.data.id"
+        )).longValue();
+        mvc.perform(patch("/api/v1/admin/news/{id}", newsId).with(admin()).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"title":"Зассан мэдээ","category":"BUSINESS","content":"Updated content","published":false}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("Зассан мэдээ"))
+                .andExpect(jsonPath("$.data.category").value("BUSINESS"))
+                .andExpect(jsonPath("$.data.slug").value("shine-medee"));
         mvc.perform(get("/api/v1/news")).andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(0));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Older","slug":"older-news","summary":"Summary","content":"Content","published":true,"publishedAt":"2020-01-01T00:00:00Z"}
+                {"title":"Older news","category":"GENERAL","content":"Content","published":true,"publishedAt":"2020-01-01T00:00:00Z"}
                 """)).andExpect(status().isCreated());
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Newer","slug":"newer-news","summary":"Summary","content":"Content","published":true,"publishedAt":"2021-01-01T00:00:00Z"}
+                {"title":"Newer news","category":"GENERAL","content":"Content","published":true,"publishedAt":"2021-01-01T00:00:00Z"}
                 """)).andExpect(status().isCreated());
         mvc.perform(get("/api/v1/news")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.data[0].title").value("Newer"))
-                .andExpect(jsonPath("$.data[1].title").value("Older"));
-        mvc.perform(get("/api/v1/news/newer-news")).andExpect(status().isOk()).andExpect(jsonPath("$.data.title").value("Newer"));
+                .andExpect(jsonPath("$.data[0].title").value("Newer news"))
+                .andExpect(jsonPath("$.data[1].title").value("Older news"));
+        mvc.perform(get("/api/v1/news/newer-news")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("Newer news"));
+    }
+
+    @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
+    void contentPagesSanitizeRichHtmlAndExposeOnlyPublishedSections() throws Exception {
+        mvc.perform(get("/api/v1/pages/hiliving-mgl"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(0));
+
+        var pages = mvc.perform(get("/api/v1/admin/pages").with(admin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(4))
+                .andExpect(jsonPath("$.data[0].slug").value("company-history"))
+                .andReturn();
+        long pageId = ((Number) com.jayway.jsonpath.JsonPath.read(
+                pages.getResponse().getContentAsString(), "$.data[0].id"
+        )).longValue();
+
+        mvc.perform(patch("/api/v1/admin/pages/{id}", pageId).with(admin()).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"title":"Компанийн түүх","contentHtml":"<h2>Түүх</h2><script>alert(1)</script><img src=\\"/media/pages/example.jpg\\" onerror=\\"alert(2)\\"><a href=\\"javascript:alert(3)\\">unsafe</a>","published":true}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.published").value(true))
+                .andExpect(jsonPath("$.data.contentHtml").value(org.hamcrest.Matchers.containsString("<h2>Түүх</h2>")))
+                .andExpect(jsonPath("$.data.contentHtml").value(org.hamcrest.Matchers.containsString("/media/pages/example.jpg")))
+                .andExpect(jsonPath("$.data.contentHtml").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("<script"))))
+                .andExpect(jsonPath("$.data.contentHtml").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("onerror"))))
+                .andExpect(jsonPath("$.data.contentHtml").value(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("javascript:"))));
+
+        mvc.perform(get("/api/v1/pages/hiliving-mgl"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].slug").value("company-history"));
+        mvc.perform(get("/api/v1/pages/hiliving-mgl/company-history"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.title").value("Компанийн түүх"));
+
+        mvc.perform(patch("/api/v1/admin/pages/{id}", pageId).with(admin()).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"title":"Компанийн түүх","contentHtml":"<p><br></p>","published":true}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("PAGE_CONTENT_REQUIRED"));
+        mvc.perform(patch("/api/v1/admin/pages/{id}", pageId).with(admin()).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"title":"Компанийн түүх","contentHtml":"<img src=\\"data:image/png;base64,AAAA\\">","published":true}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code").value("PAGE_CONTENT_REQUIRED"));
     }
 
     private static org.springframework.test.web.servlet.request.RequestPostProcessor admin() {
@@ -161,7 +244,7 @@ class AdminPlatformApiIntegrationTests {
 
     private static String productWithImages(long categoryId,int count) {
         String images=java.util.stream.IntStream.range(0,count)
-                .mapToObj(index->"{\"imageUrl\":\"https://example.com/product-%d.jpg\",\"altText\":\"Product %d\",\"sortOrder\":%d,\"primaryImage\":%s}"
+                .mapToObj(index->"{\"imageUrl\":\"https://example.com/product-%d.jpg\",\"altText\":\"Product %d\",\"sortOrder\":%d,\"primaryImage\":%s,\"displayScale\":100}"
                         .formatted(index,index,index,index==0))
                 .collect(java.util.stream.Collectors.joining(","));
         return """

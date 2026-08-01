@@ -51,6 +51,7 @@ describe('catalog API adapter', () => {
       listPrice: 65000,
       currentPrice: 50000,
       imageUrl: '/product-cleaner.svg',
+      imageScale: 100,
     });
   });
 

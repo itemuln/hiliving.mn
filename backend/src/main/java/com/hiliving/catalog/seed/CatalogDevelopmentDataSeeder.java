@@ -94,7 +94,7 @@ public class CatalogDevelopmentDataSeeder implements ApplicationRunner {
                 ProductStatus.ACTIVE,
                 true
         );
-        cleaner.addImage("/product-cleaner.svg", "Plant-based household cleaner", 0, true);
+        cleaner.addImage("/product-cleaner.svg", "Plant-based household cleaner", 0, true, 100);
         productRepository.save(cleaner);
 
         ProductEntity wellnessKit = ProductEntity.create(
@@ -109,7 +109,7 @@ public class CatalogDevelopmentDataSeeder implements ApplicationRunner {
                 ProductStatus.ACTIVE,
                 false
         );
-        wellnessKit.addImage("/health.png", "Daily wellness kit", 0, true);
+        wellnessKit.addImage("/health.png", "Daily wellness kit", 0, true, 100);
         productRepository.save(wellnessKit);
 
         ProductEntity draft = ProductEntity.create(

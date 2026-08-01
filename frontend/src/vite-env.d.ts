@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_DEV_API_PROXY_TARGET?: string;
   readonly VITE_MAP_TILE_URL?: string;
   readonly VITE_NOMINATIM_BASE_URL?: string;
+  readonly VITE_TINYMCE_API_KEY?: string;
 }
 
 interface ImportMeta {

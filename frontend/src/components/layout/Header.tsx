@@ -7,14 +7,14 @@ import { useOptionalCart } from '../../features/cart/useCart';
 
 const navigation = [
   { label: 'Дэлгүүр хэсэх', to: '/categories/', section: 'categories' },
-  { label: 'Hiliving MGL', to: '/#hiliving-mgl', section: 'about' },
+  { label: 'Hiliving MGL', to: '/hiliving-mgl', section: 'about' },
   { label: 'Брэндүүд', to: '/brands', section: 'brands' },
   { label: 'Мэдээлэл', to: '/news', section: 'news' },
   { label: 'Холбоо барих', to: '/contact', section: 'contact' },
 ] as const;
 
 export function Header() {
-  const { hash, pathname } = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const auth = useOptionalAuth();
   const state = auth?.state ?? { status: 'anonymous' as const, user: null };
@@ -83,9 +83,8 @@ export function Header() {
               {navigation.map((item) => {
                 const isActive =
                   (item.section === 'categories' &&
-                    ((pathname === '/' && hash !== '#hiliving-mgl') ||
-                      pathname.startsWith('/categories'))) ||
-                  (item.section === 'about' && pathname === '/' && hash === '#hiliving-mgl') ||
+                    (pathname === '/' || pathname.startsWith('/categories'))) ||
+                  (item.section === 'about' && pathname.startsWith('/hiliving-mgl')) ||
                   (item.section === 'brands' && pathname.startsWith('/brands')) ||
                   (item.section === 'news' && pathname.startsWith('/news')) ||
                   (item.section === 'contact' && pathname === '/contact');

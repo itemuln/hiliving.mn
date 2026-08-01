@@ -15,4 +15,5 @@ export const environment = Object.freeze({
   nominatimBaseUrl: normalizeBaseUrl(
     configuredValue(import.meta.env.VITE_NOMINATIM_BASE_URL, 'https://nominatim.openstreetmap.org')
   ),
+  tinymceApiKey: import.meta.env.VITE_TINYMCE_API_KEY?.trim() ?? '',
 });

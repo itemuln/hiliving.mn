@@ -131,7 +131,8 @@ class CatalogApiIntegrationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.slug").value("api-budget-cleaner"))
                 .andExpect(jsonPath("$.data.images.length()").value(1))
-                .andExpect(jsonPath("$.data.images[0].primaryImage").value(true));
+                .andExpect(jsonPath("$.data.images[0].primaryImage").value(true))
+                .andExpect(jsonPath("$.data.images[0].displayScale").value(100));
 
         mockMvc.perform(get("/api/v1/products/missing-product"))
                 .andExpect(status().isNotFound())

@@ -21,7 +21,7 @@ Provision the VPS integration once from a trusted administration machine:
 1. Generate a dedicated Ed25519 key pair used only by GitHub Actions.
 2. Copy the public key plus `install-deploy-automation.sh` and `deploy-release.sh` to a temporary root-readable directory on the VPS.
 3. Run `sudo ./install-deploy-automation.sh <public-key-file>`. The installer creates the restricted transfer account, installs the root-owned activator at `/usr/local/sbin/hiliving-deploy`, and permits only that validated command through passwordless `sudo`.
-4. Create the GitHub `production` environment with `PRODUCTION_URL=https://hilivingmgl.mn`, then add `VPS_HOST`, `VPS_PORT`, `VPS_SSH_PRIVATE_KEY`, and `VPS_SSH_KNOWN_HOSTS` as environment secrets. Pin known-host entries obtained through a trusted connection and verified against the VPS fingerprint; do not learn the key during the workflow.
+4. Create the GitHub `production` environment with `PRODUCTION_URL=https://hilivingmgl.mn`, then add `VPS_HOST`, `VPS_PORT`, `VPS_SSH_PRIVATE_KEY`, `VPS_SSH_KNOWN_HOSTS`, and the domain-bound Tiny Cloud value as `TINYMCE_API_KEY` environment secrets. Pin known-host entries obtained through a trusted connection and verified against the VPS fingerprint; do not learn either key during the workflow.
 
 The workflow deliberately fails when any setting is absent or a health check fails. It never copies `/etc/hiliving/hiliving.env`, PostgreSQL data, or managed uploads. Infrastructure configuration is not self-updating: after reviewing a change to `deploy-release.sh`, reinstall that root-owned command manually before relying on the changed workflow. Flyway migrations remain forward-only, so a code-link rollback does not reverse a database migration.
 

@@ -11,14 +11,14 @@ const baseNavItems = [
 ];
 
 const moreLinks = [
-  { label: 'Hiliving MGL', to: '/#hiliving-mgl' },
+  { label: 'Hiliving MGL', to: '/hiliving-mgl' },
   { label: 'Брэндүүд', to: '/brands' },
   { label: 'Мэдээлэл', to: '/news' },
   { label: 'Холбоо барих', to: '/contact' },
 ] as const;
 
 export function MobileBottomNav() {
-  const { hash, pathname } = useLocation();
+  const { pathname } = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const moreDialogRef = useRef<HTMLDivElement>(null);
@@ -29,7 +29,7 @@ export function MobileBottomNav() {
     pathname.startsWith('/brands') ||
     pathname.startsWith('/news') ||
     pathname === '/contact' ||
-    (pathname === '/' && hash === '#hiliving-mgl');
+    pathname.startsWith('/hiliving-mgl');
   const navItems = [
     ...baseNavItems,
     {
@@ -129,7 +129,7 @@ export function MobileBottomNav() {
           {navItems.map(({ label, icon, to, section }) => {
             const isActive =
               !moreOpen &&
-              ((section === 'home' && pathname === '/' && !hash) ||
+              ((section === 'home' && pathname === '/') ||
                 (section === 'categories' && pathname.startsWith('/categories')) ||
                 (section === 'cart' && pathname.startsWith('/cart')) ||
                 (section === 'account' &&

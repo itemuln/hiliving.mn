@@ -20,7 +20,7 @@ describe('MobileBottomNav', () => {
     const menu = screen.getByRole('dialog', { name: 'Нэмэлт цэс' });
     expect(within(menu).getByRole('link', { name: /Hiliving MGL/ })).toHaveAttribute(
       'href',
-      '/#hiliving-mgl'
+      '/hiliving-mgl'
     );
     expect(within(menu).getByRole('link', { name: /Брэндүүд/ })).toHaveAttribute('href', '/brands');
     expect(within(menu).getByRole('link', { name: /Мэдээлэл/ })).toHaveAttribute('href', '/news');
@@ -36,7 +36,7 @@ describe('MobileBottomNav', () => {
 
   it('treats the Hiliving section as a secondary destination instead of Home', () => {
     render(
-      <MemoryRouter initialEntries={['/#hiliving-mgl']}>
+      <MemoryRouter initialEntries={['/hiliving-mgl/membership']}>
         <MobileBottomNav />
       </MemoryRouter>
     );

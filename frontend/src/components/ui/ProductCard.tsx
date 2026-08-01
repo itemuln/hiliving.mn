@@ -7,6 +7,7 @@ interface ProductCardProduct {
   readonly listPrice: number;
   readonly currentPrice: number;
   readonly imageUrl: string;
+  readonly imageScale: number;
 }
 
 interface ProductCardProps {
@@ -30,13 +31,18 @@ export function ProductCard({
     <article className="group min-w-0">
       <Link to={`/products/${product.slug}`} className="block focus-visible:rounded-sm">
         <div className="aspect-square overflow-hidden rounded-sm border border-neutral-200 bg-white p-2 transition-colors duration-200 group-hover:border-brand-100 sm:p-3">
-          <img
-            src={product.imageUrl}
-            alt={product.name}
-            loading={imageLoading}
-            decoding="async"
-            className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transform-none"
-          />
+          <div
+            className="h-full w-full"
+            style={{ transform: `scale(${product.imageScale / 100})` }}
+          >
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              loading={imageLoading}
+              decoding="async"
+              className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transform-none"
+            />
+          </div>
         </div>
         <h3 className="mt-2.5 line-clamp-2 text-[11px] font-normal leading-[1.35] text-neutral-500 sm:text-xs md:mt-3 md:text-[13px]">
           {product.name}

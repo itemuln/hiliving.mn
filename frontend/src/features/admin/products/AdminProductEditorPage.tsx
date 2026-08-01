@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { ArrowDown, ArrowUp, ImagePlus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, GripVertical, ImagePlus, Trash2 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
 import type { Brand, Category, ProductInput, ProductLifecycle } from '../admin.types';
@@ -67,6 +67,7 @@ export function AdminProductEditorPage() {
   const [discountPercentage, setDiscountPercentage] = useState<number | null>(null);
   const [pendingUploads, setPendingUploads] = useState(0);
   const [batchUploading, setBatchUploading] = useState(false);
+  const [draggedImageIndex, setDraggedImageIndex] = useState<number | null>(null);
   const [error, setError] = useState('');
   const batchInput = useRef<HTMLInputElement>(null);
   const batchInputId = useId();
@@ -101,6 +102,7 @@ export function AdminProductEditorPage() {
               altText: i.altText,
               sortOrder: index,
               primaryImage: i.primaryImage,
+              displayScale: i.displayScale,
             })),
           });
           setDiscountEnabled(p.discountPrice !== null);
@@ -178,13 +180,14 @@ export function AdminProductEditorPage() {
           }))
       );
   };
-  const move = (index: number, direction: number) => {
+  const reorder = (index: number, target: number) => {
     const next = [...form.images];
-    const target = index + direction;
     if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
+    const [image] = next.splice(index, 1);
+    next.splice(target, 0, image);
     setImages(next);
   };
+  const move = (index: number, direction: number) => reorder(index, index + direction);
   const addPhotos = async (files: FileList | null) => {
     const selected = Array.from(files ?? []);
     if (batchInput.current) batchInput.current.value = '';
@@ -215,6 +218,7 @@ export function AdminProductEditorPage() {
           altText: '',
           sortOrder: current.images.length + index,
           primaryImage: current.images.length === 0 && index === 0,
+          displayScale: 100,
         }));
         return { ...current, images: [...current.images, ...additions] };
       });
@@ -364,7 +368,8 @@ export function AdminProductEditorPage() {
             <div className="mb-5">
               <h3 className="text-base font-black">Бүтээгдэхүүний зураг</h3>
               <p className="text-xs text-slate-500">
-                Зургаа хүртэл зураг сонгоод үндсэн зураг болон дарааллыг тохируулна уу.
+                Зургаа хүртэл зураг сонгоод хэмжээ, үндсэн зураг болон дарааллыг тохируулна уу.
+                Зургийг чирэх эсвэл сумтай товчоор дарааллыг солино.
               </p>
               {form.images.length < MAX_PRODUCT_IMAGES && (
                 <div className="mt-3">
@@ -393,11 +398,36 @@ export function AdminProductEditorPage() {
             </div>
             <div className="grid min-w-0 gap-4 sm:grid-cols-2">
               {form.images.map((image, index) => (
-                <div key={`${image.imageUrl}-${index}`} className="min-w-0">
+                <div
+                  key={image.imageUrl}
+                  className="min-w-0 rounded-2xl transition-colors"
+                  onDragOver={(event) => {
+                    if (draggedImageIndex !== null) event.preventDefault();
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    if (draggedImageIndex !== null) reorder(draggedImageIndex, index);
+                    setDraggedImageIndex(null);
+                  }}
+                >
+                  <div className="mb-2 flex items-center justify-between text-xs font-bold text-slate-500">
+                    <span
+                      draggable={!saving}
+                      onDragStart={() => setDraggedImageIndex(index)}
+                      onDragEnd={() => setDraggedImageIndex(null)}
+                      className="inline-flex cursor-grab items-center gap-1 rounded-lg px-1 py-1 active:cursor-grabbing"
+                      title="Чирж зургийн дарааллыг солино"
+                    >
+                      <GripVertical size={16} aria-hidden="true" />
+                      Дараалал {index + 1}
+                    </span>
+                    <span>{image.displayScale}%</span>
+                  </div>
                   <ImageUploadControl
                     label={`Бүтээгдэхүүний зураг ${index + 1}`}
                     purpose="PRODUCT"
                     value={image.imageUrl}
+                    imageScale={image.displayScale}
                     onChange={(url) => setSlot(index, url)}
                     onPendingChange={(pending) =>
                       setPendingUploads((value) => Math.max(0, value + (pending ? 1 : -1)))
@@ -411,6 +441,22 @@ export function AdminProductEditorPage() {
                     value={image.altText ?? ''}
                     onChange={(e) => updateImage(index, { altText: e.target.value })}
                   />
+                  <label className="mt-3 block text-xs font-bold text-slate-600">
+                    Харагдах хэмжээ
+                    <input
+                      aria-label={`Бүтээгдэхүүний зураг ${index + 1} харагдах хэмжээ`}
+                      type="range"
+                      min={75}
+                      max={150}
+                      step={5}
+                      value={image.displayScale}
+                      disabled={saving}
+                      onChange={(event) =>
+                        updateImage(index, { displayScale: Number(event.target.value) })
+                      }
+                      className="mt-2 block w-full accent-brand-500"
+                    />
+                  </label>
                   <div className="mt-2 flex items-center justify-between">
                     <label className="text-xs font-bold">
                       <input
@@ -427,7 +473,7 @@ export function AdminProductEditorPage() {
                         className="p-2"
                         disabled={index === 0}
                         onClick={() => move(index, -1)}
-                        aria-label="Зургийг дээш зөөх"
+                        aria-label={`${index + 1}-р зургийг өмнө зөөх`}
                       >
                         <ArrowUp size={16} />
                       </button>
@@ -436,7 +482,7 @@ export function AdminProductEditorPage() {
                         className="p-2"
                         disabled={index === form.images.length - 1}
                         onClick={() => move(index, 1)}
-                        aria-label="Зургийг доош зөөх"
+                        aria-label={`${index + 1}-р зургийг хойш зөөх`}
                       >
                         <ArrowDown size={16} />
                       </button>
@@ -444,7 +490,7 @@ export function AdminProductEditorPage() {
                         type="button"
                         className="p-2 text-rose-500"
                         onClick={() => setSlot(index, '')}
-                        aria-label="Зургийг устгах"
+                        aria-label={`${index + 1}-р зургийг устгах`}
                       >
                         <Trash2 size={16} />
                       </button>

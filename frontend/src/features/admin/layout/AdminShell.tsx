@@ -34,7 +34,7 @@ const links = [
   { to: '/admin/banners', label: 'Баннер', icon: Image },
   { to: '/admin/categories', label: 'Ангилал', icon: Tags },
   { to: '/admin/brands', label: 'Брэнд', icon: Building2 },
-  { label: 'Хуудас', icon: FileText, disabled: true },
+  { to: '/admin/pages', label: 'Хуудас', icon: FileText },
 ];
 
 const pathLabels: Record<string, string> = {
@@ -47,6 +47,7 @@ const pathLabels: Record<string, string> = {
   banners: 'Баннер',
   categories: 'Ангилал',
   brands: 'Брэнд',
+  pages: 'Хуудас',
 };
 
 export function AdminShell({
@@ -66,16 +67,12 @@ export function AdminShell({
   const sidebar = (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#17202b] to-[#101720] text-slate-200">
       <div className="flex h-16 items-center justify-end border-b border-white/10 px-4 lg:hidden">
-        <button
-          onClick={() => setOpen(false)}
-          className="rounded-lg p-2"
-          aria-label="Цэс хаах"
-        >
+        <button onClick={() => setOpen(false)} className="rounded-lg p-2" aria-label="Цэс хаах">
           <X size={20} />
         </button>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-4" aria-label="Удирдлагын цэс">
-        {links.map((item, index) => {
+        {links.map((item) => {
           const Icon = item.icon;
           if (item.children)
             return (
@@ -105,20 +102,6 @@ export function AdminShell({
                     </NavLink>
                   );
                 })}
-              </div>
-            );
-          if (item.disabled)
-            return (
-              <div
-                key={`${item.label}-${index}`}
-                className="flex cursor-not-allowed items-center justify-between rounded-xl px-3 py-2.5 text-sm text-slate-600"
-                aria-disabled="true"
-              >
-                <span className="flex items-center gap-3">
-                  <Icon size={18} />
-                  {item.label}
-                </span>
-                <span className="text-[9px] uppercase">Удахгүй</span>
               </div>
             );
           return (

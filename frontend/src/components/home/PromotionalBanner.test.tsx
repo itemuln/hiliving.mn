@@ -41,6 +41,9 @@ describe('PromotionalBanner', () => {
     expect(getPublicBanners).toHaveBeenCalledWith('PROMOTIONAL');
     expect(image).toHaveAttribute('src', '/media/banners/lower-desktop.jpg');
     expect(image).toHaveClass('sm:aspect-[24/5]');
+    const section = screen.getByRole('region', { name: 'Нэмэлт урамшуулал' });
+    expect(section).not.toHaveClass('py-3');
+    expect(section.firstElementChild).not.toHaveClass('px-4', 'sm:px-6', 'lg:px-10');
     expect(image.closest('picture')?.querySelector('source')).toHaveAttribute(
       'srcset',
       '/media/banners/lower-mobile.jpg'

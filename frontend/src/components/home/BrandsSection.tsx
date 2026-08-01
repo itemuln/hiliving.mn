@@ -37,7 +37,7 @@ export function BrandsSection() {
                 <Link
                   key={brand.id}
                   to={`/brands/${brand.slug}`}
-                  className="flex aspect-[2.15/1] min-w-0 items-center justify-center rounded-md border border-neutral-300 bg-white px-2 text-center text-[9px] font-medium tracking-[0.08em] text-neutral-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-brand-400 hover:text-brand-500 hover:shadow-sm motion-reduce:transform-none sm:text-xs md:text-xl"
+                  className="flex aspect-[2.15/1] min-w-0 items-center justify-center rounded-md border border-neutral-200/40 bg-white px-2 text-center text-[9px] font-medium tracking-[0.08em] text-neutral-400 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-brand-400 hover:text-brand-500 hover:shadow-sm motion-reduce:transform-none sm:text-xs md:text-xl"
                 >
                   {brand.logoUrl ? (
                     <img

@@ -24,6 +24,9 @@ const NewsDetailPage = lazy(() =>
 const ContactPage = lazy(() =>
   import('./pages/ContactPage').then((module) => ({ default: module.ContactPage }))
 );
+const HilivingMglPage = lazy(() =>
+  import('./pages/HilivingMglPage').then((module) => ({ default: module.HilivingMglPage }))
+);
 const ProductDetailPage = lazy(() =>
   import('./pages/ProductDetailPage').then((module) => ({ default: module.ProductDetailPage }))
 );
@@ -119,6 +122,14 @@ const AdminOrderDetailPage = lazy(() =>
     default: m.AdminOrderDetailPage,
   }))
 );
+const AdminPagesPage = lazy(() =>
+  import('./features/admin/pages/AdminPagesPage').then((m) => ({ default: m.AdminPagesPage }))
+);
+const AdminPageEditorPage = lazy(() =>
+  import('./features/admin/pages/AdminPageEditorPage').then((m) => ({
+    default: m.AdminPageEditorPage,
+  }))
+);
 
 export function App() {
   return (
@@ -162,6 +173,7 @@ export function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:newsSlug" element={<NewsDetailPage />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/hiliving-mgl/:sectionSlug?" element={<HilivingMglPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -324,6 +336,22 @@ export function App() {
             element={
               <ProtectedRoute admin>
                 <AdminNewsEditorPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/pages"
+            element={
+              <ProtectedRoute admin>
+                <AdminPagesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/pages/:id/edit"
+            element={
+              <ProtectedRoute admin>
+                <AdminPageEditorPage />
               </ProtectedRoute>
             }
           />

@@ -79,6 +79,7 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
       VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+      VITE_TINYMCE_API_KEY: ${{ secrets.TINYMCE_API_KEY }}
     steps:
       - name: Validate deployment configuration
         shell: bash
@@ -89,6 +90,7 @@ jobs:
           : "${VPS_PORT:?Set the production secret VPS_PORT}"
           : "${VPS_SSH_PRIVATE_KEY:?Set the production secret VPS_SSH_PRIVATE_KEY}"
           : "${VPS_SSH_KNOWN_HOSTS:?Set the production secret VPS_SSH_KNOWN_HOSTS}"
+          : "${VITE_TINYMCE_API_KEY:?Set the production secret TINYMCE_API_KEY}"
 
           if [[ ! "$PRODUCTION_URL" =~ ^https://[^/]+/?$ ]]; then
             echo "PRODUCTION_URL must be an HTTPS origin without a path." >&2

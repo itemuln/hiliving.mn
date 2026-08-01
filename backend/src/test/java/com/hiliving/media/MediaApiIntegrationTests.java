@@ -129,18 +129,19 @@ class MediaApiIntegrationTests {
     }
 
     @Test
-    void uploadedRelativeUrlsWorkAcrossProductBrandBannerAndNewsContracts() throws Exception {
+    void uploadedRelativeUrlsWorkAcrossProductBrandBannerNewsAndPageContracts() throws Exception {
         String productUrl = url(upload(image("product.png", "image/png", "PNG", 20, 20), "PRODUCT").andReturn());
         String brandUrl = url(upload(image("brand.png", "image/png", "PNG", 20, 20), "BRAND").andReturn());
         String bannerUrl = url(upload(image("banner.jpg", "image/jpeg", "JPEG", 40, 20), "BANNER").andReturn());
         String newsUrl = url(upload(image("news.jpg", "image/jpeg", "JPEG", 30, 20), "NEWS").andReturn());
+        String pageUrl = url(upload(image("page.jpg", "image/jpeg", "JPEG", 30, 20), "PAGE").andReturn());
 
         var category = mvc.perform(post("/api/v1/admin/categories").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"name":"Media","slug":"media","description":"Media","sortOrder":0,"active":true}
                 """)).andExpect(status().isCreated()).andReturn();
         long categoryId = ((Number) com.jayway.jsonpath.JsonPath.read(category.getResponse().getContentAsString(), "$.data.id")).longValue();
         mvc.perform(post("/api/v1/admin/products").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"name":"Media product","basePrice":10,"categoryId":%d,"lifecycle":"ACTIVE","stockQuantity":1,"lowStockThreshold":1,"featured":false,"newProduct":false,"active":true,"membershipDiscountEligible":true,"images":[{"imageUrl":"%s","sortOrder":0,"primaryImage":true}]}
+                {"name":"Media product","basePrice":10,"categoryId":%d,"lifecycle":"ACTIVE","stockQuantity":1,"lowStockThreshold":1,"featured":false,"newProduct":false,"active":true,"membershipDiscountEligible":true,"images":[{"imageUrl":"%s","sortOrder":0,"primaryImage":true,"displayScale":100}]}
                 """.formatted(categoryId, productUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.images[0].imageUrl").value(productUrl));
         mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"name":"Media brand","slug":"media-brand","logoUrl":"%s","bannerImageUrl":"%s","sortOrder":0,"active":true}
@@ -151,8 +152,20 @@ class MediaApiIntegrationTests {
                 {"title":"Media banner","imageUrl":"%s","placement":"HERO","sortOrder":0,"active":true}
                 """.formatted(bannerUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.imageUrl").value(bannerUrl));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Media news","slug":"media-news","summary":"Summary","content":"Content","thumbnailUrl":"%s","published":true,"sortOrder":0}
+                {"title":"Media news","category":"HEALTH","content":"Content","thumbnailUrl":"%s","published":true}
                 """.formatted(newsUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.thumbnailUrl").value(newsUrl));
+        var pages = mvc.perform(get("/api/v1/admin/pages").with(admin()))
+                .andExpect(status().isOk()).andReturn();
+        long pageId = ((Number) com.jayway.jsonpath.JsonPath.read(
+                pages.getResponse().getContentAsString(), "$.data[0].id"
+        )).longValue();
+        mvc.perform(patch("/api/v1/admin/pages/{id}", pageId).with(admin()).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"title":"Media page","contentHtml":"<p>Content</p><img src=\\"%s\\">","published":true}
+                                """.formatted(pageUrl)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.contentHtml").value(org.hamcrest.Matchers.containsString(pageUrl)));
     }
 
     private org.springframework.test.web.servlet.ResultActions upload(MockMultipartFile file, String purpose) throws Exception {

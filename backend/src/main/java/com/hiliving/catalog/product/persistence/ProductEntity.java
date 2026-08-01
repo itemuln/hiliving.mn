@@ -175,8 +175,9 @@ public class ProductEntity {
         );
     }
 
-    public void addImage(String imageUrl, String altText, int displayOrder, boolean primaryImage) {
-        images.add(ProductImageEntity.create(this, imageUrl, altText, displayOrder, primaryImage));
+    public void addImage(String imageUrl, String altText, int displayOrder, boolean primaryImage,
+                         int displayScale) {
+        images.add(ProductImageEntity.create(this, imageUrl, altText, displayOrder, primaryImage, displayScale));
     }
 
     public void initializeAdministrationFields(String productCode, int stockQuantity, int lowStockThreshold,

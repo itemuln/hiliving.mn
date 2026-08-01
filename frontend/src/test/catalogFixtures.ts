@@ -16,6 +16,7 @@ export const productSummaryDto: ProductSummaryDto = {
   brand: { id: 2, name: 'Tez Blanc', slug: 'tez-blanc' },
   featured: true,
   primaryImageUrl: '/product-cleaner.svg',
+  primaryImageScale: 100,
   createdAt: '2026-07-15T10:05:26Z',
   updatedAt: '2026-07-15T10:05:26Z',
 };
@@ -39,6 +40,7 @@ export const productDetailDto: ProductDetailDto = {
       altText: 'Plant-based household cleaner',
       displayOrder: 0,
       primaryImage: true,
+      displayScale: 100,
     },
   ],
   relatedProducts: [],

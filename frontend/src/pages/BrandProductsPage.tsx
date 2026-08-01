@@ -69,13 +69,7 @@ export function BrandProductsPage() {
           className="mb-6 aspect-[24/5] w-full object-cover md:mb-8"
         />
       ) : null}
-      <CatalogToolbar
-        search={search}
-        sort={sort}
-        onSearch={setSearch}
-        onSort={setSort}
-        mobileLayout="inline"
-      />
+      <CatalogToolbar search={search} sort={sort} onSearch={setSearch} onSort={setSort} />
       {brandsResource.status === 'error' || productsResource.status === 'error' ? (
         <CatalogErrorState onRetry={retry} />
       ) : hasUnknownSlug ? (

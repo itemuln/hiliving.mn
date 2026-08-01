@@ -57,7 +57,7 @@ export function CatalogPagination({ currentPage, totalPages }: CatalogPagination
   return (
     <nav
       aria-label="Бүтээгдэхүүний хуудас"
-      className="mt-12 flex items-center justify-center gap-1.5 md:mt-14"
+      className="mt-12 hidden items-center justify-center gap-1.5 md:mt-14 md:flex"
     >
       {currentPage > 1 ? (
         <Link

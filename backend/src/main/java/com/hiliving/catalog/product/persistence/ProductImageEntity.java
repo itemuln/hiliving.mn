@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -46,6 +47,11 @@ public class ProductImageEntity {
     @Column(name = "primary_image", nullable = false)
     private boolean primaryImage;
 
+    @Min(75)
+    @Max(150)
+    @Column(name = "display_scale", nullable = false)
+    private int displayScale;
+
     @NotNull
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -58,13 +64,15 @@ public class ProductImageEntity {
             String imageUrl,
             String altText,
             int displayOrder,
-            boolean primaryImage
+            boolean primaryImage,
+            int displayScale
     ) {
         this.product = product;
         this.imageUrl = imageUrl;
         this.altText = altText;
         this.displayOrder = displayOrder;
         this.primaryImage = primaryImage;
+        this.displayScale = displayScale;
     }
 
     static ProductImageEntity create(
@@ -72,17 +80,20 @@ public class ProductImageEntity {
             String imageUrl,
             String altText,
             int displayOrder,
-            boolean primaryImage
+            boolean primaryImage,
+            int displayScale
     ) {
-        return new ProductImageEntity(product, imageUrl, altText, displayOrder, primaryImage);
+        return new ProductImageEntity(product, imageUrl, altText, displayOrder, primaryImage, displayScale);
     }
 
-    public static ProductImageEntity draft(String imageUrl, String altText, int displayOrder, boolean primaryImage) {
-        return new ProductImageEntity(null, imageUrl, altText, displayOrder, primaryImage);
+    public static ProductImageEntity draft(String imageUrl, String altText, int displayOrder, boolean primaryImage,
+                                           int displayScale) {
+        return new ProductImageEntity(null, imageUrl, altText, displayOrder, primaryImage, displayScale);
     }
 
     static ProductImageEntity copyFor(ProductEntity product, ProductImageEntity image) {
-        return create(product, image.imageUrl, image.altText, image.displayOrder, image.primaryImage);
+        return create(product, image.imageUrl, image.altText, image.displayOrder, image.primaryImage,
+                image.displayScale);
     }
 
     @PrePersist
@@ -108,6 +119,10 @@ public class ProductImageEntity {
 
     public boolean isPrimaryImage() {
         return primaryImage;
+    }
+
+    public int getDisplayScale() {
+        return displayScale;
     }
 
     public Instant getCreatedAt() {

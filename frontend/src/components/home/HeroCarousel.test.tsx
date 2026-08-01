@@ -57,6 +57,9 @@ describe('HeroCarousel', () => {
     expect(image).toHaveAttribute('src', '/media/banners/desktop.jpg');
     expect(image).toHaveAttribute('loading', 'eager');
     expect(image.parentElement?.parentElement).toHaveAttribute('data-entrance', 'animated');
+    const section = screen.getByRole('region', { name: 'Онцлох урамшуулал' });
+    expect(section).not.toHaveClass('bg-neutral-100', 'py-3');
+    expect(section.firstElementChild).not.toHaveClass('px-4', 'sm:px-6', 'lg:px-10');
 
     await waitFor(() => {
       const mobileSource = image.closest('picture')?.querySelector('source');

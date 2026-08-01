@@ -13,10 +13,10 @@ import {
   secondaryButton,
 } from '../components/AdminUi';
 import { ImageUploadControl } from '../components/ImageUploadControl';
+import { NEWS_CATEGORY_OPTIONS } from '../../news/newsCategories';
 const blank: NewsInput = {
   title: '',
-  slug: '',
-  summary: '',
+  category: 'GENERAL',
   content: '',
   thumbnailUrl: '',
   published: false,
@@ -40,8 +40,7 @@ export function AdminNewsEditorPage() {
         if (!active) return;
         setForm({
           title: n.title,
-          slug: n.slug,
-          summary: n.summary,
+          category: n.category,
           content: n.content,
           thumbnailUrl: n.thumbnailUrl ?? '',
           published: n.published,
@@ -76,7 +75,7 @@ export function AdminNewsEditorPage() {
       else await api.createNews(payload);
       navigate('/admin/news');
     } catch {
-      setError('Мэдээг хадгалж чадсангүй. Заавал бөглөх талбар болон slug-ийг шалгана уу.');
+      setError('Мэдээг хадгалж чадсангүй. Заавал бөглөх талбаруудыг шалгана уу.');
     } finally {
       setSaving(false);
     }
@@ -115,25 +114,23 @@ export function AdminNewsEditorPage() {
             onChange={(e) => setForm({ ...form, title: e.target.value })}
           />
         </Field>
-        <Field label="Slug">
-          <input
+        <Field label="Ангилал">
+          <select
             required
-            pattern="[a-z0-9]+(-[a-z0-9]+)*"
             className={input}
-            value={form.slug}
-            onChange={(e) => setForm({ ...form, slug: e.target.value })}
-          />
+            value={form.category}
+            onChange={(e) =>
+              setForm({ ...form, category: e.target.value as NewsInput['category'] })
+            }
+          >
+            {NEWS_CATEGORY_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </Field>
-        <Field label="Товч тайлбар" wide>
-          <textarea
-            required
-            rows={3}
-            className={input}
-            value={form.summary}
-            onChange={(e) => setForm({ ...form, summary: e.target.value })}
-          />
-        </Field>
-        <Field label="Агуулга" wide>
+        <Field label="Тайлбар" wide>
           <textarea
             required
             rows={12}

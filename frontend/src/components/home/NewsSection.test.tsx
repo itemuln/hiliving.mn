@@ -14,7 +14,7 @@ describe('NewsSection', () => {
         id: 1,
         title: 'Шинэ мэдээ',
         slug: 'shine-medee',
-        summary: 'Нүүр хуудсанд харагдахгүй товч тайлбар',
+        category: 'GENERAL',
         content: 'Дэлгэрэнгүй агуулга',
         thumbnailUrl: '/news.jpg',
         published: true,
@@ -26,13 +26,10 @@ describe('NewsSection', () => {
     ]);
   });
 
-  it('shows the title followed by a right-aligned read action without the summary', async () => {
+  it('shows the title followed by a right-aligned read action', async () => {
     render(<NewsSection />);
 
     await screen.findByText('Шинэ мэдээ');
-    expect(screen.queryByText('Нүүр хуудсанд харагдахгүй товч тайлбар')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Унших/ }).parentElement).toHaveClass(
-      'justify-end'
-    );
+    expect(screen.getByRole('link', { name: /Унших/ }).parentElement).toHaveClass('justify-end');
   });
 });

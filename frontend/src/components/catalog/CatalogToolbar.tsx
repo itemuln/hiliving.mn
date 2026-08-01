@@ -6,16 +6,9 @@ interface CatalogToolbarProps {
   readonly sort: ProductSort;
   readonly onSearch: (value: string) => void;
   readonly onSort: (value: ProductSort) => void;
-  readonly mobileLayout?: 'stacked' | 'inline';
 }
 
-export function CatalogToolbar({
-  search,
-  sort,
-  onSearch,
-  onSort,
-  mobileLayout = 'stacked',
-}: CatalogToolbarProps) {
+export function CatalogToolbar({ search, sort, onSearch, onSort }: CatalogToolbarProps) {
   const [searchValue, setSearchValue] = useState(search);
 
   useEffect(() => setSearchValue(search), [search]);
@@ -26,15 +19,11 @@ export function CatalogToolbar({
   };
 
   return (
-    <div
-      className={`mb-7 flex gap-3 border-b border-neutral-100 pb-5 sm:flex-row sm:items-center sm:justify-between ${
-        mobileLayout === 'inline' ? 'flex-row items-center' : 'flex-col'
-      }`}
-    >
+    <div className="mb-7 flex justify-end gap-3 border-b border-neutral-100 pb-5 sm:items-center sm:justify-between">
       <form
         onSubmit={submitSearch}
         role="search"
-        className="flex min-w-0 flex-1 items-center rounded border border-neutral-200 bg-white focus-within:border-brand-400 sm:max-w-sm"
+        className="hidden min-w-0 flex-1 items-center rounded border border-neutral-200 bg-white focus-within:border-brand-400 sm:flex sm:max-w-sm"
       >
         <label htmlFor="catalog-search" className="sr-only">
           Бүтээгдэхүүн хайх
@@ -50,27 +39,19 @@ export function CatalogToolbar({
         />
         <button
           type="submit"
-          className={`min-h-10 text-sm font-medium text-brand-500 hover:text-brand-600 ${
-            mobileLayout === 'inline' ? 'px-2 sm:px-3' : 'px-3'
-          }`}
+          className="min-h-10 px-3 text-sm font-medium text-brand-500 hover:text-brand-600"
         >
           Хайх
         </button>
       </form>
 
-      <label
-        className={`flex items-center gap-2 text-xs text-neutral-500 ${
-          mobileLayout === 'inline' ? 'w-[128px] shrink-0 sm:w-auto' : ''
-        }`}
-      >
-        <span className={mobileLayout === 'inline' ? 'sr-only sm:not-sr-only' : ''}>Эрэмбэлэх</span>
+      <label className="flex items-center gap-2 text-xs text-neutral-500">
+        <span className="sr-only sm:not-sr-only">Эрэмбэлэх</span>
         <select
           aria-label="Бүтээгдэхүүн эрэмбэлэх"
           value={sort}
           onChange={(event) => onSort(event.target.value as ProductSort)}
-          className={`min-h-10 min-w-0 rounded border border-neutral-200 bg-white text-sm text-neutral-600 focus:border-brand-400 focus:outline-none ${
-            mobileLayout === 'inline' ? 'w-full px-2 sm:w-auto sm:px-3' : 'px-3'
-          }`}
+          className="min-h-10 min-w-0 rounded border border-neutral-200 bg-white px-3 text-sm text-neutral-600 focus:border-brand-400 focus:outline-none"
         >
           <option value="newest">Шинэ эхэнд</option>
           <option value="price_asc">Үнэ өсөхөөр</option>

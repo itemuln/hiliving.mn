@@ -31,6 +31,7 @@ export interface CatalogProduct {
   readonly listPrice: number;
   readonly currentPrice: number;
   readonly imageUrl: string;
+  readonly imageScale: number;
   readonly category: CatalogReference;
   readonly brand: CatalogReference | null;
   readonly featured: boolean;
@@ -44,6 +45,7 @@ export interface CatalogProductImage {
   readonly altText: string | null;
   readonly displayOrder: number;
   readonly primaryImage: boolean;
+  readonly displayScale: number;
 }
 
 export interface CatalogProductDetail extends CatalogProduct {

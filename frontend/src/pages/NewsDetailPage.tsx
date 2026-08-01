@@ -46,7 +46,6 @@ export function NewsDetailPage() {
               <h1 className="mt-3 text-3xl font-black text-neutral-900 md:text-5xl">
                 {article.title}
               </h1>
-              <p className="mt-5 text-lg text-neutral-500">{article.summary}</p>
               <div className="mt-10 whitespace-pre-wrap leading-8 text-neutral-700">
                 {article.content}
               </div>

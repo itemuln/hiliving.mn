@@ -18,6 +18,7 @@
 - [ ] **P1:** rotate the shared test credential before production, install only owner-controlled merchant values in the restricted server environment, and keep QPay disabled in committed defaults.
 - [x] **P1:** install/use exact Java 21 and repeat the full backend verification; all 65 tests and JAR packaging pass on Temurin Java 21.0.11, and Hostinger runs OpenJDK 21.
 - [ ] **P1:** replace the deliberately marked self-pickup sample address, business hours, and phone with owner-confirmed production collection details before launch.
+- [ ] **P1:** authorize `hilivingmgl.mn` in Tiny Cloud and set the domain-bound key as the GitHub production environment secret `TINYMCE_API_KEY` before deploying the administration page editor; use the ignored root `.env` value `VITE_TINYMCE_API_KEY` for local editor verification.
 - [ ] **P1:** define Ebarimt 3.0 invoice/receipt timing, tax classification, organization/customer data, retry, and correction policy before connecting the supplied Ebarimt contract.
 - [x] **P1:** provision `/var/lib/hiliving/uploads` under the restricted service account and route `/media/` through the localhost backend with immutable caching and NGINX request-size enforcement.
 - [x] **P1:** create a coordinated PostgreSQL/media backup, copy it off the VPS into restricted ignored workstation storage, and verify exact database/media recovery in isolated PostgreSQL 17/filesystem targets.
@@ -30,11 +31,17 @@
 - [ ] **P2:** define a redirect/alias and migration policy before ever introducing an exceptional product-slug correction or import tool; normal product editing keeps generated slugs immutable.
 - [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
+- [ ] **P2:** define the training entitlement source, approved-user administration, protected training-content API, and anonymous registration/access warning before activating the `Сургалт` section.
 - [x] **P1:** deploy reviewed NGINX, systemd, HTTPS renewal, restricted environment files, SPA fallback, `/api` and `/media` proxying, PostgreSQL 17 persistence, firewall rules, and reboot recovery to Hostinger staging. Off-server backup/restore remains the separate P1 gate above.
 - [x] **P1:** deploy successful `main` pushes automatically through GitHub Actions using a dedicated non-root transfer account, pinned SSH host keys, checksum validation, atomic release links, health gates, and code-link rollback.
 
 ## Completed
 
+- [x] Replace the Hiliving MGL home anchor with four fixed responsive content sections and activate administration Pages with TinyMCE Visual/HTML editing, managed PAGE images, draft/public state, server sanitization, and focused public/admin/security coverage.
+- [x] Add bounded per-photo display scaling across product administration, catalog cards, and the ordered product gallery; persist drag/button ordering and scale through Flyway V16 and the typed API contracts.
+- [x] Add controlled common news categories across admin, API, enum persistence, and Flyway V17; show category/date metadata and reference-matched serif headlines on the public information list.
+- [x] Rework the public information index to the supplied three-section responsive layout, remove its unrelated hero, keep existing article URLs/API content, and add vertical article plus loading/empty/error/retry presentation while deferring training authorization.
+- [x] Simplify news to server-owned slugs and one description, remove summaries through Flyway V14, hide mobile catalog search/pagination, compact desktop product detail, remove customer-facing stock/help copy, eliminate homepage banner padding/background contrast, and soften homepage brand borders.
 - [x] Apply the requested homepage and brand presentation pass: supplied header/footer logo, centered 1440×300 managed upper/lower banners, larger category icons, compact featured-product cards with cart actions, title-only news cards, wrapping desktop brand logos, optional per-brand banners, icon-free brand navigation, and one-row mobile search/sort controls. Verify 97 frontend tests, lint/build, 68 backend tests/migrations/JAR, and desktop/mobile browser layouts.
 - [x] Install and configure the GitHub Actions to Hostinger release path without exposing application, database, payment, or mail secrets to the repository or deployment account.
 - [x] Cut `hilivingmgl.mn` and `www` web DNS over from Datacom's previous endpoint to Hostinger, install renewable HTTPS, establish the apex as canonical, update public/callback origins, and verify deep links, API, health, redirects, headers, and renewal.

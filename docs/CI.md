@@ -8,13 +8,13 @@
 - Backend job: Temurin Java 21 and Maven `verify` from `backend/`
 - Production deployment job: after both validation jobs pass for a `main` push, rebuild and transfer commit-addressed artifacts to the Hostinger VPS, activate them, and verify the public origin
 
-Frontend tests mock the HTTP boundary and cover catalog, identity/account, administration, media, and commerce behavior. Backend tests use PostgreSQL 17 Testcontainers, apply Flyway through V12, start Hibernate with schema validation, and exercise catalog, identity, administration, media, checkout/orders, email, and QPay behavior.
+Frontend tests mock the HTTP boundary and cover catalog, identity/account, administration, managed rich-content pages, media, and commerce behavior. Backend tests use PostgreSQL 17 Testcontainers, apply Flyway through V17, start Hibernate with schema validation, and exercise catalog, identity, administration, sanitized content pages, media, checkout/orders, email, and QPay behavior.
 
 The backend clean verification runs on Temurin Java 21 with PostgreSQL 17 Testcontainers and packages the JAR; the frontend starts with `npm ci`, then runs lint, tests, TypeScript compilation, and the production build.
 
 The workflow grants read-only repository contents permission. Superseded pull-request runs are canceled, while `main` runs and production deployments are queued so a release cannot be interrupted halfway through.
 
-The `production` GitHub environment holds the public `PRODUCTION_URL` variable and four environment secrets: `VPS_HOST`, `VPS_PORT`, `VPS_SSH_PRIVATE_KEY`, and `VPS_SSH_KNOWN_HOSTS`. The private key belongs only to the restricted `hiliving-deploy` VPS account. The pinned known-host value prevents an unattended workflow from trusting an unverified server key. Deployment implementation and bootstrap details are in `infrastructure/production/README.md`.
+The `production` GitHub environment holds the public `PRODUCTION_URL` variable and five environment secrets: `VPS_HOST`, `VPS_PORT`, `VPS_SSH_PRIVATE_KEY`, `VPS_SSH_KNOWN_HOSTS`, and the domain-bound `TINYMCE_API_KEY` used only while building the administration editor. The private key belongs only to the restricted `hiliving-deploy` VPS account. The pinned known-host value prevents an unattended workflow from trusting an unverified server key. Deployment implementation and bootstrap details are in `infrastructure/production/README.md`.
 
 ## Local Jenkins frontend pipeline
 

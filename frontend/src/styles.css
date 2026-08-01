@@ -34,6 +34,106 @@ textarea:focus-visible {
   outline-offset: 3px;
 }
 
+.content-page-html {
+  color: #525252;
+  font-size: 1rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.content-page-html > * + * {
+  margin-top: 1.25rem;
+}
+
+.content-page-html h1,
+.content-page-html h2,
+.content-page-html h3,
+.content-page-html h4,
+.content-page-html h5,
+.content-page-html h6 {
+  color: #171717;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  margin-top: 2rem;
+}
+
+.content-page-html h1 {
+  font-size: 2rem;
+}
+.content-page-html h2 {
+  font-size: 1.65rem;
+}
+.content-page-html h3 {
+  font-size: 1.35rem;
+}
+
+.content-page-html a {
+  color: #e74540;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.content-page-html ul,
+.content-page-html ol {
+  padding-left: 1.5rem;
+}
+
+.content-page-html ul {
+  list-style: disc;
+}
+.content-page-html ol {
+  list-style: decimal;
+}
+.content-page-html li + li {
+  margin-top: 0.35rem;
+}
+
+.content-page-html blockquote {
+  border-left: 3px solid #f7554e;
+  color: #737373;
+  padding-left: 1rem;
+}
+
+.content-page-html img {
+  border-radius: 0.75rem;
+  display: block;
+  height: auto;
+  max-width: 100%;
+}
+
+.content-page-html figure {
+  margin-left: 0;
+  margin-right: 0;
+}
+.content-page-html figcaption {
+  color: #737373;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.content-page-html table {
+  border-collapse: collapse;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  width: max-content;
+}
+
+.content-page-html th,
+.content-page-html td {
+  border: 1px solid #e5e5e5;
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+}
+
+.content-page-html pre {
+  background: #f5f5f5;
+  border-radius: 0.75rem;
+  overflow-x: auto;
+  padding: 1rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

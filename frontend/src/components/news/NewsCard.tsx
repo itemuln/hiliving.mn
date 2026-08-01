@@ -1,5 +1,16 @@
 import { Link } from 'react-router-dom';
-import type { NewsArticle } from '../../data/news';
+import {
+  NEWS_CATEGORY_LABELS,
+  type NewsCategory,
+} from '../../features/news/newsCategories';
+
+type NewsArticle = {
+  readonly slug: string;
+  readonly title: string;
+  readonly image: string;
+  readonly category: NewsCategory;
+  readonly publishedAt: string | null;
+};
 
 type NewsCardProps = {
   readonly article: NewsArticle;
@@ -9,34 +20,48 @@ type NewsCardProps = {
 
 export function NewsCard({ article, imageLoading = 'lazy', className = '' }: NewsCardProps) {
   return (
-    <article className={`group min-w-0 ${className}`}>
-      <div className="aspect-[5/2] overflow-hidden rounded-[11px] bg-neutral-100 md:rounded-xl">
+    <article
+      className={`group flex min-w-0 gap-4 py-5 first:pt-0 sm:gap-6 sm:py-6 ${className}`}
+    >
+      <Link
+        to={`/news/${article.slug}`}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="h-24 w-28 shrink-0 overflow-hidden rounded-lg bg-neutral-100 sm:h-32 sm:w-44"
+      >
         <img
           src={article.image}
-          alt={`${article.title} мэдээний зураг`}
+          alt=""
           loading={imageLoading}
           decoding="async"
-          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.015] motion-reduce:transform-none"
+          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transform-none"
         />
-      </div>
+      </Link>
 
-      <div className="mt-5 px-2.5 md:px-6">
-        <h2 className="text-[14px] font-normal leading-[1.15] text-neutral-800 md:text-[13px]">
-          {article.title}
+      <div className="flex min-w-0 flex-1 flex-col py-0.5 sm:py-1">
+        <h2>
+          <Link
+            to={`/news/${article.slug}`}
+            className="font-serif text-[15px] font-bold leading-[1.2] text-neutral-900 transition-colors hover:text-brand-500 sm:text-[19px] lg:text-[22px]"
+          >
+            {article.title}
+          </Link>
         </h2>
-        <p className="mt-0.5 text-[14px] leading-[1.15] text-neutral-700 md:text-[13px]">
-          {article.description}
-        </p>
-      </div>
-
-      <div className="mt-3 flex justify-end pr-2 md:mt-3.5">
-        <Link
-          to={`/news/${article.slug}`}
-          aria-label={`${article.title}: Унших`}
-          className="rounded-sm text-[13px] font-medium text-brand-500 transition-colors duration-300 ease-out hover:text-brand-600 hover:underline focus-visible:bg-brand-50 md:text-xs"
-        >
-          Унших
-        </Link>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-x-5 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[11px] text-neutral-400 sm:text-xs">
+            <span>{NEWS_CATEGORY_LABELS[article.category]}</span>
+            {article.publishedAt ? (
+              <time dateTime={article.publishedAt}>{article.publishedAt.slice(0, 10)}</time>
+            ) : null}
+          </div>
+          <Link
+            to={`/news/${article.slug}`}
+            aria-label={`${article.title}: Унших`}
+            className="ml-auto text-xs font-medium text-brand-500 transition-colors hover:text-brand-600 hover:underline sm:text-sm"
+          >
+            Унших
+          </Link>
+        </div>
       </div>
     </article>
   );

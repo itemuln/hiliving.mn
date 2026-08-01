@@ -17,6 +17,7 @@ import {
 import { adminDate } from '../adminLocale';
 import { Dialog } from '../components/AdminUi';
 import { useDebouncedValue } from '../components/useDebouncedValue';
+import { NEWS_CATEGORY_LABELS } from '../../news/newsCategories';
 export function AdminNewsPage() {
   const [items, setItems] = useState<News[] | null>(null);
   const [search, setSearch] = useState('');
@@ -67,7 +68,7 @@ export function AdminNewsPage() {
             label="Мэдээ хайх"
             value={search}
             onChange={setSearch}
-            placeholder="Гарчиг эсвэл slug-аар хайх"
+            placeholder="Гарчгаар хайх"
           />
         </div>
       </div>
@@ -100,7 +101,9 @@ export function AdminNewsPage() {
                   >
                     <td className="p-4">
                       <div className="font-bold">{n.title}</div>
-                      <div className="text-xs text-slate-400">/{n.slug}</div>
+                      <div className="mt-1 text-xs text-slate-500">
+                        {NEWS_CATEGORY_LABELS[n.category]}
+                      </div>
                     </td>
                     <td>
                       <StatusBadge tone={n.published ? 'success' : 'warning'}>

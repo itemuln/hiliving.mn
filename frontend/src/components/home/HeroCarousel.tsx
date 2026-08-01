@@ -133,8 +133,8 @@ function HeroCarouselComponent() {
   };
 
   return (
-    <section aria-label="Онцлох урамшуулал" className="bg-neutral-100 py-3 sm:py-4">
-      <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden px-4 sm:px-6 lg:px-10">
+    <section aria-label="Онцлох урамшуулал">
+      <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden">
         <div ref={emblaRef} className="overflow-hidden">
           <div className="flex touch-pan-y">
             {banners.map((banner, index) => (
@@ -166,7 +166,7 @@ function HeroCarouselComponent() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center justify-between sm:left-6 sm:right-6 lg:left-10 lg:right-10">
+        <div className="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center justify-between">
           <CarouselControls
             onPrevious={() => emblaApi?.scrollPrev()}
             onNext={() => emblaApi?.scrollNext()}

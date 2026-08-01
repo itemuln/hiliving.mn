@@ -46,7 +46,7 @@ public final class CatalogTestFixtures {
                 status,
                 featured
         );
-        product.addImage("/test/" + slug + ".png", name, 0, true);
+        product.addImage("/test/" + slug + ".png", name, 0, true, 100);
         return product;
     }
 }

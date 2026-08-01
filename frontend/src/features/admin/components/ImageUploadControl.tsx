@@ -14,6 +14,7 @@ interface Props {
   disabled?: boolean;
   required?: boolean;
   compact?: boolean;
+  imageScale?: number;
 }
 
 function safeMessage(error: unknown) {
@@ -45,6 +46,7 @@ export function ImageUploadControl({
   disabled = false,
   required = false,
   compact = false,
+  imageScale = 100,
 }: Props) {
   const inputId = useId();
   const input = useRef<HTMLInputElement>(null);
@@ -133,6 +135,7 @@ export function ImageUploadControl({
             src={image}
             alt={`${label} харагдац`}
             className="absolute inset-0 h-full w-full object-contain"
+            style={{ transform: `scale(${imageScale / 100})` }}
           />
         ) : (
           <>

@@ -460,7 +460,7 @@ class CheckoutApiIntegrationTests {
         ProductEntity product = ProductEntity.create(name, slug, "Checkout product", "Checkout description",
                 new BigDecimal(price), discount == null ? null : new BigDecimal(discount), category, brand,
                 ProductStatus.ACTIVE, false);
-        product.addImage("/test/" + slug + ".png", name, 0, true);
+        product.addImage("/test/" + slug + ".png", name, 0, true, 100);
         product.initializeAdministrationFields(slug.toUpperCase(), stock, 2, eligibleDiscount, false, true);
         return products.save(product);
     }

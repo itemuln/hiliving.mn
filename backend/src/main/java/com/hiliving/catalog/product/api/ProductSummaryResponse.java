@@ -14,6 +14,7 @@ public record ProductSummaryResponse(
         CatalogReferenceResponse brand,
         boolean featured,
         String primaryImageUrl,
+        int primaryImageScale,
         Instant createdAt,
         Instant updatedAt
 ) {

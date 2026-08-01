@@ -52,8 +52,8 @@ export function PromotionalBanner() {
   if (banners.length === 0) return null;
 
   return (
-    <section aria-label="Нэмэлт урамшуулал" className="py-3 sm:py-4">
-      <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden px-4 sm:px-6 lg:px-10">
+    <section aria-label="Нэмэлт урамшуулал">
+      <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden">
         <div ref={emblaRef} className="overflow-hidden">
           <div className="flex touch-pan-y">
             {banners.map((banner) => (
@@ -74,13 +74,13 @@ export function PromotionalBanner() {
             ))}
           </div>
         </div>
-        <div className="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center justify-between sm:left-6 sm:right-6 lg:left-10 lg:right-10">
+        <div className="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center justify-between">
           <CarouselControls
             onPrevious={() => emblaApi?.scrollPrev()}
             onNext={() => emblaApi?.scrollNext()}
           />
         </div>
-        <div className="absolute bottom-6 right-8 rounded-full bg-black/35 px-3 py-1 text-xs text-white backdrop-blur-sm sm:bottom-7 sm:right-10 lg:right-14">
+        <div className="absolute bottom-6 right-8 rounded-full bg-black/35 px-3 py-1 text-xs text-white backdrop-blur-sm sm:bottom-7">
           {selectedIndex + 1} / {banners.length}
         </div>
       </div>

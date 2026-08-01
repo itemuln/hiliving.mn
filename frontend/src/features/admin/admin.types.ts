@@ -1,5 +1,6 @@
 import type { AuthenticatedUser } from '../auth/auth.types';
 import type { CustomerOrder } from '../checkout/order.types';
+import type { NewsCategory } from '../news/newsCategories';
 
 export interface DashboardCounts {
   totalProducts: number;
@@ -48,6 +49,7 @@ export interface ProductImage {
   altText: string | null;
   displayOrder: number;
   primaryImage: boolean;
+  displayScale: number;
 }
 export type ProductLifecycle = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type InventoryState = 'OUT_OF_STOCK' | 'LOW_STOCK' | 'IN_STOCK';
@@ -124,7 +126,7 @@ export interface News {
   id: number;
   title: string;
   slug: string;
-  summary: string;
+  category: NewsCategory;
   content: string;
   thumbnailUrl: string | null;
   published: boolean;
@@ -133,9 +135,21 @@ export interface News {
   createdAt: string;
   updatedAt: string;
 }
-export type NewsInput = Omit<News, 'id' | 'sortOrder' | 'createdAt' | 'updatedAt'>;
+export type NewsInput = Omit<News, 'id' | 'slug' | 'sortOrder' | 'createdAt' | 'updatedAt'>;
+export interface ContentPage {
+  id: number;
+  slug: string;
+  navigationLabel: string;
+  title: string;
+  contentHtml: string;
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+export type ContentPageInput = Pick<ContentPage, 'title' | 'contentHtml' | 'published'>;
 export type AdminUser = AuthenticatedUser;
-export type MediaPurpose = 'PRODUCT' | 'BRAND' | 'BANNER' | 'NEWS';
+export type MediaPurpose = 'PRODUCT' | 'BRAND' | 'BANNER' | 'NEWS' | 'PAGE';
 export interface MediaUpload {
   id: number;
   storageKey: string;

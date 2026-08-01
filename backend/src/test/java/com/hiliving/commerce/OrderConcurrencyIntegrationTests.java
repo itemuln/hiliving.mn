@@ -60,7 +60,7 @@ class OrderConcurrencyIntegrationTests {
         var brand = brands.save(CatalogTestFixtures.brand("Race Brand", "race-brand", true));
         ProductEntity product = ProductEntity.create("Last unit", "last-unit", "Race", "Race test",
                 new BigDecimal("1000.00"), null, category, brand, ProductStatus.ACTIVE, false);
-        product.addImage("/test/last-unit.png", "Last unit", 0, true);
+        product.addImage("/test/last-unit.png", "Last unit", 0, true, 100);
         product.initializeAdministrationFields("LAST-UNIT", 1, 1, true, false, true);
         product = products.saveAndFlush(product);
 
