@@ -16,7 +16,7 @@ export function Footer() {
       <div className="border-b border-neutral-200 bg-neutral-100/70 py-5">
         <Container className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <img
-            src="/hiLivingLogo.svg"
+            src="/hiliving-mongolia-logo.png"
             alt="Hiliving Mongolia"
             loading="lazy"
             decoding="async"

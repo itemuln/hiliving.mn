@@ -143,10 +143,12 @@ class MediaApiIntegrationTests {
                 {"name":"Media product","basePrice":10,"categoryId":%d,"lifecycle":"ACTIVE","stockQuantity":1,"lowStockThreshold":1,"featured":false,"newProduct":false,"active":true,"membershipDiscountEligible":true,"images":[{"imageUrl":"%s","sortOrder":0,"primaryImage":true}]}
                 """.formatted(categoryId, productUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.images[0].imageUrl").value(productUrl));
         mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"name":"Media brand","slug":"media-brand","logoUrl":"%s","sortOrder":0,"active":true}
-                """.formatted(brandUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.logoUrl").value(brandUrl));
+                {"name":"Media brand","slug":"media-brand","logoUrl":"%s","bannerImageUrl":"%s","sortOrder":0,"active":true}
+                """.formatted(brandUrl, bannerUrl))).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.logoUrl").value(brandUrl))
+                .andExpect(jsonPath("$.data.bannerImageUrl").value(bannerUrl));
         mvc.perform(post("/api/v1/admin/banners").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Media banner","imageUrl":"%s","sortOrder":0,"active":true}
+                {"title":"Media banner","imageUrl":"%s","placement":"HERO","sortOrder":0,"active":true}
                 """.formatted(bannerUrl))).andExpect(status().isCreated()).andExpect(jsonPath("$.data.imageUrl").value(bannerUrl));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"title":"Media news","slug":"media-news","summary":"Summary","content":"Content","thumbnailUrl":"%s","published":true,"sortOrder":0}

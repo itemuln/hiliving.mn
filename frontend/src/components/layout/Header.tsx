@@ -33,7 +33,7 @@ export function Header() {
       <Container className="flex h-[72px] items-center justify-between md:h-[128px] md:items-end">
         <Link to="/" className="mb-0 shrink-0 md:mb-6" aria-label="Hiliving Mongolia нүүр хуудас">
           <img
-            src="/hiLivingLogo.svg"
+            src="/hiliving-mongolia-logo.png"
             alt="Hiliving Mongolia"
             loading="eager"
             decoding="async"

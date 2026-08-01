@@ -38,6 +38,10 @@ public class BrandEntity {
     @Column(name = "logo_url", length = 2048)
     private String logoUrl;
 
+    @Size(max = 2048)
+    @Column(name = "banner_image_url", length = 2048)
+    private String bannerImageUrl;
+
     @Size(max = 1000)
     @Column(length = 1000)
     private String description;
@@ -59,21 +63,23 @@ public class BrandEntity {
     protected BrandEntity() {
     }
 
-    private BrandEntity(String name, String slug, String logoUrl, boolean active) {
+    private BrandEntity(String name, String slug, String logoUrl, String bannerImageUrl, boolean active) {
         this.name = name;
         this.slug = slug;
         this.logoUrl = logoUrl;
+        this.bannerImageUrl = bannerImageUrl;
         this.active = active;
     }
 
-    public static BrandEntity create(String name, String slug, String logoUrl, boolean active) {
-        return new BrandEntity(name, slug, logoUrl, active);
+    public static BrandEntity create(String name, String slug, String logoUrl, String bannerImageUrl, boolean active) {
+        return new BrandEntity(name, slug, logoUrl, bannerImageUrl, active);
     }
 
-    public void update(String name, String slug, String logoUrl, String description, boolean active) {
+    public void update(String name, String slug, String logoUrl, String bannerImageUrl, String description, boolean active) {
         this.name = name;
         this.slug = slug;
         this.logoUrl = logoUrl;
+        this.bannerImageUrl = bannerImageUrl;
         this.description = description;
         this.active = active;
     }
@@ -105,6 +111,8 @@ public class BrandEntity {
     public String getLogoUrl() {
         return logoUrl;
     }
+
+    public String getBannerImageUrl() { return bannerImageUrl; }
 
     public String getDescription() { return description; }
 

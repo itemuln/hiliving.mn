@@ -41,7 +41,7 @@ export function CategorySection() {
                   aria-hidden="true"
                   className="flex animate-pulse flex-col items-center gap-3 py-2"
                 >
-                  <span className="h-16 w-16 rounded-full bg-neutral-100 md:h-20 md:w-20" />
+                  <span className="h-20 w-20 rounded-full bg-neutral-100 md:h-24 md:w-24" />
                   <span className="h-3 w-16 rounded bg-neutral-100" />
                 </div>
               ))}
@@ -57,7 +57,7 @@ export function CategorySection() {
                   to={`/categories/${category.slug}`}
                   className="group flex min-w-0 flex-col items-center gap-3 rounded-xl py-2 text-center transition-all duration-300 ease-out hover:bg-brand-50 motion-reduce:transform-none"
                 >
-                  <span className="flex h-16 w-16 items-center justify-center p-3 md:h-20 md:w-20 md:p-4">
+                  <span className="flex h-20 w-20 items-center justify-center p-1 md:h-24 md:w-24">
                     <img
                       src={category.iconUrl}
                       alt=""

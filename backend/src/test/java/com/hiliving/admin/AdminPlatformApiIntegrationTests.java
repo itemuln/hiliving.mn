@@ -52,8 +52,9 @@ class AdminPlatformApiIntegrationTests {
     @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
     void brandsUseAutomaticNameOrderingWithoutManualSort() throws Exception {
         mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"name":"Zebra","slug":"zebra","description":"Last alphabetically","active":true}
-                """)).andExpect(status().isCreated());
+                {"name":"Zebra","slug":"zebra","bannerImageUrl":"https://example.com/zebra-banner.jpg","description":"Last alphabetically","active":true}
+                """)).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.bannerImageUrl").value("https://example.com/zebra-banner.jpg"));
         mvc.perform(post("/api/v1/admin/brands").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"name":"Alpha","slug":"alpha","description":"First alphabetically","active":true}
                 """)).andExpect(status().isCreated());
@@ -124,9 +125,20 @@ class AdminPlatformApiIntegrationTests {
     @Test @WithMockUser(username="admin@example.com",roles="ADMIN")
     void bannersAndNewsRespectPublicSchedulingAndPublication() throws Exception {
         mvc.perform(post("/api/v1/admin/banners").with(admin()).with(csrf()).contentType("application/json").content("""
-                {"title":"Public banner","imageUrl":"https://example.com/banner.jpg","sortOrder":1,"active":true}
+                {"title":"Public banner","imageUrl":"https://example.com/banner.jpg","placement":"HERO","sortOrder":1,"active":true}
                 """)).andExpect(status().isCreated());
-        mvc.perform(get("/api/v1/banners")).andExpect(status().isOk()).andExpect(jsonPath("$.data[0].title").value("Public banner"));
+        mvc.perform(post("/api/v1/admin/banners").with(admin()).with(csrf()).contentType("application/json").content("""
+                {"title":"Promotional banner","imageUrl":"https://example.com/promo.jpg","placement":"PROMOTIONAL","sortOrder":1,"active":true}
+                """)).andExpect(status().isCreated());
+        mvc.perform(get("/api/v1/banners").param("placement", "HERO"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].title").value("Public banner"))
+                .andExpect(jsonPath("$.data[0].placement").value("HERO"));
+        mvc.perform(get("/api/v1/banners").param("placement", "PROMOTIONAL"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.length()").value(1))
+                .andExpect(jsonPath("$.data[0].title").value("Promotional banner"));
         mvc.perform(post("/api/v1/admin/news").with(admin()).with(csrf()).contentType("application/json").content("""
                 {"title":"Draft","slug":"draft-news","summary":"Summary","content":"Content","published":false}
                 """)).andExpect(status().isCreated());

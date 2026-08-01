@@ -21,6 +21,7 @@ const blank: BrandInput = {
   name: '',
   slug: '',
   logoUrl: '',
+  bannerImageUrl: '',
   description: '',
   active: true,
 };
@@ -31,7 +32,8 @@ export function AdminBrandsPage() {
   const [form, setForm] = useState<BrandInput>(blank);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [bannerUploading, setBannerUploading] = useState(false);
   const [removing, setRemoving] = useState<Brand | null>(null);
   const debouncedSearch = useDebouncedValue(search);
   const load = async () => setItems(await api.listBrands(debouncedSearch));
@@ -58,6 +60,7 @@ export function AdminBrandsPage() {
             name: item.name,
             slug: item.slug,
             logoUrl: item.logoUrl ?? '',
+            bannerImageUrl: item.bannerImageUrl ?? '',
             description: item.description ?? '',
             active: item.active,
           }
@@ -67,8 +70,9 @@ export function AdminBrandsPage() {
   };
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    const uploading = logoUploading || bannerUploading;
     if (uploading) {
-      setError('Лого байршуулж дуустал түр хүлээнэ үү.');
+      setError('Зураг байршуулж дуустал түр хүлээнэ үү.');
       return;
     }
     setSaving(true);
@@ -98,7 +102,7 @@ export function AdminBrandsPage() {
   return (
     <AdminShell
       title="Брэнд"
-      description="Брэндийн мэдээлэл, лого болон каталогт харагдах төлөвийг удирдана."
+      description="Брэндийн мэдээлэл, лого, баннер болон каталогт харагдах төлөвийг удирдана."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
@@ -228,7 +232,20 @@ export function AdminBrandsPage() {
                 purpose="BRAND"
                 value={form.logoUrl ?? ''}
                 onChange={(logoUrl) => setForm({ ...form, logoUrl })}
-                onPendingChange={setUploading}
+                onPendingChange={setLogoUploading}
+                disabled={saving}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <p className="mb-2 text-xs text-slate-500">
+                Тухайн брэндийн бүтээгдэхүүний хуудсанд харагдах 1440×300 зураг.
+              </p>
+              <ImageUploadControl
+                label="Брэндийн баннер"
+                purpose="BANNER"
+                value={form.bannerImageUrl ?? ''}
+                onChange={(bannerImageUrl) => setForm({ ...form, bannerImageUrl })}
+                onPendingChange={setBannerUploading}
                 disabled={saving}
               />
             </div>
@@ -256,8 +273,15 @@ export function AdminBrandsPage() {
               >
                 Цуцлах
               </button>
-              <button disabled={saving || uploading} className={primaryButton}>
-                {uploading ? 'Байршуулж байна…' : saving ? 'Хадгалж байна…' : 'Брэнд хадгалах'}
+              <button
+                disabled={saving || logoUploading || bannerUploading}
+                className={primaryButton}
+              >
+                {logoUploading || bannerUploading
+                  ? 'Байршуулж байна…'
+                  : saving
+                  ? 'Хадгалж байна…'
+                  : 'Брэнд хадгалах'}
               </button>
             </div>
           </form>

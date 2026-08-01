@@ -1,17 +1,35 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { CartContext, type CartContextValue } from '../../features/cart/CartContext';
 import { jsonResponse, productPageEnvelope, productSummaryDto } from '../../test/catalogFixtures';
 import { ProductSection } from './ProductSection';
 
+const addItem = vi.fn();
+const cart: CartContextValue = {
+  items: [],
+  itemCount: 0,
+  quote: null,
+  quoteStatus: 'idle',
+  quoteError: null,
+  addItem,
+  removeItem: vi.fn(),
+  setQuantity: vi.fn(),
+  clearCart: vi.fn(),
+  refreshQuote: vi.fn().mockResolvedValue(null),
+};
+
 afterEach(() => {
   vi.unstubAllGlobals();
+  addItem.mockClear();
 });
 
 function renderSection() {
   return render(
     <MemoryRouter>
-      <ProductSection />
+      <CartContext.Provider value={cart}>
+        <ProductSection />
+      </CartContext.Provider>
     </MemoryRouter>
   );
 }
@@ -37,6 +55,12 @@ describe('ProductSection', () => {
     expect(
       screen.getAllByRole('link', { name: /Plant-Based Household Cleaner/ })[0]
     ).toHaveAttribute('href', '/products/plant-based-household-cleaner');
+    fireEvent.click(
+      screen.getAllByRole('button', {
+        name: 'Plant-Based Household Cleaner бүтээгдэхүүнийг сагсанд нэмэх',
+      })[0]
+    );
+    expect(addItem).toHaveBeenCalledWith('plant-based-household-cleaner');
   });
 
   it('renders an explicit empty state for an empty successful page', async () => {

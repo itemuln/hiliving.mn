@@ -2,7 +2,7 @@ package com.hiliving.content.banner;
 import com.hiliving.admin.audit.AuditService; import com.hiliving.api.error.ApiRequestException; import org.springframework.data.domain.Sort; import org.springframework.http.HttpStatus; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import java.time.*; import java.util.*;
 @Service public class BannerService{
     private final BannerRepository banners;private final AuditService audit;private final Clock clock=Clock.systemUTC();public BannerService(BannerRepository banners,AuditService audit){this.banners=banners;this.audit=audit;}
-    @Transactional(readOnly=true)public List<BannerResponse> publicList(){return banners.findPublic(clock.instant()).stream().map(BannerResponse::from).toList();}
+    @Transactional(readOnly=true)public List<BannerResponse> publicList(BannerPlacement placement){return banners.findPublic(clock.instant(),placement).stream().map(BannerResponse::from).toList();}
     @Transactional(readOnly=true)public List<BannerResponse> adminList(){return banners.findAll(Sort.by("displayOrder","id")).stream().map(BannerResponse::from).toList();}
     @Transactional(readOnly=true)public BannerResponse find(Long id){return BannerResponse.from(require(id));}
     @Transactional public BannerResponse create(BannerRequest r){validate(r);BannerEntity b=banners.saveAndFlush(BannerEntity.create(r));audit.record("BANNER_CREATED","BANNER",b.getId(),b.getTitle());return BannerResponse.from(b);}

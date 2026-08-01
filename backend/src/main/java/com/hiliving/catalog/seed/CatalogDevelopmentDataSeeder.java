@@ -71,12 +71,14 @@ public class CatalogDevelopmentDataSeeder implements ApplicationRunner {
                 "HiLiving",
                 "hiliving",
                 "/hiLivingLogo.svg",
+                null,
                 true
         ));
         BrandEntity tezBlanc = brandRepository.save(BrandEntity.create(
                 "Tez Blanc",
                 "tez-blanc",
                 "/brands/tezblanc.png",
+                null,
                 true
         ));
 

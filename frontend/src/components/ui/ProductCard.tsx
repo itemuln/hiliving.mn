@@ -24,7 +24,7 @@ export function ProductCard({
   imageLoading = 'lazy',
   onAddToCart,
 }: ProductCardProps) {
-  const showCartButton = variant === 'category';
+  const showCartButton = onAddToCart !== undefined && variant !== 'brand';
 
   return (
     <article className="group min-w-0">
@@ -38,7 +38,7 @@ export function ProductCard({
             className="h-full w-full object-contain transition-transform duration-300 ease-out group-hover:scale-[1.02] motion-reduce:transform-none"
           />
         </div>
-        <h3 className="mt-2.5 line-clamp-3 min-h-[3.25rem] text-[11px] font-normal leading-[1.35] text-neutral-500 sm:text-xs md:mt-3 md:min-h-[3.2rem] md:text-[13px]">
+        <h3 className="mt-2.5 line-clamp-2 text-[11px] font-normal leading-[1.35] text-neutral-500 sm:text-xs md:mt-3 md:text-[13px]">
           {product.name}
         </h3>
       </Link>

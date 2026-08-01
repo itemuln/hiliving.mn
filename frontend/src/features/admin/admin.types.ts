@@ -30,6 +30,7 @@ export interface Brand {
   name: string;
   slug: string;
   logoUrl: string | null;
+  bannerImageUrl: string | null;
   description: string | null;
   sortOrder: number;
   active: boolean;
@@ -106,6 +107,7 @@ export interface Banner {
   mobileImageUrl: string | null;
   linkUrl: string | null;
   linkLabel: string | null;
+  placement: BannerPlacement;
   sortOrder: number;
   active: boolean;
   startsAt: string | null;
@@ -113,6 +115,7 @@ export interface Banner {
   createdAt: string;
   updatedAt: string;
 }
+export type BannerPlacement = 'HERO' | 'PROMOTIONAL';
 export type BannerInput = Omit<
   Banner,
   'id' | 'linkUrl' | 'linkLabel' | 'startsAt' | 'endsAt' | 'createdAt' | 'updatedAt'

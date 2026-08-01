@@ -32,6 +32,7 @@ export function BrandProductsPage() {
     brandsResource.status === 'success' &&
     Boolean(brandSlug && !brands.some((brand) => brand.slug === brandSlug));
   const sidebarBrands = [{ slug: 'all', name: 'БҮГД' }, ...brands];
+  const activeBrand = brandSlug ? brands.find((brand) => brand.slug === brandSlug) : undefined;
 
   useEffect(() => {
     if (productsResource.status !== 'success' || !productsResource.data) return;
@@ -59,7 +60,22 @@ export function BrandProductsPage() {
 
   return (
     <CatalogLayout sidebar={navigation} mobileNavigation={mobileNavigation}>
-      <CatalogToolbar search={search} sort={sort} onSearch={setSearch} onSort={setSort} />
+      {activeBrand?.bannerImageUrl ? (
+        <img
+          src={activeBrand.bannerImageUrl}
+          alt={`${activeBrand.name} брэндийн баннер`}
+          loading="eager"
+          decoding="async"
+          className="mb-6 aspect-[24/5] w-full object-cover md:mb-8"
+        />
+      ) : null}
+      <CatalogToolbar
+        search={search}
+        sort={sort}
+        onSearch={setSearch}
+        onSort={setSort}
+        mobileLayout="inline"
+      />
       {brandsResource.status === 'error' || productsResource.status === 'error' ? (
         <CatalogErrorState onRetry={retry} />
       ) : hasUnknownSlug ? (

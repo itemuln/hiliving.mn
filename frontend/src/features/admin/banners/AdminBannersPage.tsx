@@ -22,6 +22,7 @@ const blank: BannerInput = {
   subtitle: '',
   imageUrl: '',
   mobileImageUrl: '',
+  placement: 'HERO',
   sortOrder: 0,
   active: true,
 };
@@ -53,6 +54,7 @@ export function AdminBannersPage() {
             subtitle: b.subtitle ?? '',
             imageUrl: b.imageUrl,
             mobileImageUrl: b.mobileImageUrl ?? '',
+            placement: b.placement,
             sortOrder: b.sortOrder,
             active: b.active,
           }
@@ -146,7 +148,7 @@ export function AdminBannersPage() {
   return (
     <AdminShell
       title="Баннер"
-      description="Нүүр хуудасны компьютер болон гар утасны баннер зургийг удирдана."
+      description="Нүүр хуудасны дээд болон доод 1440×300 баннер зургийг удирдана."
       actions={
         <button className={primaryButton} onClick={() => open()}>
           <Plus size={17} className="mr-2" />
@@ -181,6 +183,9 @@ export function AdminBannersPage() {
                   <div>
                     <h2 className="font-black">{b.title}</h2>
                     <p className="mt-1 text-sm text-slate-500">{b.subtitle}</p>
+                    <p className="mt-2 text-xs font-semibold text-slate-500">
+                      {b.placement === 'HERO' ? 'Дээд баннер' : 'Доод баннер'}
+                    </p>
                   </div>
                   <StatusBadge tone={b.active ? 'success' : 'neutral'}>
                     {b.active ? 'Идэвхтэй' : 'Идэвхгүй'}
@@ -220,6 +225,22 @@ export function AdminBannersPage() {
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
               />
             </Field>
+            <Field label="Байрлал">
+              <select
+                required
+                className={input}
+                value={form.placement}
+                onChange={(event) =>
+                  setForm({
+                    ...form,
+                    placement: event.target.value as BannerInput['placement'],
+                  })
+                }
+              >
+                <option value="HERO">Дээд баннер</option>
+                <option value="PROMOTIONAL">Доод баннер</option>
+              </select>
+            </Field>
             <Field label="Дэд гарчиг" wide>
               <textarea
                 className={input}
@@ -232,7 +253,8 @@ export function AdminBannersPage() {
               <div>
                 <p className="text-sm font-bold text-slate-700">Баннер зураг</p>
                 <p className="text-xs text-slate-500">
-                  Эхний зураг компьютерт, хоёр дахь зураг гар утсанд ашиглагдана.
+                  Компьютерийн зургийг 1440×300 хэмжээтэй бэлтгэнэ. Эхний зураг компьютерт, хоёр
+                  дахь зураг гар утсанд ашиглагдана.
                 </p>
                 {imageCount < 2 && (
                   <div className="mt-3">

@@ -1,6 +1,6 @@
 # Infrastructure
 
-This directory contains the reviewed Hostinger deployment assets under `production/` and the gitignored development upload root at `data/uploads/`. The production assets define PostgreSQL 17, NGINX, systemd, Let's Encrypt renewal, restricted first-run secrets, and versioned application releases. Off-server backup automation remains deliberately unconfigured until the owner selects a destination.
+This directory contains the reviewed Hostinger deployment assets under `production/` and the gitignored development upload root at `data/uploads/`. The production assets define PostgreSQL 17, NGINX, systemd, Let's Encrypt renewal, restricted first-run secrets, versioned application releases, and the root-owned release activator used by GitHub Actions. Off-server backup automation remains deliberately unconfigured until the owner selects a destination.
 
 The target architecture is documented in `docs/ARCHITECTURE.md`.
 

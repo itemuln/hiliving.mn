@@ -17,7 +17,11 @@ public final class CatalogTestFixtures {
     }
 
     public static BrandEntity brand(String name, String slug, boolean active) {
-        return BrandEntity.create(name, slug, null, active);
+        return brand(name, slug, null, active);
+    }
+
+    public static BrandEntity brand(String name, String slug, String bannerImageUrl, boolean active) {
+        return BrandEntity.create(name, slug, null, bannerImageUrl, active);
     }
 
     public static ProductEntity product(

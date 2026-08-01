@@ -1,5 +1,6 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { useProducts } from '../../features/catalog/useCatalog';
+import { useOptionalCart } from '../../features/cart/useCart';
 import { CatalogEmptyState } from '../catalog/CatalogEmptyState';
 import { CatalogErrorState } from '../catalog/CatalogErrorState';
 import { ProductGridSkeleton } from '../catalog/ProductGridSkeleton';
@@ -12,6 +13,7 @@ import { SectionTitle } from '../ui/SectionTitle';
 export function ProductSection() {
   const resource = useProducts({ page: 0, size: 10, featured: true, sort: 'newest' });
   const products = resource.data?.items ?? [];
+  const cart = useOptionalCart();
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'start', slidesToScroll: 5 });
 
   return (
@@ -37,7 +39,11 @@ export function ProductSection() {
           <>
             <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 md:hidden">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={cart ? () => cart.addItem(product.slug) : undefined}
+                />
               ))}
             </div>
 
@@ -46,7 +52,10 @@ export function ProductSection() {
                 <div className="-ml-5 flex touch-pan-y">
                   {products.map((product) => (
                     <div key={product.id} className="min-w-0 flex-[0_0_20%] pl-5">
-                      <ProductCard product={product} />
+                      <ProductCard
+                        product={product}
+                        onAddToCart={cart ? () => cart.addItem(product.slug) : undefined}
+                      />
                     </div>
                   ))}
                 </div>

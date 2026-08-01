@@ -31,9 +31,12 @@
 - [ ] **P2:** migrate the catalog itself to explicit currency before supporting anything beyond the current MNT quote/order boundary.
 - [ ] **P2:** add contract automation or schema generation if manual frontend/backend DTO synchronization becomes error-prone.
 - [x] **P1:** deploy reviewed NGINX, systemd, HTTPS renewal, restricted environment files, SPA fallback, `/api` and `/media` proxying, PostgreSQL 17 persistence, firewall rules, and reboot recovery to Hostinger staging. Off-server backup/restore remains the separate P1 gate above.
+- [x] **P1:** deploy successful `main` pushes automatically through GitHub Actions using a dedicated non-root transfer account, pinned SSH host keys, checksum validation, atomic release links, health gates, and code-link rollback.
 
 ## Completed
 
+- [x] Apply the requested homepage and brand presentation pass: supplied header/footer logo, centered 1440×300 managed upper/lower banners, larger category icons, compact featured-product cards with cart actions, title-only news cards, wrapping desktop brand logos, optional per-brand banners, icon-free brand navigation, and one-row mobile search/sort controls. Verify 97 frontend tests, lint/build, 68 backend tests/migrations/JAR, and desktop/mobile browser layouts.
+- [x] Install and configure the GitHub Actions to Hostinger release path without exposing application, database, payment, or mail secrets to the repository or deployment account.
 - [x] Cut `hilivingmgl.mn` and `www` web DNS over from Datacom's previous endpoint to Hostinger, install renewable HTTPS, establish the apex as canonical, update public/callback origins, and verify deep links, API, health, redirects, headers, and renewal.
 - [x] Deploy a reduced-motion-aware cart count-increase animation, remove the admin sidebar logo, promote the two specifically requested registered admin accounts, and live-verify the cart plus branded verification delivery.
 - [x] Selectively migrate only the public demo catalog/content and 15 referenced media files to Hostinger staging; verify exact public counts and zero users, orders, payments, and email rows.

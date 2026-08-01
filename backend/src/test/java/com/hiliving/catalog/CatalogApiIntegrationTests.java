@@ -51,7 +51,12 @@ class CatalogApiIntegrationTests {
                 true
         ));
         categoryRepository.save(CatalogTestFixtures.category("API Hidden", "api-hidden", false));
-        activeBrand = brandRepository.save(CatalogTestFixtures.brand("API Brand", "api-brand", true));
+        activeBrand = brandRepository.save(CatalogTestFixtures.brand(
+                "API Brand",
+                "api-brand",
+                "https://example.com/api-brand-banner.jpg",
+                true
+        ));
         brandRepository.save(CatalogTestFixtures.brand("API Hidden Brand", "api-hidden-brand", false));
 
         productRepository.save(CatalogTestFixtures.product(
@@ -96,7 +101,9 @@ class CatalogApiIntegrationTests {
         mockMvc.perform(get("/api/v1/brands"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(1))
-                .andExpect(jsonPath("$.data[0].slug").value("api-brand"));
+                .andExpect(jsonPath("$.data[0].slug").value("api-brand"))
+                .andExpect(jsonPath("$.data[0].bannerImageUrl")
+                        .value("https://example.com/api-brand-banner.jpg"));
     }
 
     @Test

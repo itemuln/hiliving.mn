@@ -61,7 +61,8 @@ describe('admin media forms', () => {
     render(page(<AdminBrandsPage />));
     fireEvent.click(screen.getByRole('button', { name: 'Брэнд нэмэх' }));
     expect(screen.queryByLabelText('Logo URL')).not.toBeInTheDocument();
-    fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
+    const [logoInput, bannerInput] = document.querySelectorAll('input[type="file"]');
+    fireEvent.change(logoInput as HTMLInputElement, {
       target: { files: [file] },
     });
     await waitFor(() =>
@@ -70,13 +71,25 @@ describe('admin media forms', () => {
         '/media/brand/generated.png'
       )
     );
+    fireEvent.change(bannerInput as HTMLInputElement, {
+      target: { files: [file] },
+    });
+    await waitFor(() =>
+      expect(screen.getByAltText('Брэндийн баннер харагдац')).toHaveAttribute(
+        'src',
+        '/media/banner/generated.png'
+      )
+    );
     fireEvent.change(screen.getByLabelText('Нэр'), { target: { value: 'Uploaded brand' } });
     fireEvent.change(screen.getByLabelText('Slug'), { target: { value: 'uploaded-brand' } });
     expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Брэнд хадгалах' }));
     await waitFor(() =>
       expect(api.createBrand).toHaveBeenCalledWith(
-        expect.objectContaining({ logoUrl: '/media/brand/generated.png' })
+        expect.objectContaining({
+          logoUrl: '/media/brand/generated.png',
+          bannerImageUrl: '/media/banner/generated.png',
+        })
       )
     );
     expect(vi.mocked(api.createBrand).mock.calls[0][0]).not.toHaveProperty('sortOrder');
@@ -115,6 +128,9 @@ describe('admin media forms', () => {
     );
     expect(screen.queryByLabelText('Баннер зураг нэмэх')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Гарчиг'), { target: { value: 'Uploaded banner' } });
+    fireEvent.change(screen.getByLabelText('Байрлал'), {
+      target: { value: 'PROMOTIONAL' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Баннер хадгалах' }));
     await waitFor(() =>
       expect(api.createBanner).toHaveBeenCalledWith({
@@ -122,6 +138,7 @@ describe('admin media forms', () => {
         subtitle: '',
         imageUrl: '/media/banner/desktop.png',
         mobileImageUrl: '/media/banner/mobile.jpg',
+        placement: 'PROMOTIONAL',
         sortOrder: 23,
         active: true,
       })

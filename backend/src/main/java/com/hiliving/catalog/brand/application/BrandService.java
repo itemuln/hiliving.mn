@@ -25,6 +25,6 @@ public class BrandService {
     }
 
     private BrandResponse toResponse(BrandEntity brand) {
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getSlug(), brand.getLogoUrl());
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getSlug(), brand.getLogoUrl(), brand.getBannerImageUrl());
     }
 }

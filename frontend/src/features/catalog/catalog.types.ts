@@ -14,6 +14,7 @@ export interface CatalogBrand {
   readonly name: string;
   readonly slug: string;
   readonly logoUrl: string | null;
+  readonly bannerImageUrl: string | null;
 }
 
 export interface CatalogReference {

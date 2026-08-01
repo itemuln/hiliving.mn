@@ -38,6 +38,7 @@ describe('HeroCarousel', () => {
         mobileImageUrl: '/media/banners/mobile.png',
         linkUrl: null,
         linkLabel: null,
+        placement: 'HERO',
         sortOrder: 0,
         startsAt: null,
         endsAt: null,
@@ -52,6 +53,7 @@ describe('HeroCarousel', () => {
     render(<HeroCarousel />);
 
     const image = await screen.findByRole('img', { name: 'Summer banner' });
+    expect(getPublicBanners).toHaveBeenCalledWith('HERO');
     expect(image).toHaveAttribute('src', '/media/banners/desktop.jpg');
     expect(image).toHaveAttribute('loading', 'eager');
     expect(image.parentElement?.parentElement).toHaveAttribute('data-entrance', 'animated');

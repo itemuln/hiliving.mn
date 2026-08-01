@@ -1,5 +1,8 @@
-import type { NewsItem } from '../../data/homeData';
-
 export interface NewsCardProps {
-  readonly item: NewsItem;
+  readonly item: {
+    readonly id: string;
+    readonly title: string;
+    readonly description: string;
+    readonly image: string;
+  };
 }

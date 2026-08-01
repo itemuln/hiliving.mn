@@ -11,7 +11,9 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A main run may already be deploying. Queue the next push instead of
+  # interrupting a release halfway through; pull-request runs remain cancelable.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   frontend:
@@ -58,3 +60,139 @@ jobs:
         run: java -version
       - name: Verify backend
         run: ./mvnw --batch-mode --no-transfer-progress verify
+
+  deploy-production:
+    name: Deploy to Hostinger production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [frontend, backend]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    concurrency:
+      group: production-deployment
+      cancel-in-progress: false
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+      VPS_SSH_KNOWN_HOSTS: ${{ secrets.VPS_SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${PRODUCTION_URL:?Set the production environment variable PRODUCTION_URL}"
+          : "${VPS_HOST:?Set the production secret VPS_HOST}"
+          : "${VPS_PORT:?Set the production secret VPS_PORT}"
+          : "${VPS_SSH_PRIVATE_KEY:?Set the production secret VPS_SSH_PRIVATE_KEY}"
+          : "${VPS_SSH_KNOWN_HOSTS:?Set the production secret VPS_SSH_KNOWN_HOSTS}"
+
+          if [[ ! "$PRODUCTION_URL" =~ ^https://[^/]+/?$ ]]; then
+            echo "PRODUCTION_URL must be an HTTPS origin without a path." >&2
+            exit 1
+          fi
+          if [[ ! "$VPS_PORT" =~ ^[0-9]+$ ]] || (( VPS_PORT < 1 || VPS_PORT > 65535 )); then
+            echo "VPS_PORT must be a valid TCP port." >&2
+            exit 1
+          fi
+
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Set up Temurin Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Build release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix frontend ci --no-audit --no-fund
+          npm --prefix frontend run build
+          ./backend/mvnw --batch-mode --no-transfer-progress -f backend/pom.xml -DskipTests package
+
+          artifact_directory="${RUNNER_TEMP}/hiliving-${GITHUB_SHA}"
+          install -d -m 0700 "$artifact_directory"
+          tar -C frontend/dist -czf "$artifact_directory/frontend.tar.gz" .
+
+          mapfile -t backend_jars < <(
+            find backend/target -maxdepth 1 -type f -name '*.jar' ! -name '*.original' -print
+          )
+          if (( ${#backend_jars[@]} != 1 )); then
+            echo "Expected exactly one deployable backend JAR, found ${#backend_jars[@]}." >&2
+            exit 1
+          fi
+          install -m 0600 "${backend_jars[0]}" "$artifact_directory/hiliving-backend.jar"
+          (
+            cd "$artifact_directory"
+            sha256sum frontend.tar.gz hiliving-backend.jar > SHA256SUMS
+          )
+
+      - name: Configure pinned SSH connection
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0700 "${HOME}/.ssh"
+          printf '%s\n' "$VPS_SSH_PRIVATE_KEY" > "${HOME}/.ssh/hiliving_deploy_key"
+          printf '%s\n' "$VPS_SSH_KNOWN_HOSTS" > "${HOME}/.ssh/known_hosts"
+          chmod 0600 "${HOME}/.ssh/hiliving_deploy_key" "${HOME}/.ssh/known_hosts"
+          ssh-keygen -y -f "${HOME}/.ssh/hiliving_deploy_key" >/dev/null
+          ssh-keygen -F "$VPS_HOST" -f "${HOME}/.ssh/known_hosts" >/dev/null
+
+      - name: Transfer and activate release
+        shell: bash
+        run: |
+          set -euo pipefail
+          artifact_directory="${RUNNER_TEMP}/hiliving-${GITHUB_SHA}"
+          remote_directory="/var/lib/hiliving-deploy/incoming/${GITHUB_SHA}"
+          ssh_options=(
+            -i "${HOME}/.ssh/hiliving_deploy_key"
+            -o BatchMode=yes
+            -o IdentitiesOnly=yes
+            -o StrictHostKeyChecking=yes
+            -o ConnectTimeout=10
+            -p "$VPS_PORT"
+          )
+
+          ssh "${ssh_options[@]}" "hiliving-deploy@${VPS_HOST}" \
+            "install -d -m 0700 '${remote_directory}'"
+          scp -i "${HOME}/.ssh/hiliving_deploy_key" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=10 \
+            -P "$VPS_PORT" \
+            "$artifact_directory/frontend.tar.gz" \
+            "$artifact_directory/hiliving-backend.jar" \
+            "$artifact_directory/SHA256SUMS" \
+            "hiliving-deploy@${VPS_HOST}:${remote_directory}/"
+          ssh "${ssh_options[@]}" "hiliving-deploy@${VPS_HOST}" \
+            "sudo /usr/local/sbin/hiliving-deploy '${GITHUB_SHA}'"
+
+      - name: Verify public deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          production_origin="${PRODUCTION_URL%/}"
+          curl --fail --silent --show-error \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "${production_origin}/" >/dev/null
+          curl --fail --silent --show-error \
+            --retry 5 --retry-delay 2 --retry-all-errors \
+            "${production_origin}/api/v1/categories?size=1" >/dev/null
+          printf 'Deployed `%s` to [%s](%s).\n' \
+            "$GITHUB_SHA" "$production_origin" "$production_origin" >> "$GITHUB_STEP_SUMMARY"

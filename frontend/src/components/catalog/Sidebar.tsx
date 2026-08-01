@@ -32,7 +32,7 @@ export function Sidebar({ items, activeSlug, basePath, variant }: SidebarProps) 
                     : 'text-neutral-400 hover:bg-brand-50 hover:text-brand-500'
                 }`}
               >
-                {item.iconUrl ? (
+                {variant === 'brand' ? null : item.iconUrl ? (
                   <span
                     className={`flex h-8 w-9 shrink-0 items-center justify-center ${
                       isActive ? 'bg-white/90' : ''
