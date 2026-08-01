@@ -67,10 +67,12 @@ describe('brand catalog presentation', () => {
     ).toBeNull();
   });
 
-  it('hides catalog search and pagination on mobile while retaining sorting', () => {
+  it('hides the catalog toolbar and pagination on mobile', () => {
     render(<CatalogToolbar search="" sort="newest" onSearch={vi.fn()} onSort={vi.fn()} />);
 
-    expect(screen.getByRole('search', { hidden: true })).toHaveClass('hidden', 'sm:flex');
+    const search = screen.getByRole('search', { hidden: true });
+    expect(search).toHaveClass('hidden', 'sm:flex');
+    expect(search.parentElement).toHaveClass('hidden', 'sm:flex');
     expect(screen.getByLabelText('Бүтээгдэхүүн эрэмбэлэх')).toBeInTheDocument();
 
     render(

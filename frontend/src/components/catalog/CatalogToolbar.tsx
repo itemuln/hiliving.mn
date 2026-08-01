@@ -19,7 +19,7 @@ export function CatalogToolbar({ search, sort, onSearch, onSort }: CatalogToolba
   };
 
   return (
-    <div className="mb-7 flex justify-end gap-3 border-b border-neutral-100 pb-5 sm:items-center sm:justify-between">
+    <div className="mb-7 hidden gap-3 border-b border-neutral-100 pb-5 sm:flex sm:items-center sm:justify-between">
       <form
         onSubmit={submitSearch}
         role="search"

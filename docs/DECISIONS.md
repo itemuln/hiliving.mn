@@ -611,3 +611,11 @@
 **Decision:** Render only the single-news article title at exactly 20px using the locally bundled Roboto Regular face. Keep list-card and missing-state heading typography unchanged.
 
 **Consequences:** Opening an individual news article now has a consistent compact title without changing typography elsewhere in the storefront.
+
+## 2026-08-01 - Remove inventory presentation from All products
+
+**Context:** All products repeated stock state and remaining quantity in a dedicated column and exposed both an inventory-state filter and stock sort choices, although normal product authoring already delegates inventory changes to the dedicated inventory workflow.
+
+**Decision:** Remove the stock column, the “Бүх нөөц” filter, and stock-based sort choices from All products. Stop sending an inventory-state query from that page while preserving backend inventory contracts and dedicated inventory behavior. Hide the remaining general sort selector on mobile and retain newest-first as the default order there.
+
+**Consequences:** The product list is narrower and focused on catalog administration, and its mobile filter area no longer includes a “Шинэ эхэнд” ordering control. Public category and brand product views also omit their shared search/sort toolbar on mobile. Inventory remains authoritative and unchanged, but is no longer displayed or filtered from All products; larger screens retain explicit sorting and public catalog search.

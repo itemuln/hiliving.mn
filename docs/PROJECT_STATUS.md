@@ -67,6 +67,9 @@ The Hostinger stack, canonical `hilivingmgl.mn` origin, public catalog, reviewed
 
 ## Latest meaningful changes
 
+- 2026-08-01: Removed the shared “Шинэ эхэнд” toolbar from mobile Category and Brand product views; storefront search and sorting remain available from the `sm` breakpoint.
+- 2026-08-01: Hid the All products “Шинэ эхэнд” sorting selector on mobile while preserving newest-first default ordering and full sorting controls on larger screens.
+- 2026-08-01: Removed the stock column, remaining-quantity display, “Бүх нөөц” filter, and stock sorting choices from All products. The page no longer sends an inventory-state filter; backend inventory behavior remains unchanged.
 - 2026-08-01: Set the single-news detail title to exactly 20px in locally bundled Roboto Regular without changing news-card or other storefront headings.
 - 2026-08-01: Reworked administration Users to the supplied compact list/detail layouts. The list now presents separate phone/email fields, order count, backend-calculated paid total, membership, registration date, and a clear view action. User detail combines profile/default-address information, account and membership controls, cancelled/in-transit summaries, and paginated customer order history. The entire admin shell now uses bundled Roboto Regular without changing storefront typography. All 107 frontend tests, lint/build, all 69 backend tests/JAR packaging, and desktop plus 390×844 browser layouts pass.
 - 2026-08-01: Removed `/slug` secondary text from product, category, and brand administration lists, removed slug wording from their list search prompts, and removed the duplicated fixed navigation label beneath titles in the Pages list. Banner administration already had no slug display. Routing and edit fields remain unchanged.

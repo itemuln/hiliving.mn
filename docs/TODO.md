@@ -37,6 +37,9 @@
 
 ## Completed
 
+- [x] Hide the shared catalog search/sort toolbar on mobile Category and Brand product views while retaining it on larger screens.
+- [x] Hide the All products sorting selector on mobile while preserving newest-first default ordering and desktop sorting.
+- [x] Remove the stock column, “Бүх нөөц” filter, and stock sort choices from All products without changing backend inventory behavior.
 - [x] Set the single-news detail title to exactly 20px in Roboto Regular without affecting other storefront headings.
 - [x] Rework administration Users to the supplied list/detail layouts with order counts, paid totals, membership and registration columns, profile/status summaries, paginated customer order history, and admin-scoped Roboto Regular typography.
 - [x] Replace the seven topical news categories with `Сургалт`, `Мэдээ`, and `Мэдээлэл` through the editor, typed API, Flyway V18 data migration/constraint, public metadata, and working section-filter buttons.

@@ -15,7 +15,7 @@ import {
   panel,
   primaryButton,
 } from '../components/AdminUi';
-import { inventoryLabel, lifecycleLabel } from '../adminLocale';
+import { lifecycleLabel } from '../adminLocale';
 import { useDebouncedValue } from '../components/useDebouncedValue';
 export function AdminProductsPage() {
   const [data, setData] = useState<Page<Product> | null>(null);
@@ -26,7 +26,6 @@ export function AdminProductsPage() {
     lifecycle: '',
     categoryId: '',
     brandId: '',
-    inventoryState: '',
     sort: 'newest',
     page: 0,
     size: 20,
@@ -49,7 +48,6 @@ export function AdminProductsPage() {
         lifecycle: filters.lifecycle,
         categoryId: filters.categoryId,
         brandId: filters.brandId,
-        inventoryState: filters.inventoryState,
         sort: filters.sort,
         page: filters.page,
         size: filters.size,
@@ -69,7 +67,6 @@ export function AdminProductsPage() {
     debouncedSearch,
     filters.brandId,
     filters.categoryId,
-    filters.inventoryState,
     filters.lifecycle,
     filters.page,
     filters.size,
@@ -105,7 +102,7 @@ export function AdminProductsPage() {
   return (
     <AdminShell
       title="Бүтээгдэхүүн"
-      description="Бүтээгдэхүүн хайх, шүүх, нийтлэх, архивлах болон нөөцийг хянах."
+      description="Бүтээгдэхүүн хайх, шүүх, нийтлэх болон архивлах."
       actions={
         <Link to="/admin/products/new" className={primaryButton}>
           <Plus size={17} className="mr-2" />
@@ -160,18 +157,7 @@ export function AdminProductsPage() {
           ))}
         </select>
         <select
-          className={input}
-          aria-label="Нөөц"
-          value={filters.inventoryState}
-          onChange={(e) => change('inventoryState', e.target.value)}
-        >
-          <option value="">Бүх нөөц</option>
-          <option value="IN_STOCK">Нөөцтэй</option>
-          <option value="LOW_STOCK">Нөөц багассан</option>
-          <option value="OUT_OF_STOCK">Нөөц дууссан</option>
-        </select>
-        <select
-          className={input}
+          className={`${input} hidden sm:block`}
           aria-label="Бүтээгдэхүүн эрэмбэлэх"
           value={filters.sort}
           onChange={(e) => change('sort', e.target.value)}
@@ -182,8 +168,6 @@ export function AdminProductsPage() {
           <option value="name_desc">Нэр Я–А</option>
           <option value="price_asc">Үнэ өсөхөөр</option>
           <option value="price_desc">Үнэ буурахаар</option>
-          <option value="stock_asc">Нөөц өсөхөөр</option>
-          <option value="stock_desc">Нөөц буурахаар</option>
         </select>
       </div>
       {error && (
@@ -199,13 +183,12 @@ export function AdminProductsPage() {
         data && (
           <div className={`${panel} overflow-hidden`}>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[1000px] text-left text-sm">
+              <table className="w-full min-w-[860px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase text-slate-500">
                   <tr>
                     <th className="p-4">Бүтээгдэхүүн</th>
                     <th>Ангилал / Брэнд</th>
                     <th>Үнэ</th>
-                    <th>Нөөц</th>
                     <th>Төлөв</th>
                     <th>Гишүүнчлэл</th>
                     <th className="pr-4 text-right">Үйлдэл</th>
@@ -249,22 +232,6 @@ export function AdminProductsPage() {
                             ₮ {p.discountPrice.toLocaleString()}
                           </div>
                         )}
-                      </td>
-                      <td>
-                        <StatusBadge
-                          tone={
-                            p.inventoryState === 'IN_STOCK'
-                              ? 'success'
-                              : p.inventoryState === 'LOW_STOCK'
-                              ? 'warning'
-                              : 'danger'
-                          }
-                        >
-                          {inventoryLabel(p.inventoryState)}
-                        </StatusBadge>
-                        <div className="mt-1 text-xs text-slate-400">
-                          Үлдэгдэл: {p.stockQuantity}
-                        </div>
                       </td>
                       <td>
                         <StatusBadge
