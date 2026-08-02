@@ -64,10 +64,12 @@ export function CategorySection() {
                       aria-hidden="true"
                       loading="lazy"
                       decoding="async"
+                      width={96}
+                      height={96}
                       className="h-full w-full object-contain"
                     />
                   </span>
-                  <span className="text-xs text-neutral-400 transition-colors duration-300 ease-out group-hover:text-brand-500 md:text-sm">
+                  <span className="text-xs text-neutral-600 transition-colors duration-300 ease-out group-hover:text-brand-700 md:text-sm">
                     {getTranslatedName(category.name)}
                   </span>
                 </Link>

@@ -56,8 +56,12 @@ describe('HeroCarousel', () => {
     expect(getPublicBanners).toHaveBeenCalledWith('HERO');
     expect(image).toHaveAttribute('src', '/media/banners/desktop.jpg');
     expect(image).toHaveAttribute('loading', 'eager');
+    expect(image).toHaveAttribute('fetchpriority', 'high');
+    expect(image).toHaveAttribute('width', '2400');
+    expect(image).toHaveAttribute('height', '990');
     expect(image.parentElement?.parentElement).toHaveAttribute('data-entrance', 'animated');
     const section = screen.getByRole('region', { name: 'Онцлох урамшуулал' });
+    expect(section.firstElementChild).toHaveClass('h-[170px]', 'sm:aspect-[24/5]');
     expect(section).not.toHaveClass('bg-neutral-100', 'py-3');
     expect(section.firstElementChild).not.toHaveClass('px-4', 'sm:px-6', 'lg:px-10');
 

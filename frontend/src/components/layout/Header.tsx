@@ -37,6 +37,8 @@ export function Header() {
             alt="Hiliving Mongolia"
             loading="eager"
             decoding="async"
+            width={240}
+            height={59}
             className="h-auto w-[190px] md:w-[190px] lg:w-[220px] xl:w-[250px]"
           />
         </Link>

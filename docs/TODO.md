@@ -26,6 +26,7 @@
 - [ ] **P2:** add reference-aware media deletion/orphan reporting after defining retention and recovery policy; do not delete shared or externally hosted URLs.
 - [ ] **P2:** move the auth rate-limit store from the in-memory per-instance counter to a shared backend (for example Redis with atomic counters and TTLs) before any multi-node deployment, so throttle limits are not multiplied across replicas; revisit the account-lockout DoS with CAPTCHA or soft-backoff at the same time.
 - [ ] **P2:** switch the existing media storage boundary to an S3-compatible provider only when multi-node deployment, CDN/off-server durability, or storage growth justifies it.
+- [ ] **P2:** add tested responsive image variants and modern-format encoding, then migrate the current oversized homepage banner/product assets; retain JPEG/PNG-only uploads until the Java decoder/encoder and recovery behavior are verified end to end.
 - [ ] **P2:** decide whether browser-local carts need authenticated cross-device synchronization, expiry, abandoned-cart handling, or inventory reservation; do not add them without a concrete business requirement.
 - [x] **P1:** invalidate prior sessions after password recovery through a database-backed per-user session version. As of 2026-07-29 the same revocation also applies to self-service password change and login-email change.
 - [ ] **P2:** define a redirect/alias and migration policy before ever introducing an exceptional product-slug correction or import tool; normal product editing keeps generated slugs immutable.
@@ -37,6 +38,7 @@
 
 ## Completed
 
+- [x] Re-audit production security/performance, patch the OWASP sanitizer and Flyway/Jackson advisories, add an XSS regression test, configure static compression/caching, stabilize and prioritize the hero, correct measured contrast/image sizing, and add valid favicon/robots resources.
 - [x] Move `Цэс` to the third mobile bottom-navigation position between `Ангилал` and `Сагс`.
 - [x] Enlarge the five mobile bottom-navigation controls and make `Ангилал` open a lazy-loaded, keyboard-safe category sheet matching the existing `Цэс` interaction.
 - [x] Hide the shared catalog search/sort toolbar on mobile Category and Brand product views while retaining it on larger screens.

@@ -134,7 +134,7 @@ function HeroCarouselComponent() {
 
   return (
     <section aria-label="Онцлох урамшуулал">
-      <div className="relative mx-auto w-full max-w-[1440px] overflow-hidden">
+      <div className="relative mx-auto h-[170px] w-full max-w-[1440px] overflow-hidden bg-neutral-50 sm:h-auto sm:aspect-[24/5]">
         <div ref={emblaRef} className="overflow-hidden">
           <div className="flex touch-pan-y">
             {banners.map((banner, index) => (
@@ -156,7 +156,10 @@ function HeroCarouselComponent() {
                       src={banner.imageUrl}
                       alt={banner.title}
                       loading={index === selectedIndex ? 'eager' : 'lazy'}
+                      fetchPriority={index === selectedIndex ? 'high' : 'auto'}
                       decoding="async"
+                      width={2400}
+                      height={990}
                       className="h-[170px] w-full object-cover sm:h-auto sm:aspect-[24/5]"
                     />
                   </picture>
@@ -166,33 +169,37 @@ function HeroCarouselComponent() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center justify-between">
-          <CarouselControls
-            onPrevious={() => emblaApi?.scrollPrev()}
-            onNext={() => emblaApi?.scrollNext()}
-          />
-        </div>
+        {banners.length > 0 ? (
+          <>
+            <div className="pointer-events-none absolute inset-y-0 left-4 right-4 flex items-center justify-between">
+              <CarouselControls
+                onPrevious={() => emblaApi?.scrollPrev()}
+                onNext={() => emblaApi?.scrollNext()}
+              />
+            </div>
 
-        <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 py-1 pl-3 pr-1.5 text-xs text-white backdrop-blur-sm sm:bottom-7">
-          <span>
-            {banners.length ? selectedIndex + 1 : 0} / {banners.length}
-          </span>
-          <button
-            type="button"
-            onClick={toggleAutoplay}
-            className="flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ease-out hover:bg-white/20"
-            aria-label={
-              isPlaying ? 'Автомат сэлгэлтийг түр зогсоох' : 'Автомат сэлгэлтийг үргэлжлүүлэх'
-            }
-          >
-            <img
-              src={isPlaying ? '/icons/pause.svg' : '/icons/play.svg'}
-              alt=""
-              aria-hidden="true"
-              className="h-3.5 w-3.5 invert"
-            />
-          </button>
-        </div>
+            <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-black/35 py-1 pl-3 pr-1.5 text-xs text-white backdrop-blur-sm sm:bottom-7">
+              <span>
+                {selectedIndex + 1} / {banners.length}
+              </span>
+              <button
+                type="button"
+                onClick={toggleAutoplay}
+                className="flex h-6 w-6 items-center justify-center rounded-full transition-all duration-300 ease-out hover:bg-white/20"
+                aria-label={
+                  isPlaying ? 'Автомат сэлгэлтийг түр зогсоох' : 'Автомат сэлгэлтийг үргэлжлүүлэх'
+                }
+              >
+                <img
+                  src={isPlaying ? '/icons/pause.svg' : '/icons/play.svg'}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 invert"
+                />
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
     </section>
   );

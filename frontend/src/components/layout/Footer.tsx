@@ -11,7 +11,7 @@ export function Footer() {
   return (
     <footer
       id="contact"
-      className="mb-[74px] mt-16 bg-neutral-50 text-neutral-400 md:mb-0 md:mt-24"
+      className="mb-[74px] mt-16 bg-neutral-50 text-neutral-600 md:mb-0 md:mt-24"
     >
       <div className="border-b border-neutral-200 bg-neutral-100/70 py-5">
         <Container className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -20,6 +20,8 @@ export function Footer() {
             alt="Hiliving Mongolia"
             loading="lazy"
             decoding="async"
+            width={240}
+            height={59}
             className="h-auto w-[230px] opacity-90 md:w-[310px]"
           />
           <div className="flex gap-3">

@@ -11,24 +11,24 @@ export function SubFooter() {
         </p>
         <p>
           И-мэйл:{' '}
-          <a href="mailto:info@hilivingmgl.mn" className="hover:text-brand-500 hover:underline">
+          <a href="mailto:info@hilivingmgl.mn" className="hover:text-brand-700 hover:underline">
             info@hilivingmgl.mn
           </a>
         </p>
         <Link
           to="/contact"
-          className="mt-3 inline-flex font-medium text-neutral-500 underline underline-offset-4 hover:text-brand-500"
+          className="mt-3 inline-flex font-medium text-neutral-700 underline underline-offset-4 hover:text-brand-700"
         >
           Холбоо барих дэлгэрэнгүй
         </Link>
-        <p className="mt-4 text-brand-500">Бүх эрх хуулиар баталгаажсан. ©2026</p>
+        <p className="mt-4 text-brand-700">Бүх эрх хуулиар баталгаажсан. ©2026</p>
       </div>
       <div className="md:text-right">
         <p>Даваа – Бямба 10:00 - 20:00</p>
         <p>Ням амарна.</p>
         <p>
           Утас:{' '}
-          <a href="tel:+97677558888" className="hover:text-brand-500 hover:underline">
+          <a href="tel:+97677558888" className="hover:text-brand-700 hover:underline">
             7755-8888
           </a>
         </p>
