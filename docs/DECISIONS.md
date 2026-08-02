@@ -604,6 +604,14 @@
 
 **Consequences:** The Users list and detail screen match the requested compact hierarchy without trusting client-side financial calculations or issuing an order query per row. Paid totals exclude unpaid, failed, expired, cancelled, and refunded payments. Order history remains bounded by pagination, order details continue to use the established administration order route, and the storefront font is unaffected.
 
+## 2026-08-02 - Larger mobile navigation with a category sheet
+
+**Context:** The five-item mobile navigation used a compact 70px bar with 20px icons and a direct Categories route. The user requested larger controls and category selection directly from the bottom bar in the same interaction pattern as `Цэс`.
+
+**Decision:** Increase the bar content height to 78px, icons to 24px, and labels to 11px. Order the actions Home, Categories, `Цэс`, Cart, and Account/Login so the two sheet triggers sit together before transactional destinations. Replace the direct Categories link with a button that opens the shared accessible bottom-sheet pattern and lists `БҮГД` plus active public categories. Load the category code and data only after the sheet opens, retain an explicit loading/failure/retry state, and preserve focus trapping, scroll locking, Escape/backdrop close, trigger-focus restoration, and single-active-state behavior across both sheets.
+
+**Consequences:** Mobile targets are easier to tap and customers can move directly to a category without first loading the category index. The persistent bar still has five equal-width actions, larger breakpoints remain unchanged, and unopened pages do not pay the category request or eagerly load its API module.
+
 ## 2026-08-01 - Compact single-news title typography
 
 **Context:** The single-news detail route rendered its article title as a responsive 30–48px heavy heading, which was oversized for the requested compact article presentation.

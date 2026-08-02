@@ -8,11 +8,11 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 
 - Responsive React/Vite storefront with preserved home, category, brand, product, and news routes
 - Minimal responsive `/contact` page with direct phone, email, office-hours, address, and external map actions
-- Five-item mobile bottom navigation with a compact keyboard-safe text menu and one unambiguous active state
+- Larger five-item mobile bottom navigation with keyboard-safe Category and secondary-menu sheets, lazy category loading, and one unambiguous active state
 - Environment-based catalog API configuration with same-origin defaults
 - Typed backend DTO definitions, explicit frontend-domain mapping, centralized fetch/status handling, cancellation, and safe normalized errors
 - Backend-driven home categories, brands, and featured products
-- Backend-driven category and brand pages with desktop search/pagination, mobile sorting, a persistent shared hero, home-style reveal motion, and icon-triggered mobile category switching
+- Backend-driven category and brand pages with desktop search/sorting/pagination, a persistent shared hero, home-style reveal motion, and mobile category selection
 - Complete slug-based product detail with ordered, aspect-ratio-safe gallery images, per-photo display scaling, SKU, membership-aware pricing, bounded quantities, add-to-cart, related products, and top-aligned desktop details without customer-facing stock counts
 - Loading skeletons plus successful, empty, safe error, retry, 400, 404, and backend-unavailable states
 - API-backed upper and lower homepage banners, each presented without surrounding padding in a centered 1440×300 desktop frame on the page background, plus published news list/detail content
@@ -67,6 +67,8 @@ The Hostinger stack, canonical `hilivingmgl.mn` origin, public catalog, reviewed
 
 ## Latest meaningful changes
 
+- 2026-08-02: Moved `Цэс` to the third mobile bottom-navigation position, producing the order Эхлэл, Ангилал, Цэс, Сагс, Нэвтрэх/Бүртгэл without changing either sheet interaction.
+- 2026-08-02: Enlarged the five mobile bottom-navigation controls from a 70px/20px-icon presentation to 78px with 24px icons and 11px labels. `Ангилал` now opens a `Цэс`-style accessible bottom sheet containing `БҮГД` and lazily loaded public categories, with loading/retry handling, focus trapping, scroll lock, Escape/backdrop close, trigger-focus restoration, and single-active-state behavior. The category API module and request load only after the button is tapped. All 108 frontend tests, lint, TypeScript/production build, formatting, and diff checks pass.
 - 2026-08-01: Removed the shared “Шинэ эхэнд” toolbar from mobile Category and Brand product views; storefront search and sorting remain available from the `sm` breakpoint.
 - 2026-08-01: Hid the All products “Шинэ эхэнд” sorting selector on mobile while preserving newest-first default ordering and full sorting controls on larger screens.
 - 2026-08-01: Removed the stock column, remaining-quantity display, “Бүх нөөц” filter, and stock sorting choices from All products. The page no longer sends an inventory-state filter; backend inventory behavior remains unchanged.

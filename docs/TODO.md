@@ -37,6 +37,8 @@
 
 ## Completed
 
+- [x] Move `Цэс` to the third mobile bottom-navigation position between `Ангилал` and `Сагс`.
+- [x] Enlarge the five mobile bottom-navigation controls and make `Ангилал` open a lazy-loaded, keyboard-safe category sheet matching the existing `Цэс` interaction.
 - [x] Hide the shared catalog search/sort toolbar on mobile Category and Brand product views while retaining it on larger screens.
 - [x] Hide the All products sorting selector on mobile while preserving newest-first default ordering and desktop sorting.
 - [x] Remove the stock column, “Бүх нөөц” filter, and stock sort choices from All products without changing backend inventory behavior.
