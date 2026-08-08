@@ -29,6 +29,8 @@ The frontend is a client-rendered React application using React Router, Tailwind
 
 Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity and cart coordination use small React contexts because header, route protection, cart, and checkout share them.
 
+Global document styling in `src/styles.css` hides only the viewport scrollbar through the standard Firefox property and the WebKit scrollbar pseudo-element. The document remains the scrolling container, so wheel, trackpad, keyboard, touch, and programmatic scrolling keep their native behavior. Nested application scroll containers are not targeted and retain their own scrollbar presentation.
+
 The cart persists only `{version, items: [{productSlug, quantity}]}` under `hiliving.cart.v1`; it never stores trusted prices, discounts, stock, customer identity, or order state. Malformed entries are discarded, duplicate slugs merge within the quantity limit, and every cart/auth change is reconciled through the quote API. Cart data survives login and is cleared only after confirmed order creation.
 
 Category, brand, product, banner, and news mocks are no longer application sources. Active upper and lower banners and published news are read from the API; there is no hard-coded promotional-banner fallback.

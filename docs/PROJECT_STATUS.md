@@ -6,7 +6,7 @@ HiLiving is a modular monorepo with an independently buildable React/Vite storef
 
 ## Features currently working
 
-- Responsive React/Vite storefront with preserved home, category, brand, product, and news routes
+- Responsive React/Vite storefront with preserved home, category, brand, product, and news routes; the outer browser scrollbar is visually hidden while wheel, trackpad, keyboard, and touch scrolling remain functional
 - Minimal responsive `/contact` page with direct phone, email, office-hours, address, and external map actions
 - Larger five-item mobile bottom navigation with keyboard-safe Category and secondary-menu sheets, lazy category loading, and one unambiguous active state
 - Environment-based catalog API configuration with same-origin defaults
@@ -70,6 +70,7 @@ The Hostinger stack, canonical `hilivingmgl.mn` origin, public catalog, reviewed
 
 ## Latest meaningful changes
 
+- 2026-08-08: Hid the document-level browser scrollbar across modern Firefox, Chromium, and WebKit browsers while preserving normal wheel, trackpad, keyboard, touch, and programmatic scrolling. Nested application scroll areas retain their own scrollbar presentation.
 - 2026-08-02: Re-audited the live `hilivingmgl.mn` origin and local applications. Live TLS, same-origin CORS posture, CSRF cookies, HSTS, frame denial, MIME sniffing protection, referrer/permissions policies, and TRACE rejection pass. Baseline Lighthouse measured mobile at 67 Performance / 95 Accessibility / 96 Best Practices / 92 SEO and desktop at 89 / 96 / 96 / 92; it identified uncompressed application assets, a roughly 0.18 hero-driven layout shift, missing intrinsic logo dimensions, low-contrast home/footer text, uncacheable public icons, and a missing `robots.txt`. Updated the reviewed NGINX template to gzip JS/CSS/SVG and cache stable public images for one hour; reserved the hero frame, prioritized its visible image, added image dimensions, corrected measured contrast, and added favicon/robots metadata. An OSV scan of 106 backend runtime components found two matches; upgraded OWASP Java HTML Sanitizer to 20260313.1 and pinned Jackson Databind 3.1.5, then added a malformed `noscript`/`style` sanitizer regression test. The post-patch OSV scan has zero matches; all 108 frontend tests, lint, scoped formatting, TypeScript/production build, all 70 backend tests and JAR packaging on exact Java 21, dependency resolution, NGINX/shell syntax, and diff checks pass. The repository-wide formatter still reports seven pre-existing files outside this change.
 - 2026-08-02: Moved `Цэс` to the third mobile bottom-navigation position, producing the order Эхлэл, Ангилал, Цэс, Сагс, Нэвтрэх/Бүртгэл without changing either sheet interaction.
 - 2026-08-02: Enlarged the five mobile bottom-navigation controls from a 70px/20px-icon presentation to 78px with 24px icons and 11px labels. `Ангилал` now opens a `Цэс`-style accessible bottom sheet containing `БҮГД` and lazily loaded public categories, with loading/retry handling, focus trapping, scroll lock, Escape/backdrop close, trigger-focus restoration, and single-active-state behavior. The category API module and request load only after the button is tapped. All 108 frontend tests, lint, TypeScript/production build, formatting, and diff checks pass.

@@ -635,3 +635,11 @@
 **Decision:** Keep the application and deployment topology unchanged. Enable NGINX gzip only for static JavaScript, CSS, and SVG; keep hashed Vite assets immutable; cache un-hashed root images for one hour; and preserve `/media/**` as a higher-priority backend proxy. Reserve the hero's responsive frame before its API response, give the selected image high fetch priority and intrinsic dimensions, correct measured text contrast, and provide explicit favicon/robots resources. Upgrade OWASP Java HTML Sanitizer to 20260313.1, pin Jackson Databind 3.1.5, and retain a regression test for the malformed `noscript`/`style` payload. Do not force the React Router audit downgrade because HiLiving is a client-only `BrowserRouter` SPA without the advisory's RSC server-action path.
 
 **Consequences:** The deployment can reduce the main JavaScript transfer from approximately 371 KB toward its 122 KB gzip size without changing application behavior, and the hero no longer shifts following content when banner data arrives. Stable public files receive bounded repeat-visit caching without making replaceable filenames immutable. Rich-content sanitization and Flyway's runtime graph resolve to fixed advisory versions. Current oversized managed banner/product images still require a separate tested responsive-variant and modern-format design before they can be safely reduced.
+
+## 2026-08-08 - Hide only the viewport scrollbar
+
+**Context:** The visible outer browser scrollbar was not wanted, but scrolling itself must remain fully functional across desktop and mobile input methods.
+
+**Decision:** Hide the document-root scrollbar with `scrollbar-width: none` and the `::-webkit-scrollbar` pseudo-element. Do not disable document overflow and do not apply the rule to every element.
+
+**Consequences:** Wheel, trackpad, keyboard, touch, smooth, and programmatic scrolling continue to work while the outer scrollbar is not painted in modern Firefox, Chromium, and WebKit browsers. Nested scrollable controls keep visible scrollbars so their independent scroll boundaries remain discoverable.
