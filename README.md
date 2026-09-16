@@ -7,7 +7,7 @@ HiLiving is a modular monorepo containing an independently buildable React/Vite 
 - `frontend/` - React, TypeScript, and Vite storefront
 - `backend/` - Java 21 and Spring Boot catalog API
 - `docs/` - project state, architecture, decisions, backlog, and CI guidance
-- `infrastructure/` - future production infrastructure assets
+- `infrastructure/` -  infrastructure stuff
 - `compose.yaml` - local PostgreSQL service
 
 ## Prerequisites
