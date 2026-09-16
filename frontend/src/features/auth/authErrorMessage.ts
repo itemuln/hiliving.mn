@@ -1,4 +1,4 @@
-import { AccountApiError } from '../../api/accountApi';
+import { ApiRequestError } from '../../api/http';
 
 const messages: Record<string, string> = {
   INVALID_CREDENTIALS: 'Имэйл, утасны дугаар эсвэл нууц үг буруу байна.',
@@ -19,7 +19,7 @@ const messages: Record<string, string> = {
 };
 
 export function authErrorMessage(error: unknown) {
-  return error instanceof AccountApiError
+  return error instanceof ApiRequestError
     ? messages[error.code] ?? 'Хүсэлтийг гүйцэтгэж чадсангүй. Дахин оролдоно уу.'
     : 'Хүсэлтийг гүйцэтгэж чадсангүй. Дахин оролдоно уу.';
 }

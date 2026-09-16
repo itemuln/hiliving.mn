@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom';
-import {
-  NEWS_CATEGORY_LABELS,
-  type NewsCategory,
-} from '../../features/news/newsCategories';
+import { NEWS_CATEGORY_LABELS, type NewsCategory } from '../../features/news/newsCategories';
 
 type NewsArticle = {
   readonly slug: string;
@@ -20,9 +17,7 @@ type NewsCardProps = {
 
 export function NewsCard({ article, imageLoading = 'lazy', className = '' }: NewsCardProps) {
   return (
-    <article
-      className={`group flex min-w-0 gap-4 py-5 first:pt-0 sm:gap-6 sm:py-6 ${className}`}
-    >
+    <article className={`group flex min-w-0 gap-4 py-5 first:pt-0 sm:gap-6 sm:py-6 ${className}`}>
       <Link
         to={`/news/${article.slug}`}
         tabIndex={-1}

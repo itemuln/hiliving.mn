@@ -5,7 +5,7 @@ import { Container } from '../components/layout/Container';
 import { Footer } from '../components/layout/Footer';
 import { Header } from '../components/layout/Header';
 import { MobileBottomNav } from '../components/layout/MobileBottomNav';
-import type { ContentPage } from '../features/admin/admin.types';
+import type { ContentPage } from '../features/content/content.types';
 
 export function HilivingMglPage() {
   const { sectionSlug } = useParams();

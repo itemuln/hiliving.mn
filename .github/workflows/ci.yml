@@ -39,6 +39,8 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: Check bundle budgets
+        run: npm run bundle:check
 
   backend:
     name: Backend on Java 21
@@ -125,6 +127,7 @@ jobs:
           set -euo pipefail
           npm --prefix frontend ci --no-audit --no-fund
           npm --prefix frontend run build
+          npm --prefix frontend run bundle:check
           ./backend/mvnw --batch-mode --no-transfer-progress -f backend/pom.xml -DskipTests package
 
           artifact_directory="${RUNNER_TEMP}/hiliving-${GITHUB_SHA}"

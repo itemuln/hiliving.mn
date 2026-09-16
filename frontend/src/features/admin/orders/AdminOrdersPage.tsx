@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listAdminOrders } from '../../../api/adminApi';
+import type { PagedResult } from '../../../api/api.types';
 import { cartErrorMessage } from '../../cart/cartErrorMessage';
 import { orderStatusLabel, paymentStatusLabel, statusTone } from '../../checkout/orderStatus';
-import type { AdminOrderSummary, Page } from '../admin.types';
+import type { AdminOrderSummary } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
 import {
   ErrorNotice,
@@ -20,7 +21,7 @@ export function AdminOrdersPage() {
   const [orderStatus, setOrderStatus] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
   const [pageNumber, setPageNumber] = useState(0);
-  const [result, setResult] = useState<Page<AdminOrderSummary> | null>(null);
+  const [result, setResult] = useState<PagedResult<AdminOrderSummary> | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {

@@ -1,13 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { accountJson, authenticatedUser } from '../test/accountFixtures';
-import {
-  AccountApiError,
-  apiUpload,
-  createAddress,
-  getCurrentUser,
-  login,
-  logout,
-} from './accountApi';
+import { createAddress, getCurrentUser, login, logout } from './accountApi';
+import { ApiRequestError, apiUpload } from './http';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -85,8 +79,8 @@ describe('account API adapter', () => {
     await expect(login({ identifier: 'x@example.com', password: 'wrong' })).rejects.toMatchObject({
       status: 401,
       code: 'INVALID_CREDENTIALS',
-      message: 'The account request could not be completed.',
-    } satisfies Partial<AccountApiError>);
+      message: 'The API request could not be completed.',
+    } satisfies Partial<ApiRequestError>);
   });
 
   it('serializes address creation through the ownership-scoped endpoint', async () => {

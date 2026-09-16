@@ -3,6 +3,7 @@
 ## Active
 
 - The Hostinger stack, canonical `hilivingmgl.mn` origin, reviewed admin accounts, public demo catalog, and branded Brevo transactional email are live over HTTPS. Next: configure durable scheduled off-server backups, rotate/authenticate final production mail credentials/domain, then complete QPay and business verification before accepting production payments.
+- [x] Remove confirmed dead frontend exports/helpers, consolidate shared HTTP envelope and pagination contracts, and expand the product/banner/news backend paths into readable, behavior-tested code.
 
 ## Planned
 
@@ -38,6 +39,8 @@
 
 ## Completed
 
+- [x] Separate human and agent documentation, add developer onboarding and scoped engineering/security rules, move shared public content contracts out of admin ownership, document advanced-web security and performance concepts against the implementation, and enforce measured frontend bundle budgets in local and CI builds.
+- [x] Map the complete repository architecture, separate implemented behavior from environment-dependent readiness, clean misleading frontend/backend boundaries, and add a presentation guide with request flows, structure, risks, demo checklist, ownership summary, and a 3-5 minute script.
 - [x] Hide the outer browser scrollbar without disabling wheel, trackpad, keyboard, touch, or programmatic scrolling, while retaining scrollbar presentation for nested application scroll areas.
 - [x] Re-audit production security/performance, patch the OWASP sanitizer and Flyway/Jackson advisories, add an XSS regression test, configure static compression/caching, stabilize and prioritize the hero, correct measured contrast/image sizing, and add valid favicon/robots resources.
 - [x] Move `Цэс` to the third mobile bottom-navigation position between `Ангилал` and `Сагс`.

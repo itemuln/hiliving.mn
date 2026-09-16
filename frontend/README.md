@@ -32,10 +32,13 @@ npm ci
 npm run lint
 npm test
 npm run build
+npm run bundle:check
 npm run dev
 ```
 
 The tests mock the HTTP boundary and cover catalog success, loading, empty results, safe failures, retry, filter serialization, adapter errors, and product-detail 404 behavior.
+
+`bundle:check` runs after a production build and enforces gzip budgets for the initial JavaScript, initial CSS, and largest lazy JavaScript chunk. The rationale and current measurements are in [`../docs/human/ADVANCED_WEB_APPLICATION.md`](../docs/human/ADVANCED_WEB_APPLICATION.md).
 
 For local integration when the backend is running on port 18080:
 

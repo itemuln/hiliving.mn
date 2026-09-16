@@ -269,7 +269,9 @@ describe('admin product editor', () => {
       screen.queryByRole('checkbox', { name: 'Энэ бүтээгдэхүүн хөнгөлөлттэй' })
     ).not.toBeInTheDocument();
     expect(screen.queryByRole('spinbutton', { name: 'Үлдэгдэл тоо' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('spinbutton', { name: 'Нөөц багассаны босго' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('spinbutton', { name: 'Нөөц багассаны босго' })
+    ).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('Ангилал'), { target: { value: '1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Ноорог хадгалах' }));
 

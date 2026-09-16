@@ -61,16 +61,6 @@ export interface CatalogProductDetail extends CatalogProduct {
   readonly relatedProducts: readonly CatalogProduct[];
 }
 
-export interface CatalogPage<T> {
-  readonly items: readonly T[];
-  readonly page: number;
-  readonly size: number;
-  readonly totalElements: number;
-  readonly totalPages: number;
-  readonly first: boolean;
-  readonly last: boolean;
-}
-
 export interface ProductQuery {
   readonly page?: number;
   readonly size?: number;

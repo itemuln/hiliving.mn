@@ -1,0 +1,453 @@
+{
+  "schemaVersion": 1,
+  "runId": "e3d6c0f4-4860-49bb-a116-5d10bedbcc39",
+  "mode": "init",
+  "phase": "generating",
+  "startedAt": "2026-09-06T06:46:26.430Z",
+  "language": "en",
+  "languageChanged": false,
+  "requiredRewritePages": [],
+  "initialPages": [],
+  "sourceFingerprint": "sha256:c76fcb89d29b76176dafb606648aaacb72ecd1cadf9593fee9586a90ff5e2bfa",
+  "targetGitHead": "b7f84d851064cb0d358ba88491ca32d668a2e5d8",
+  "actor": {
+    "producerActor": "openwiki/0.5.0",
+    "metadataModel": "gpt-5.6-sol"
+  },
+  "previousLastUpdate": null,
+  "wikiGoal": "A code wiki for this repository.",
+  "beforeContentSnapshot": "632cf2073a36a4ef01dcd33b2a7a2d55b75afc69f961e55e70fa14a5e236f881",
+  "preparedWiki": {
+    "generatedProvenance": []
+  },
+  "plan": {
+    "pages": [
+      {
+        "id": "f0545b0a-7c1b-426f-a0d9-7008d688cee2",
+        "path": "/openwiki/architecture/persistence-model-and-transactions.md",
+        "title": "Persistence Model and Transaction Boundaries",
+        "purpose": "Map the principal PostgreSQL aggregates and relationships, Flyway schema ownership, database-enforced invariants, and the locking/idempotency patterns that make identity, commerce, payment, media, audit, and outbox changes safe.",
+        "seedPaths": [
+          "backend/src/main/resources/application.yml",
+          "backend/src/main/resources/db/migration/V11__add_qpay_payment_lifecycle.sql",
+          "backend/src/main/resources/db/migration/V2__create_catalog_schema.sql",
+          "backend/src/main/resources/db/migration/V3__create_identity_and_account_schema.sql",
+          "backend/src/main/resources/db/migration/V5__create_media_asset_schema.sql",
+          "backend/src/main/resources/db/migration/V6__create_checkout_and_order_schema.sql",
+          "backend/src/main/resources/db/migration/V8__create_transactional_email_outbox.sql",
+          "backend/src/main/resources/db/migration/V9__create_email_verification_and_password_reset.sql"
+        ],
+        "relatedPages": [
+          "/openwiki/concepts/catalog-and-merchandising.md",
+          "/openwiki/concepts/identity-and-accounts.md",
+          "/openwiki/integrations/qpay-payments.md",
+          "/openwiki/integrations/transactional-email.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md"
+        ],
+        "instructions": [
+          "Describe where pessimistic locks, stable lock ordering, transactions, REQUIRES_NEW outbox worker phases, and database constraints protect invariants.",
+          "Explain immutable order/customer/address/item snapshots, generated public identifiers, ownership keys, unique idempotency keys, payment attempts/deeplinks, token hashes, media metadata, audit rows, and email outbox events.",
+          "State that Flyway is the only schema writer, applied migrations are never edited, Hibernate only validates, and production code rollback does not reverse a forward migration.",
+          "Use a focused Mermaid ER diagram with a one-line caption for the major aggregates and cross-domain foreign-key relationships; do not attempt a column-by-column schema dump."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "f66f7fb9-81e9-4a86-b0ca-849d14392b95",
+        "path": "/openwiki/architecture/system-overview.md",
+        "title": "System Overview and Owned Domains",
+        "purpose": "Explain the modular monorepo, local and production runtime topology, major owned domains, shared cross-cutting services, entrypoints, and how browser requests and scheduled work cross system boundaries.",
+        "seedPaths": [
+          "README.md",
+          "backend/src/main/java/com/hiliving/HiLivingApplication.java",
+          "backend/src/main/java/com/hiliving/package-info.java",
+          "docs/ARCHITECTURE.md",
+          "frontend/src/App.tsx",
+          "frontend/src/main.tsx",
+          "infrastructure/production/README.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/architecture/web-runtime-and-api-boundary.md",
+          "/openwiki/concepts/identity-and-accounts.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md"
+        ],
+        "instructions": [
+          "Identify domain owners and cross-cutting facilities such as API envelopes, Spring Security, scheduling, audit, Flyway, and development seeding, including their principal public surfaces.",
+          "Include an evidence-grounded Mermaid topology diagram with a one-line caption, distinguishing Vite/local proxying from NGINX/production routing and durable versus external state.",
+          "Organize around the storefront/admin browser runtime, Spring API, PostgreSQL, managed uploads, QPay, SMTP outbox, and browser-side map/editor services rather than reproducing the directory tree."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "5bba2170-71c4-4f71-b1af-dc65ae852b5d",
+        "path": "/openwiki/architecture/web-runtime-and-api-boundary.md",
+        "title": "Frontend Runtime and API Boundary",
+        "purpose": "Trace how React routes, providers, feature pages, API adapters, the shared HTTP/upload clients, Spring Security, controllers, services, repositories, and standardized envelopes cooperate for public and protected requests.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/api/ApiResponse.java",
+          "backend/src/main/java/com/hiliving/api/PagedResponse.java",
+          "backend/src/main/java/com/hiliving/api/error/ApiExceptionHandler.java",
+          "backend/src/main/java/com/hiliving/identity/auth/security/SecurityConfiguration.java",
+          "frontend/src/App.tsx",
+          "frontend/src/api/api.types.ts",
+          "frontend/src/api/http.ts",
+          "frontend/src/config/environment.ts",
+          "frontend/src/features/auth/ProtectedRoute.tsx",
+          "frontend/src/main.tsx"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/system-overview.md",
+          "/openwiki/concepts/catalog-and-merchandising.md",
+          "/openwiki/concepts/identity-and-accounts.md",
+          "/openwiki/testing/verification-strategy.md",
+          "/openwiki/workflows/content-authoring-and-media.md"
+        ],
+        "instructions": [
+          "Contrast frontend ProtectedRoute navigation with authoritative backend route RBAC plus ownership/state checks; preserve the deny-by-default policy and the 401, 403, and non-revealing 404 distinctions.",
+          "Document same-origin credentials, lazy route composition, DTO mapping, CSRF bootstrap/cookie-to-header behavior, 204 handling, paged and non-paged success envelopes, normalized error codes, abort/network failures, upload progress, and the session-expired event.",
+          "Include a Mermaid sequence diagram with a one-line caption for a representative protected mutation from React through PostgreSQL and back, including an important failure branch."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "9e660364-ad62-49b6-8d52-d4d53b386409",
+        "path": "/openwiki/concepts/catalog-and-merchandising.md",
+        "title": "Catalog, Merchandising, and Public Visibility",
+        "purpose": "Explain categories, brands, products, identifiers, lifecycle and visibility, images, inventory and membership-discount eligibility, public search/detail behavior, and the corresponding administration workflows and audit effects.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/catalog/brand/admin/AdminBrandService.java",
+          "backend/src/main/java/com/hiliving/catalog/category/admin/AdminCategoryService.java",
+          "backend/src/main/java/com/hiliving/catalog/product/admin/AdminProductService.java",
+          "backend/src/main/java/com/hiliving/catalog/product/application/ProductService.java",
+          "backend/src/main/java/com/hiliving/catalog/product/persistence/ProductEntity.java",
+          "backend/src/test/java/com/hiliving/admin/AdminPlatformApiIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/catalog/CatalogApiIntegrationTests.java",
+          "frontend/src/api/catalogApi.ts",
+          "frontend/src/features/admin/products/AdminProductEditorPage.tsx",
+          "frontend/src/features/catalog/useCatalogPageQuery.ts"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/architecture/web-runtime-and-api-boundary.md",
+          "/openwiki/testing/verification-strategy.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md",
+          "/openwiki/workflows/content-authoring-and-media.md"
+        ],
+        "instructions": [
+          "Capture non-obvious invariants: backend-generated stable product codes and slugs, slug collision handling and rename stability, category cycle protection, price/discount validity, stock thresholds, image count/primary/order/display-scale rules, and archived-product invisibility.",
+          "Distinguish public active/visible catalog reads from admin list/edit/archive surfaces, and explain bounded pagination, allowlisted filtering/sorting, deterministic related products, and loading/empty/error states.",
+          "Explain how catalog base/discount price and membership eligibility feed backend-authoritative commerce pricing without moving pricing authority into the browser.",
+          "Include a compact Mermaid lifecycle or relationship diagram with a one-line caption where it clarifies publication and catalog ownership."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "9e271b41-4d11-47f8-bacb-0ae8656f89e1",
+        "path": "/openwiki/concepts/identity-and-accounts.md",
+        "title": "Identity, Sessions, Accounts, and Addresses",
+        "purpose": "Describe registration and login, identity normalization and lockout/rate limits, server-side sessions and revocation, CSRF/RBAC/ownership, account profile and membership policy, verification/recovery, and owned delivery addresses including map-assisted entry.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/identity/account/application/AccountService.java",
+          "backend/src/main/java/com/hiliving/identity/account/application/AddressService.java",
+          "backend/src/main/java/com/hiliving/identity/auth/api/AuthController.java",
+          "backend/src/main/java/com/hiliving/identity/auth/application/AuthService.java",
+          "backend/src/main/java/com/hiliving/identity/auth/security/SecurityConfiguration.java",
+          "backend/src/main/java/com/hiliving/identity/auth/security/SessionVersionFilter.java",
+          "backend/src/test/java/com/hiliving/identity/EmailRecoveryIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/identity/IdentityApiIntegrationTests.java",
+          "frontend/src/api/accountApi.ts",
+          "frontend/src/features/account/addressMap.ts",
+          "frontend/src/features/auth/AuthProvider.tsx"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/architecture/web-runtime-and-api-boundary.md",
+          "/openwiki/integrations/transactional-email.md",
+          "/openwiki/operations/configuration-and-local-development.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md"
+        ],
+        "instructions": [
+          "Cover coarse route authorization together with resource ownership and transactionally maintained default-address semantics; include the customer-versus-admin boundary.",
+          "Document the Leaflet/OpenStreetMap tile and Nominatim reverse-geocoding path, address cleanup/mapping, request throttling/abort/error behavior, and that its current direct browser fetch is a notable transport edge to review against frontend rules before extending.",
+          "Explain verification and reset token lifecycle only from the identity perspective and link to the email page for durable delivery mechanics.",
+          "Include an evidence-grounded Mermaid sequence or flow diagram with a one-line caption for authentication and session revocation.",
+          "Trace login/session creation and rotation, hydration/expiry handling, session_version invalidation after sensitive changes, generic anti-enumeration behavior, and account status/role/membership effects."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "4bef1cbd-e6d2-4a0c-9e64-c139298180c2",
+        "path": "/openwiki/integrations/qpay-payments.md",
+        "title": "QPay Invoice and Payment Reconciliation",
+        "purpose": "Document QPay configuration, token management, invoice creation, durable payment attempts and deeplinks, browser polling/manual checks, callback verification, expiry processing, reconciliation failures, and their effects on orders, stock, email, and audit.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/commerce/payment/PaymentAttemptEntity.java",
+          "backend/src/main/java/com/hiliving/commerce/payment/PaymentStateService.java",
+          "backend/src/main/java/com/hiliving/commerce/payment/QpayCallbackController.java",
+          "backend/src/main/java/com/hiliving/commerce/payment/QpayClient.java",
+          "backend/src/main/java/com/hiliving/commerce/payment/QpayPaymentExpiryProcessor.java",
+          "backend/src/main/java/com/hiliving/commerce/payment/QpayPaymentService.java",
+          "backend/src/test/java/com/hiliving/commerce/CheckoutApiIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/commerce/payment/QpayClientContractTests.java",
+          "frontend/src/pages/PaymentPage.tsx"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/integrations/transactional-email.md",
+          "/openwiki/operations/configuration-and-local-development.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md"
+        ],
+        "instructions": [
+          "Document attempt/order/payment states, deterministic sender invoice numbers and unguessable callback tokens, idempotent repeated initiation/callback/check behavior, mismatched-payment reconciliation-required state, expiry races, failure cancellation, and exactly-once stock restoration.",
+          "Emphasize that callbacks are notifications rather than proof: reconciliation must query QPay and match invoice context, optional callback payment ID, PAID state, exact amount, and MNT currency before confirming an order.",
+          "Explain frontend terminal versus retryable behavior, four-second instruction polling, explicit checks, terminal screens, and the boundary between cart clearing and payment confirmation.",
+          "Include a Mermaid sequence diagram and a Mermaid payment state diagram, each with a one-line caption.",
+          "Keep credentials and private provider payloads out of examples and logs; identify live paid/callback/expiry rehearsals as owner-controlled verification, not ordinary automated tests.",
+          "Trace authentication/refresh token caching, timeouts, exact provider request/response contracts, response completeness and safe URL/deeplink validation, and normalized provider errors."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "001ac3b7-a149-4fe8-8c40-6e3591b7bfa1",
+        "path": "/openwiki/integrations/transactional-email.md",
+        "title": "Transactional Email, Outbox, and Recovery Tokens",
+        "purpose": "Explain how registration, verification, password recovery, checkout, payment confirmation, and order status changes persist idempotent email intent, then asynchronously render and deliver it through SMTP with leases, retries, sanitized failures, and protected token payloads.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/email/TokenProtector.java",
+          "backend/src/main/java/com/hiliving/email/outbox/EmailOutboxClaimService.java",
+          "backend/src/main/java/com/hiliving/email/outbox/EmailOutboxProcessor.java",
+          "backend/src/main/java/com/hiliving/email/outbox/EmailOutboxResultService.java",
+          "backend/src/main/java/com/hiliving/email/outbox/EmailOutboxService.java",
+          "backend/src/main/java/com/hiliving/identity/auth/application/EmailVerificationService.java",
+          "backend/src/main/java/com/hiliving/identity/auth/application/PasswordRecoveryService.java",
+          "backend/src/test/java/com/hiliving/email/EmailOutboxIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/identity/EmailRecoveryIntegrationTests.java",
+          "docs/TRANSACTIONAL_EMAIL.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/concepts/identity-and-accounts.md",
+          "/openwiki/operations/configuration-and-local-development.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md"
+        ],
+        "instructions": [
+          "Cover template dispatch and escaping, inline branding, immutable order contact snapshots, hashed verification/reset tokens, AES-GCM protection of raw link tokens in queued payloads, generic anti-enumeration responses, expiry/consumption, and password-reset session invalidation.",
+          "Distinguish automated tests with delivery disabled from the separately gated ManualEmailDeliveryIT and mailbox verification.",
+          "Document safe operational inspection/requeue guidance without exposing payloads, raw tokens, provider details, credentials, or customer data; note that rotating the protection key can strand queued token emails.",
+          "Explain SMTP at-least-once semantics and the crash window that can duplicate delivery; do not describe it as exactly-once.",
+          "Include a Mermaid delivery sequence diagram and a Mermaid outbox state diagram, each with a one-line caption.",
+          "Trace business-transaction enqueue, deterministic event idempotency, SKIP LOCKED batch claim and processing lease, send outside the business transaction, separate success/failure transactions, exponential retry, permanent failures, and stale claimant protection."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "c0e11f85-36ce-4707-a36a-d0cbed79b94d",
+        "path": "/openwiki/operations/configuration-and-local-development.md",
+        "title": "Configuration and Local Development",
+        "purpose": "Provide a safe operator/developer map of environment settings, local PostgreSQL and application startup, profiles and seeding, proxy/origin behavior, disabled-by-default integrations, storage paths, health probes, and common configuration failures.",
+        "seedPaths": [
+          ".env.example",
+          "backend/README.md",
+          "backend/src/main/resources/application-local.yml",
+          "backend/src/main/resources/application.yml",
+          "compose.yaml",
+          "frontend/README.md",
+          "frontend/src/config/environment.ts",
+          "frontend/vite.config.ts",
+          "infrastructure/README.md"
+        ],
+        "relatedPages": [
+          "/openwiki/integrations/qpay-payments.md",
+          "/openwiki/integrations/transactional-email.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md",
+          "/openwiki/quickstart.md",
+          "/openwiki/testing/verification-strategy.md",
+          "/openwiki/workflows/content-authoring-and-media.md"
+        ],
+        "instructions": [
+          "Call out fail-closed settings: Secure session cookies by default, QPay/email/manual delivery disabled by default, required TinyMCE key for rich editing, and HTTPS/public callback requirements when integrations are enabled.",
+          "Group configuration by database/session, checkout, QPay, email/SMTP/outbox/rate limits, media/multipart, frontend API proxy, OpenStreetMap/Nominatim, and TinyMCE rather than reproducing the env file linearly.",
+          "Link configuration symptoms to the owning integration/workflow pages instead of duplicating their state machines.",
+          "State exact local startup, shutdown, health, and profile commands and explain loopback PostgreSQL, persistent Docker volume, default upload root, development data seeding, and Vite proxy behavior.",
+          "Use only .env.example placeholders and defaults; never read or reproduce the ignored .env, credentials, private endpoints, customer data, or token-bearing payloads."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "f3139b42-fdc5-4ea5-af98-e54b3c2dc420",
+        "path": "/openwiki/operations/production-deployment-and-pipelines.md",
+        "title": "Production Deployment and Delivery Pipelines",
+        "purpose": "Explain the single-VPS production topology, GitHub CI and main-branch deployment, release artifact and SSH trust chain, atomic activation and rollback, NGINX/systemd/PostgreSQL/upload ownership, health gates, infrastructure installation, and remaining operational risks.",
+        "seedPaths": [
+          ".github/workflows/ci.yml",
+          "Jenkinsfile",
+          "docs/CI.md",
+          "docs/TODO.md",
+          "infrastructure/production/README.md",
+          "infrastructure/production/deploy-release.sh",
+          "infrastructure/production/hiliving-backend.service",
+          "infrastructure/production/initialize-server.sh",
+          "infrastructure/production/install-deploy-automation.sh",
+          "infrastructure/production/nginx.conf.template",
+          "infrastructure/production/postgres.compose.yaml"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/system-overview.md",
+          "/openwiki/integrations/qpay-payments.md",
+          "/openwiki/integrations/transactional-email.md",
+          "/openwiki/operations/configuration-and-local-development.md",
+          "/openwiki/testing/verification-strategy.md"
+        ],
+        "instructions": [
+          "Distinguish the canonical GitHub repository-wide production pipeline from the separate local Jenkins frontend/Sonar/JFrog pipeline.",
+          "Explain versioned releases and current symlinks, NGINX same-origin routing/TLS/security headers, restricted systemd service, loopback-only PostgreSQL/Spring ports, durable upload and secret locations, and infrastructure that must be reinstalled manually after review.",
+          "Highlight backup/restore, credentials, sender-domain, QPay paid/expiry rehearsal, DNS/TLS, and monitoring gates as owner-controlled operations; do not instruct the reader to deploy, mutate production, rotate credentials, or expose secrets without an explicit request.",
+          "Include a Mermaid deployment flow diagram with a one-line caption, including health-gate failure and rollback branches.",
+          "State the crucial rollback limit: Flyway migrations are forward-only and code rollback does not undo schema changes; persistent uploads, database data, and secrets are never release artifacts.",
+          "Trace pull-request/push frontend and backend gates, push-to-main artifact rebuild, checksums, pinned SSH transfer, restricted deploy account/root-owned activator, backend-first health check, frontend switch, public smoke tests, and code-symlink rollback."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "5de848d7-8a33-4c1e-b432-cd5e4f61097c",
+        "path": "/openwiki/testing/verification-strategy.md",
+        "title": "Testing and Verification Strategy",
+        "purpose": "Map the repository's frontend and backend test layers, fixtures, Testcontainers requirements, security/concurrency/contract coverage, build and bundle checks, manual integration exclusions, and the smallest useful verification set for each change domain.",
+        "seedPaths": [
+          "backend/pom.xml",
+          "backend/src/test/java/com/hiliving/HiLivingApplicationTests.java",
+          "backend/src/test/java/com/hiliving/TestcontainersConfiguration.java",
+          "backend/src/test/java/com/hiliving/commerce/CheckoutApiIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/commerce/OrderConcurrencyIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/email/EmailOutboxIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/identity/IdentityApiIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/media/MediaApiIntegrationTests.java",
+          "frontend/package.json",
+          "frontend/scripts/check-bundle-size.mjs",
+          "frontend/src/api/commerceApi.test.ts",
+          "frontend/src/features/auth/AuthProvider.test.tsx",
+          "frontend/src/pages/CheckoutPage.test.tsx",
+          "frontend/src/test/setup.ts"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/web-runtime-and-api-boundary.md",
+          "/openwiki/concepts/identity-and-accounts.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md",
+          "/openwiki/quickstart.md",
+          "/openwiki/workflows/checkout-and-order-lifecycle.md"
+        ],
+        "instructions": [
+          "Describe backend JUnit/MockMvc/PostgreSQL Testcontainers tests for HTTP contracts, validation, 401/403/ownership behavior, database constraints, transactions, lock ordering, concurrency, outbox claims, media filesystem behavior, and mocked provider contracts.",
+          "Describe frontend Vitest/jsdom API-adapter, provider, component, route-page, accessibility, stale-request, and error-state tests; include lint, strict build, formatting, and bundle-budget checks.",
+          "End with final diff inspection and git diff --check; preserve complete failure output and report anything not exercised.",
+          "Explain where new tests belong and require success plus important security, invalid-state, rollback/idempotency, and failure paths at the closest useful layer.",
+          "Provide a focused-test-to-full-suite progression and exact commands, noting Docker requirements and when Maven verify is necessary.",
+          "Separate automated evidence from live QPay, SMTP/mailbox, DNS/TLS, backup/restore, and deployment verification; ManualEmailDeliveryIT is intentionally outside normal Surefire patterns and must remain explicitly opt-in."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "a01645f0-f04f-4234-b7c1-83675ea99ea5",
+        "path": "/openwiki/workflows/checkout-and-order-lifecycle.md",
+        "title": "Cart, Checkout, and Order Lifecycle",
+        "purpose": "Trace the full buyer and administrator commerce flow from browser cart state and authoritative quotes through address/delivery selection, idempotent placement, inventory locking, immutable snapshots, payment branching, order status transitions, audit, and notification intent.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/commerce/order/OrderCheckoutService.java",
+          "backend/src/main/java/com/hiliving/commerce/order/OrderEntity.java",
+          "backend/src/main/java/com/hiliving/commerce/order/OrderService.java",
+          "backend/src/main/java/com/hiliving/commerce/pricing/PricingService.java",
+          "backend/src/test/java/com/hiliving/commerce/CheckoutApiIntegrationTests.java",
+          "backend/src/test/java/com/hiliving/commerce/OrderConcurrencyIntegrationTests.java",
+          "frontend/src/api/commerceApi.ts",
+          "frontend/src/features/cart/CartProvider.tsx",
+          "frontend/src/pages/CartPage.tsx",
+          "frontend/src/pages/CheckoutPage.tsx"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/concepts/catalog-and-merchandising.md",
+          "/openwiki/concepts/identity-and-accounts.md",
+          "/openwiki/integrations/qpay-payments.md",
+          "/openwiki/integrations/transactional-email.md"
+        ],
+        "instructions": [
+          "Cover stable product lock ordering, stock deduction and transaction rollback, immutable order/item/address/customer snapshots, order-number generation, customer ownership, admin filtering, legal status transitions, audit, and idempotent email enqueue.",
+          "Explain that localStorage contains only versioned product slugs and quantities; every quote and final order total, discount, shipping amount, availability, and role/membership effect is recalculated by the backend with BigDecimal.",
+          "Include a Mermaid end-to-end sequence diagram and a Mermaid order state diagram, each with a one-line caption.",
+          "Separate cash-on-delivery behavior from the QPay branch and link to payment reconciliation; explain exactly-once inventory restoration on terminal QPay failure/expiry.",
+          "Trace quote refresh/race suppression, standard delivery versus zero-fee self-pickup, owned-address requirements, pre-submit requote, request fingerprint/idempotency-key rotation, canonical request hashing, and conflicting duplicate handling."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "67921545-1047-4bb4-8a6b-a3bf9782557d",
+        "path": "/openwiki/workflows/content-authoring-and-media.md",
+        "title": "Content Authoring, Media, and Publication",
+        "purpose": "Trace administrator authoring of banners, news, fixed content pages, and product rich text through TinyMCE and image upload into sanitized persistent content and publicly cached media/content responses.",
+        "seedPaths": [
+          "backend/src/main/java/com/hiliving/content/HtmlContentSanitizer.java",
+          "backend/src/main/java/com/hiliving/content/banner/BannerService.java",
+          "backend/src/main/java/com/hiliving/content/news/NewsService.java",
+          "backend/src/main/java/com/hiliving/content/page/ContentPageService.java",
+          "backend/src/main/java/com/hiliving/media/ImageProcessor.java",
+          "backend/src/main/java/com/hiliving/media/LocalMediaStorageService.java",
+          "backend/src/main/java/com/hiliving/media/MediaService.java",
+          "backend/src/main/java/com/hiliving/media/MediaWebConfiguration.java",
+          "backend/src/test/java/com/hiliving/content/HtmlContentSanitizerTests.java",
+          "backend/src/test/java/com/hiliving/media/MediaApiIntegrationTests.java",
+          "frontend/src/features/admin/components/ImageUploadControl.tsx",
+          "frontend/src/features/admin/components/RichTextEditor.tsx"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/persistence-model-and-transactions.md",
+          "/openwiki/architecture/web-runtime-and-api-boundary.md",
+          "/openwiki/concepts/catalog-and-merchandising.md",
+          "/openwiki/operations/configuration-and-local-development.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md"
+        ],
+        "instructions": [
+          "Cover admin-only CSRF-protected multipart upload, purpose-specific limits, decode/format/dimension checks, re-encoding, generated relative keys, transactional metadata/audit recording, compensating file deletion, and public immutable caching with no directory listing.",
+          "Document TinyMCE Cloud configuration, upload callbacks and concurrent upload state, and fail-closed missing-key/script-load behavior; VITE settings are public configuration and never secret storage.",
+          "Explain sanitization on write and legacy public reads, allowed relative media URLs, semantically empty rich content, stable slugs/fixed page sections, publication rules, controlled news categories, and banner placements/order.",
+          "Include a Mermaid sequence diagram with a one-line caption from editor image selection through storage/database publication, including cleanup on failure."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "01bbce87-f478-4a13-8bdb-65242fb43167",
+        "path": "/openwiki/quickstart.md",
+        "title": "HiLiving Coding Quickstart",
+        "purpose": "Give a coding agent the shortest safe path from checkout to a working local stack, then route common change types into the architecture, domain, workflow, integration, operations, and testing pages.",
+        "seedPaths": [
+          "AGENTS.md",
+          "README.md",
+          "backend/AGENTS.md",
+          "backend/pom.xml",
+          "compose.yaml",
+          "docs/human/DEVELOPMENT_GUIDE.md",
+          "frontend/AGENTS.md",
+          "frontend/package.json"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/system-overview.md",
+          "/openwiki/architecture/web-runtime-and-api-boundary.md",
+          "/openwiki/operations/configuration-and-local-development.md",
+          "/openwiki/operations/production-deployment-and-pipelines.md",
+          "/openwiki/testing/verification-strategy.md"
+        ],
+        "instructions": [
+          "Include exact prerequisites, local startup and health-check commands, focused/full validation commands, and a task-routing table linking every planned wiki area.",
+          "Lead with the repository's trust boundary: the backend owns identity, roles, pricing, discounts, inventory, orders, payments, and persistent content; frontend guards and displayed values are not authoritative.",
+          "Summarize the mandatory change discipline: read the closest AGENTS.md, inspect git status, preserve unrelated work, use new append-only Flyway migrations, keep frontend backend-API transport in src/api, and never commit/deploy or touch production without an explicit request.",
+          "Treat implementation, migrations, and focused tests as authoritative; identify existing docs as deeper context rather than duplicating them."
+        ],
+        "status": "pending"
+      }
+    ],
+    "deletePages": []
+  }
+}

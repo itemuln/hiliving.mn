@@ -1,7 +1,9 @@
 import type { AuthenticatedUser } from '../auth/auth.types';
-import type { CustomerOrder } from '../checkout/order.types';
-import type { OrderSummary } from '../checkout/order.types';
-import type { NewsCategory } from '../news/newsCategories';
+import type { PagedResult } from '../../api/api.types';
+import type { CustomerOrder, OrderSummary } from '../checkout/order.types';
+import type { Banner, ContentPage, News } from '../content/content.types';
+
+export type { Banner, ContentPage, News } from '../content/content.types';
 
 export interface DashboardCounts {
   totalProducts: number;
@@ -93,61 +95,11 @@ export interface ProductInput {
   membershipDiscountEligible: boolean;
   images: Array<Omit<ProductImage, 'id' | 'displayOrder'> & { sortOrder: number }>;
 }
-export interface Page<T> {
-  items: T[];
-  page: number;
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  first: boolean;
-  last: boolean;
-}
-export interface Banner {
-  id: number;
-  title: string;
-  subtitle: string | null;
-  imageUrl: string;
-  mobileImageUrl: string | null;
-  linkUrl: string | null;
-  linkLabel: string | null;
-  placement: BannerPlacement;
-  sortOrder: number;
-  active: boolean;
-  startsAt: string | null;
-  endsAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-export type BannerPlacement = 'HERO' | 'PROMOTIONAL';
 export type BannerInput = Omit<
   Banner,
   'id' | 'linkUrl' | 'linkLabel' | 'startsAt' | 'endsAt' | 'createdAt' | 'updatedAt'
 >;
-export interface News {
-  id: number;
-  title: string;
-  slug: string;
-  category: NewsCategory;
-  content: string;
-  thumbnailUrl: string | null;
-  published: boolean;
-  publishedAt: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
 export type NewsInput = Omit<News, 'id' | 'slug' | 'sortOrder' | 'createdAt' | 'updatedAt'>;
-export interface ContentPage {
-  id: number;
-  slug: string;
-  navigationLabel: string;
-  title: string;
-  contentHtml: string;
-  published: boolean;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
 export type ContentPageInput = Pick<ContentPage, 'title' | 'contentHtml' | 'published'>;
 export type AdminUser = AuthenticatedUser;
 export interface AdminUserSummary extends AuthenticatedUser {
@@ -157,7 +109,7 @@ export interface AdminUserSummary extends AuthenticatedUser {
 export interface AdminUserOrderOverview {
   cancelledCount: number;
   shippedCount: number;
-  orders: Page<OrderSummary>;
+  orders: PagedResult<OrderSummary>;
 }
 export type MediaPurpose = 'PRODUCT' | 'BRAND' | 'BANNER' | 'NEWS' | 'PAGE';
 export interface MediaUpload {

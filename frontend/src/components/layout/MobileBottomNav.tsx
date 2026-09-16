@@ -54,16 +54,16 @@ export function MobileBottomNav() {
 
     const controller = new AbortController();
     let active = true;
-    void import('../../api/catalogApi').then(({ fetchCategories }) =>
-      fetchCategories(controller.signal)
-    ).then(
-      (loadedCategories) => {
-        if (active) setCategories(loadedCategories);
-      },
-      () => {
-        if (active && !controller.signal.aborted) setCategoryLoadFailed(true);
-      }
-    );
+    void import('../../api/catalogApi')
+      .then(({ fetchCategories }) => fetchCategories(controller.signal))
+      .then(
+        (loadedCategories) => {
+          if (active) setCategories(loadedCategories);
+        },
+        () => {
+          if (active && !controller.signal.aborted) setCategoryLoadFailed(true);
+        }
+      );
 
     return () => {
       active = false;
@@ -229,7 +229,7 @@ export function MobileBottomNav() {
               section === 'categories'
                 ? categoriesOpen || (openSheet === null && routeIsActive)
                 : section === 'more'
-                  ? moreOpen || (openSheet === null && routeIsActive)
+                ? moreOpen || (openSheet === null && routeIsActive)
                 : openSheet === null && routeIsActive;
             const itemClassName = `relative flex min-w-0 flex-col items-center justify-center gap-0.5 text-[11px] transition-all duration-300 ease-out ${
               isActive ? 'font-medium text-brand-500' : 'text-neutral-400 hover:text-brand-500'
@@ -297,8 +297,8 @@ export function MobileBottomNav() {
               >
                 {content}
               </Link>
-              );
-            })}
+            );
+          })}
         </div>
       </nav>
     </>

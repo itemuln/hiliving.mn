@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AccountApiError, createAddress, getAddresses } from '../api/accountApi';
+import { createAddress, getAddresses } from '../api/accountApi';
+import { ApiRequestError } from '../api/http';
 import { placeOrder, quoteCart } from '../api/commerceApi';
 import { Container } from '../components/layout/Container';
 import { Footer } from '../components/layout/Footer';
@@ -173,7 +174,7 @@ export function CheckoutPage() {
         state: { payment: checkout.payment },
       });
     } catch (failure) {
-      if (failure instanceof AccountApiError && terminalQpayInitiationErrors.has(failure.code)) {
+      if (failure instanceof ApiRequestError && terminalQpayInitiationErrors.has(failure.code)) {
         idempotencyKey.current = newKey();
       }
       setError(cartErrorMessage(failure));

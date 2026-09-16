@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPublicNewsArticle } from '../api/contentApi';
-import type { News } from '../features/admin/admin.types';
+import type { News } from '../features/content/content.types';
 import { Header } from '../components/layout/Header';
 import { Footer } from '../components/layout/Footer';
 import { MobileBottomNav } from '../components/layout/MobileBottomNav';

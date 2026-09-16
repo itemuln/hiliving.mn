@@ -1,5 +1,5 @@
-import { apiRequest } from './accountApi';
-import type { Banner, BannerPlacement, ContentPage, News } from '../features/admin/admin.types';
+import { apiRequest } from './http';
+import type { Banner, BannerPlacement, ContentPage, News } from '../features/content/content.types';
 export const getPublicBanners = (placement: BannerPlacement) =>
   apiRequest<Banner[]>(`/api/v1/banners?placement=${placement}`);
 export const getPublicNews = () => apiRequest<News[]>('/api/v1/news');

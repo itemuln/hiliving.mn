@@ -3,7 +3,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { getPublicBanners } from '../../api/contentApi';
-import type { Banner } from '../../features/admin/admin.types';
+import type { Banner } from '../../features/content/content.types';
 import { CarouselControls } from '../ui/CarouselControls';
 
 const heroEntranceState = { opacity: 0.84, scale: 1.006 };

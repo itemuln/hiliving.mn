@@ -1,11 +1,11 @@
-import { apiRequest } from './accountApi';
+import { apiRequest } from './http';
+import type { PagedResult } from './api.types';
 import type { CartItem, CartQuote } from '../features/cart/cart.types';
 import type { DeliveryMethod } from '../features/checkout/delivery';
 import type {
   CheckoutResult,
   CustomerOrder,
   OrderSummary,
-  Page,
   PaymentInstructions,
 } from '../features/checkout/order.types';
 
@@ -39,7 +39,7 @@ export const getOrder = (orderNumber: string) =>
   apiRequest<CustomerOrder>(`/api/v1/orders/${encodeURIComponent(orderNumber)}`);
 
 export const listOrders = (page = 0, size = 20) =>
-  apiRequest<Page<OrderSummary>>(`/api/v1/orders?page=${page}&size=${size}`);
+  apiRequest<PagedResult<OrderSummary>>(`/api/v1/orders?page=${page}&size=${size}`);
 
 export const getPayment = (orderNumber: string) =>
   apiRequest<PaymentInstructions>(`/api/v1/orders/${encodeURIComponent(orderNumber)}/payment`);

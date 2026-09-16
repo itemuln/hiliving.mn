@@ -1,1 +1,17 @@
-package com.hiliving.content.news;import jakarta.validation.constraints.*;import java.time.Instant;public record NewsRequest(@NotBlank@Size(max=240)String title,@NotNull NewsCategory category,@NotBlank@Size(max=100_000)String content,@Size(max=2048)String thumbnailUrl,boolean published,Instant publishedAt){}
+package com.hiliving.content.news;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.time.Instant;
+
+public record NewsRequest(
+        @NotBlank @Size(max = 240) String title,
+        @NotNull NewsCategory category,
+        @NotBlank @Size(max = 100_000) String content,
+        @Size(max = 2048) String thumbnailUrl,
+        boolean published,
+        Instant publishedAt
+) {
+}

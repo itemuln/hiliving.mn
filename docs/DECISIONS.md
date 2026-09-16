@@ -643,3 +643,35 @@
 **Decision:** Hide the document-root scrollbar with `scrollbar-width: none` and the `::-webkit-scrollbar` pseudo-element. Do not disable document overflow and do not apply the rule to every element.
 
 **Consequences:** Wheel, trackpad, keyboard, touch, smooth, and programmatic scrolling continue to work while the outer scrollbar is not painted in modern Firefox, Chromium, and WebKit browsers. Nested scrollable controls keep visible scrollbars so their independent scroll boundaries remain discoverable.
+
+## 2026-09-03 - Presentation clarity without a domain rewrite
+
+**Context:** The implemented system already had strong domain behavior and extensive living documentation, but a walkthrough exposed misleading code ownership: the generic credential-aware HTTP client lived in `accountApi.ts`, a homepage news card lived beside scroll behavior with its props in another folder, and banner/news controllers shared compressed plural files. Reorganizing all packages or changing commerce contracts immediately before a presentation would create unnecessary regression risk.
+
+**Decision:** Keep runtime contracts and domain behavior unchanged. Extract shared frontend HTTP, CSRF, response, and upload behavior into `api/http.ts`; use the neutral `ApiRequestError` name; place the homepage-specific news card in the homepage component folder; split banner and news controllers into one named class per file; and expand only the compressed dashboard code needed for a clear entry-point walkthrough. Add one presentation guide that links the architecture, request flows, project structure, demo sequence, ownership evidence, and remaining risks.
+
+**Consequences:** The most visible boundaries now match their responsibilities without a broad refactor. Remaining dense backend formatting, inconsistent package depth, manual DTO synchronization, and the absent browser E2E suite stay explicit follow-up work rather than hidden presentation risk. Shared banner, news, and page contracts were subsequently moved from admin ownership into `features/content`.
+
+## 2026-09-03 - Separate human guidance from agent rules
+
+**Context:** The documentation mixed onboarding, architecture history, operational state, presentation material, and instructions for automated tools. A new developer had no short reading path, while agent-specific instructions were buried in a backend-only file containing local tool guidance.
+
+**Decision:** Keep established living records at their stable paths under `docs/`. Add `docs/human/` for developer onboarding and advanced-web explanations, `docs/agent/` for concise code/security/documentation rules, and a root documentation map. Make `AGENTS.md` the repository entry point, with smaller scoped files in `frontend/` and `backend/`.
+
+**Consequences:** People can learn the system without reading automation policy, and tools receive explicit boundaries without treating presentation prose as instructions. Material changes must keep the stable architecture, status, decision, and TODO records aligned rather than creating a second history in the audience folders.
+
+## 2026-09-03 - Enforce an initial bundle budget and required font subsets
+
+**Context:** Route splitting existed, but CI did not prevent a large dependency from silently entering the initial page. The generic Roboto Regular stylesheet also emitted Greek, mathematical, symbol, and Vietnamese assets that the Mongolian/Latin interface does not use.
+
+**Decision:** Import only Latin, standard Cyrillic, and extended Cyrillic Roboto Regular styles. After each production build, measure the generated gzip bytes and fail when initial JavaScript exceeds 150 KiB, initial CSS exceeds 25 KiB, or any lazy JavaScript chunk exceeds 75 KiB. Run the check locally, in GitHub Actions, during release-artifact creation, and in Jenkins.
+
+**Consequences:** The font change reduces initial CSS output without changing typography or text coverage. The budgets make bundle growth visible while leaving room for normal feature work. A budget increase requires a measured explanation; the check does not replace Lighthouse, route testing, or runtime performance monitoring.
+
+## 2026-09-03 - Delete only proven dead code and consolidate transport contracts
+
+**Context:** Static inspection found an unused admin inventory-label helper, an unused banner type re-export, three equivalent frontend pagination models, and a catalog adapter that independently implemented URL construction, JSON envelope parsing, fetch errors, and cancellation. Several central product and content backend files also compressed complete business flows into single lines, making security and transaction review unnecessarily difficult. Spring-managed components and dormant business capabilities cannot be classified as dead merely because they lack direct source imports or a current UI caller.
+
+**Decision:** Delete only exports and helpers proven unreachable by TypeScript analysis and repository search. Keep extension paths and Spring-discovered components unless their removal is supported by runtime wiring and tests. Make `api/http.ts` the single browser transport boundary and `api/api.types.ts` the shared envelope/pagination contract, while each domain adapter retains its public error vocabulary and DTO mapping. Reformat the admin product and banner/news backend paths in focused batches, extracting descriptive private checks without changing endpoint, authorization, persistence, audit, or validation behavior.
+
+**Consequences:** New developers have one place to inspect credential, CSRF, cancellation, and envelope handling, and list pages share one immutable pagination shape. Product/content transaction rules are readable as ordered steps and named predicates. The cleanup avoids falsely deleting annotation-wired or operational code, but some older backend domains remain candidates for later focused formatting passes.

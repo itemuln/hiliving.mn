@@ -1,9 +1,9 @@
 import type {
-  ApiResponse,
   PagedResponseDto,
   ProductDetailDto,
   ProductSummaryDto,
 } from '../api/catalogApi.types';
+import type { ApiResponse } from '../api/api.types';
 
 export const productSummaryDto: ProductSummaryDto = {
   id: 1,

@@ -1,22 +1,20 @@
-import { environment } from '../config/environment';
 import type {
   CatalogBrand,
   CatalogCategory,
-  CatalogPage,
   CatalogProduct,
   CatalogProductDetail,
   CatalogProductImage,
   ProductQuery,
 } from '../features/catalog/catalog.types';
 import type {
-  ApiErrorResponseDto,
-  ApiResponse,
   BrandDto,
   CategoryDto,
   PagedResponseDto,
   ProductDetailDto,
   ProductSummaryDto,
 } from './catalogApi.types';
+import type { PagedResult } from './api.types';
+import { ApiRequestError, apiRequest } from './http';
 
 export type CatalogApiErrorKind =
   | 'aborted'
@@ -44,10 +42,7 @@ export class CatalogApiError extends Error {
   readonly status: number | null;
   readonly code: string | null;
 
-  constructor(
-    kind: CatalogApiErrorKind,
-    options: { status?: number; code?: string; cause?: unknown } = {}
-  ) {
+  constructor(kind: CatalogApiErrorKind, options: { status?: number; code?: string } = {}) {
     super(safeErrorMessage(kind));
     this.name = 'CatalogApiError';
     this.kind = kind;
@@ -64,55 +59,23 @@ function safeErrorMessage(kind: CatalogApiErrorKind) {
   return 'Catalog data could not be loaded.';
 }
 
-function apiUrl(path: string) {
-  return `${environment.apiBaseUrl}${path}`;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
-}
-
-async function parseError(response: Response) {
-  try {
-    const payload: unknown = await response.json();
-    if (isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === 'string') {
-      return (payload as unknown as ApiErrorResponseDto).error.code;
-    }
-  } catch {
-    // The status code remains authoritative when an error body is absent or malformed.
-  }
-  return null;
-}
-
 async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
-  let response: Response;
   try {
-    response = await fetch(apiUrl(path), {
-      headers: { Accept: 'application/json' },
-      signal,
-    });
+    return await apiRequest<T>(path, { signal });
   } catch (error) {
-    if (signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
-      throw new CatalogApiError('aborted', { cause: error });
+    if (!(error instanceof ApiRequestError)) throw new CatalogApiError('unavailable');
+    if (error.code === 'REQUEST_ABORTED') throw new CatalogApiError('aborted');
+    if (error.code === 'INVALID_RESPONSE') {
+      throw new CatalogApiError('invalid-response', { status: error.status ?? undefined });
     }
-    throw new CatalogApiError('unavailable', { cause: error });
-  }
-
-  if (!response.ok) {
-    const code = await parseError(response);
-    if (response.status === 404)
-      throw new CatalogApiError('not-found', { status: 404, code: code ?? undefined });
-    if (response.status === 400)
-      throw new CatalogApiError('validation', { status: 400, code: code ?? undefined });
-    throw new CatalogApiError('server', { status: response.status, code: code ?? undefined });
-  }
-
-  try {
-    const payload: unknown = await response.json();
-    if (!isRecord(payload) || !('data' in payload)) throw new Error('Missing data envelope');
-    return (payload as unknown as ApiResponse<T>).data;
-  } catch (error) {
-    throw new CatalogApiError('invalid-response', { status: response.status, cause: error });
+    if (error.status === null) throw new CatalogApiError('unavailable');
+    if (error.status === 404) {
+      throw new CatalogApiError('not-found', { status: error.status, code: error.code });
+    }
+    if (error.status === 400) {
+      throw new CatalogApiError('validation', { status: error.status, code: error.code });
+    }
+    throw new CatalogApiError('server', { status: error.status, code: error.code });
   }
 }
 
@@ -204,7 +167,7 @@ export async function fetchBrands(signal?: AbortSignal) {
 export async function fetchProducts(
   query: ProductQuery = {},
   signal?: AbortSignal
-): Promise<CatalogPage<CatalogProduct>> {
+): Promise<PagedResult<CatalogProduct>> {
   const parameters = serializeProductQuery(query);
   const page = await request<PagedResponseDto<ProductSummaryDto>>(
     `/api/v1/products${parameters ? `?${parameters}` : ''}`,

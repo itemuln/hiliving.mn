@@ -2,7 +2,7 @@
 
 ## Repository architecture
 
-HiLiving is a modular monorepo with independently buildable and deployable applications:
+HiLiving is a modular monorepo.
 
 - `frontend/`: React, TypeScript, Vite storefront, and frontend tests
 - `backend/`: Java 21, Maven, and Spring Boot API
@@ -12,13 +12,34 @@ HiLiving is a modular monorepo with independently buildable and deployable appli
 
 Java source stays inside `backend/`; frontend source stays inside `frontend/`.
 
-## Frontend architecture
+Documentation is separated by audience. `docs/human/` explains development and architectural trade-offs; `docs/agent/` contains concise automation rules. The long-lived architecture, decision, status, and TODO files remain at stable root paths under `docs/`. See [`docs/README.md`](README.md) for the reading order.
 
-The frontend is a client-rendered React application using React Router, Tailwind CSS, and focused local hooks. Catalog integration is divided into explicit boundaries:
+## System overview
+
+```mermaid
+flowchart LR
+    User[Customer or administrator] --> NGINX[NGINX and HTTPS]
+    NGINX -->|static SPA| Browser[React and TypeScript SPA]
+    Browser -->|/api and /media| NGINX
+    NGINX --> API[Spring Boot API]
+    API --> DB[(PostgreSQL)]
+    API --> Media[(Managed image storage)]
+    API --> QPay[QPay Merchant V2]
+    API --> SMTP[SMTP provider]
+```
+
+The backend is authoritative for identity, roles, pricing, inventory, orders, payments, managed content, and email-event creation. The frontend owns route composition and presentation but stores no trusted price, stock, identity, or payment state. PostgreSQL is the durable system of record; managed image bytes and secrets live outside versioned application releases.
+
+The checkout, authentication, media, email/outbox, and deployment sequences are summarized in [`PRESENTATION_GUIDE.md`](PRESENTATION_GUIDE.md).
+
+The security model, RBAC/ABAC split, performance strategy, measured bundle budgets, and scaling limits are explained in [`human/ADVANCED_WEB_APPLICATION.md`](human/ADVANCED_WEB_APPLICATION.md).
+
+## Frontend architecture
 
 - `src/api`: backend response DTOs, URL/query serialization, HTTP status handling, safe error normalization, and DTO-to-domain mapping
 - `src/config`: environment normalization
 - `src/features/catalog`: presentation-safe catalog models and cancellation-aware resource/query hooks
+- `src/features/content`: shared banner, news, and fixed-page contracts used by public and admin features
 - `src/features/auth`: three-state session hydration, auth context, login/registration forms, and protected routing
 - `src/features/account`: profile, password, membership, and delivery-address UI
 - `src/features/cart`: versioned minimal local persistence, cart quotation state, reconciliation, and the cart page
@@ -27,7 +48,7 @@ The frontend is a client-rendered React application using React Router, Tailwind
 - `src/components/catalog`: reusable loading, empty, error, retry, navigation, filter, grid, and pagination UI
 - `src/pages`: category, brand, news, and slug-based product-detail routes
 
-Only API adapter modules call `fetch`. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity and cart coordination use small React contexts because header, route protection, cart, and checkout share them.
+Only API adapter modules call `fetch`. `src/api/http.ts` owns credentials, CSRF headers, JSON/envelope validation, upload progress, cancellation normalization, and safe transport errors. Domain adapters map that shared transport into catalog, account, commerce, content, and admin contracts rather than reimplementing fetch behavior. `src/api/api.types.ts` owns the shared response envelope and paged-result shape; feature modules own only their domain models. Presentational components receive mapped frontend models rather than backend DTOs. No global state or server-state library is installed. Catalog reads keep focused local hooks; session identity and cart coordination use small React contexts because header, route protection, cart, and checkout share them.
 
 Global document styling in `src/styles.css` hides only the viewport scrollbar through the standard Firefox property and the WebKit scrollbar pseudo-element. The document remains the scrolling container, so wheel, trackpad, keyboard, touch, and programmatic scrolling keep their native behavior. Nested application scroll containers are not targeted and retain their own scrollbar presentation.
 
@@ -159,13 +180,13 @@ The processor never trusts the supplied name, extension, or MIME type. It checks
 
 Purpose policy is centralized:
 
-| Purpose | Maximum upload | Maximum source | Maximum output | Directory |
-| --- | ---: | ---: | ---: | --- |
-| Product | 5 MB | 4000×4000 | 1600×1600 | `products/` |
-| Brand | 2 MB | 3000×3000 | 1000×1000 | `brands/` |
-| Banner | 8 MB | 6000×4000 | 2400×1600 | `banners/` |
-| News | 5 MB | 4000×3000 | 1600×1200 | `news/` |
-| Page | 8 MB | 6000×4000 | 2400×1600 | `pages/` |
+| Purpose | Maximum upload | Maximum source | Maximum output | Directory   |
+| ------- | -------------: | -------------: | -------------: | ----------- |
+| Product |           5 MB |      4000×4000 |      1600×1600 | `products/` |
+| Brand   |           2 MB |      3000×3000 |      1000×1000 | `brands/`   |
+| Banner  |           8 MB |      6000×4000 |      2400×1600 | `banners/`  |
+| News    |           5 MB |      4000×3000 |      1600×1200 | `news/`     |
+| Page    |           8 MB |      6000×4000 |      2400×1600 | `pages/`    |
 
 `MediaStorageService` is the provider boundary. `LocalMediaStorageService` is used for both development and the first Hostinger deployment; changing the absolute configured root does not change application code. It creates server-selected purpose directories, generates UUID filenames with the processor-selected extension, stages within the destination filesystem, and uses an atomic move where supported with a safe non-replacing fallback. It normalizes and validates every resolved path, rejects traversal and symlink destinations, never uses the original filename as a path, and does not overwrite an existing key.
 
@@ -217,7 +238,7 @@ Public reads remain under `/api/v1/categories`, `/api/v1/brands`, `/api/v1/produ
 
 ## Validation strategy
 
-Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, a Vite production build, and npm advisory review. The current 104 tests preserve catalog, account, administration, content-page, and commerce coverage and include explicit Hiliving MGL routing/rich-content/error states, fixed page administration and publication, banner placement/presentation, server-owned news authoring contracts, the three-section information index plus its failure/retry behavior, brand-banner presentation, wrapped low-border brand lists, compact home news/product cards, desktop-only catalog search/pagination, top-aligned product detail, persistent catalog-shell navigation, mobile category/brand switching and sorting, Mongolian admin interactions, address-map cleanup and dependent administrative selections, QPay requests, QR/deeplinks, checkout labels, payment checks, and safe idempotency-key retry behavior. Isolated browser rehearsals cover the 390×844 category, brand, and Hiliving MGL layouts, desktop homepage/product-detail/information/Hiliving MGL presentation, content-section navigation, category-to-brand navigation without hero refetches, customer registration/address/cart/checkout, pending and paid transitions, customer history, callback replay, and ADMIN list/detail visibility. Dependabot checks npm and Maven weekly. The remaining npm advisory concerns React Router's RSC server-action path, which this client-only `BrowserRouter` application does not use; it remains monitored rather than forcing a downgrade with broader browser vulnerabilities.
+Frontend validation uses `npm ci`, ESLint, Vitest/Testing Library HTTP-boundary tests, TypeScript compilation, a Vite production build, and npm advisory review. The current 109 tests preserve catalog, account, administration, content-page, and commerce coverage and include explicit transport cancellation, Hiliving MGL routing/rich-content/error states, fixed page administration and publication, banner placement/presentation, server-owned news authoring contracts, the three-section information index plus its failure/retry behavior, brand-banner presentation, wrapped low-border brand lists, compact home news/product cards, desktop-only catalog search/pagination, top-aligned product detail, persistent catalog-shell navigation, mobile category/brand switching and sorting, Mongolian admin interactions, address-map cleanup and dependent administrative selections, QPay requests, QR/deeplinks, checkout labels, payment checks, and safe idempotency-key retry behavior. Isolated browser rehearsals cover the 390×844 category, brand, and Hiliving MGL layouts, desktop homepage/product-detail/information/Hiliving MGL presentation, content-section navigation, category-to-brand navigation without hero refetches, customer registration/address/cart/checkout, pending and paid transitions, customer history, callback replay, and ADMIN list/detail visibility. Dependabot checks npm and Maven weekly. The remaining npm advisory concerns React Router's RSC server-action path, which this client-only `BrowserRouter` application does not use; it remains monitored rather than forcing a downgrade with broader browser vulnerabilities.
 
 Live validation runs Vite against the real Spring Boot/PostgreSQL stack. Phase 6 verified product gallery selection, anonymous cart persistence after refresh, authoritative quotation, login return to checkout, address creation/selection, cash-on-delivery order placement, success details, inventory deduction, cart clearing only on success, exact idempotent replay, cross-customer order denial, and no horizontal overflow at mobile, tablet, and desktop widths. Temporary customers, address, order, product image, and stock changes were removed/restored immediately afterward. Existing Phase 5.1 media files were not modified.
 

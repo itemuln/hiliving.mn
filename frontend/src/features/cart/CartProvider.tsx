@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { AccountApiError } from '../../api/accountApi';
+import { ApiRequestError } from '../../api/http';
 import { quoteCart } from '../../api/commerceApi';
 import { useAuth } from '../auth/useAuth';
 import { CartContext } from './CartContext';
@@ -74,7 +74,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, dispatch] = useReducer(reducer, undefined, loadCart);
   const [quote, setQuote] = useState<CartQuote | null>(null);
   const [quoteStatus, setQuoteStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
-  const [quoteError, setQuoteError] = useState<AccountApiError | null>(null);
+  const [quoteError, setQuoteError] = useState<ApiRequestError | null>(null);
   const requestSequence = useRef(0);
 
   useEffect(() => {
@@ -100,9 +100,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return nextQuote;
     } catch (failure) {
       const error =
-        failure instanceof AccountApiError
+        failure instanceof ApiRequestError
           ? failure
-          : new AccountApiError(null, 'SERVICE_UNAVAILABLE');
+          : new ApiRequestError(null, 'SERVICE_UNAVAILABLE');
       if (sequence === requestSequence.current) {
         setQuote(null);
         setQuoteError(error);

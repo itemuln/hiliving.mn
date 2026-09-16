@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type DragEvent } from 'react';
 import { ImagePlus, RefreshCw, Trash2, UploadCloud } from 'lucide-react';
-import { AccountApiError } from '../../../api/accountApi';
+import { ApiRequestError } from '../../../api/http';
 import { uploadMediaImage } from '../../../api/adminApi';
 import type { MediaPurpose } from '../admin.types';
 import { secondaryButton } from './AdminUi';
@@ -18,7 +18,7 @@ interface Props {
 }
 
 function safeMessage(error: unknown) {
-  if (!(error instanceof AccountApiError)) return 'Зургийг байршуулж чадсангүй. Дахин оролдоно уу.';
+  if (!(error instanceof ApiRequestError)) return 'Зургийг байршуулж чадсангүй. Дахин оролдоно уу.';
   if (error.code === 'MEDIA_FILE_TOO_LARGE' || error.code === 'MEDIA_MULTIPART_LIMIT_EXCEEDED')
     return 'Зургийн хэмжээ зөвшөөрөгдөх хэмжээнээс их байна.';
   if (error.code === 'MEDIA_DIMENSIONS_EXCEEDED')

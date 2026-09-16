@@ -93,14 +93,8 @@ describe('NewsGrid', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Сургалт' }));
     expect(await screen.findByRole('link', { name: 'Шинэ сургалтын гарчиг' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Сургалт' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    );
-    expect(screen.getByRole('button', { name: 'Сургалт' })).toHaveAttribute(
-      'aria-pressed',
-      'true'
-    );
+    expect(screen.getByRole('button', { name: 'Сургалт' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Сургалт' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows an explicit error and retries the request', async () => {

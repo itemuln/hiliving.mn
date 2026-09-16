@@ -32,9 +32,7 @@ export function useCatalogResource<T>(load: (signal: AbortSignal) => Promise<T>)
         )
           return;
         const safeError =
-          error instanceof CatalogApiError
-            ? error
-            : new CatalogApiError('unavailable', { cause: error });
+          error instanceof CatalogApiError ? error : new CatalogApiError('unavailable');
         setState({ data: null, error: safeError, status: 'error' });
       });
 

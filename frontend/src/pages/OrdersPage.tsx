@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listOrders } from '../api/commerceApi';
+import type { PagedResult } from '../api/api.types';
 import { AccountShell } from '../features/account/AccountShell';
 import { cartErrorMessage } from '../features/cart/cartErrorMessage';
-import type { OrderSummary, Page } from '../features/checkout/order.types';
+import type { OrderSummary } from '../features/checkout/order.types';
 import { orderStatusLabel, paymentStatusLabel, statusTone } from '../features/checkout/orderStatus';
 
 const money = new Intl.NumberFormat('mn-MN');
@@ -11,7 +12,7 @@ const date = new Intl.DateTimeFormat('mn-MN', { dateStyle: 'medium', timeStyle: 
 
 export function OrdersPage() {
   const [pageNumber, setPageNumber] = useState(0);
-  const [orders, setOrders] = useState<Page<OrderSummary> | null>(null);
+  const [orders, setOrders] = useState<PagedResult<OrderSummary> | null>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {

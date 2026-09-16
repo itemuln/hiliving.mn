@@ -77,6 +77,14 @@ pipeline {
       }
     }
 
+    stage('Bundle budget') {
+      steps {
+        dir('frontend') {
+          sh 'npm run bundle:check'
+        }
+      }
+    }
+
     stage('SonarQube analysis') {
       steps {
         script {

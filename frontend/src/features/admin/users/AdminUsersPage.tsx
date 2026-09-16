@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
-import type { AdminUserSummary, Page } from '../admin.types';
+import type { PagedResult } from '../../../api/api.types';
+import type { AdminUserSummary } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
 import {
   EmptyPanel,
@@ -17,7 +18,7 @@ import {
 import { accountStatusLabel, adminDate, adminMoney, membershipLabel } from '../adminLocale';
 import { useDebouncedValue } from '../components/useDebouncedValue';
 export function AdminUsersPage() {
-  const [data, setData] = useState<Page<AdminUserSummary> | null>(null);
+  const [data, setData] = useState<PagedResult<AdminUserSummary> | null>(null);
   const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     search: '',

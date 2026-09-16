@@ -1,24 +1,3 @@
-export interface ApiResponse<T> {
-  readonly data: T;
-}
-
-export interface ApiFieldErrorDto {
-  readonly field: string;
-  readonly message: string;
-}
-
-export interface ApiErrorDto {
-  readonly code: string;
-  readonly message: string;
-  readonly path: string;
-  readonly timestamp: string;
-  readonly fieldErrors: readonly ApiFieldErrorDto[];
-}
-
-export interface ApiErrorResponseDto {
-  readonly error: ApiErrorDto;
-}
-
 export interface CategoryDto {
   readonly id: number;
   readonly name: string;

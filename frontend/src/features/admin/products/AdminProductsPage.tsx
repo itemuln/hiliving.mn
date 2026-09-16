@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Archive, Edit3, Plus, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import * as api from '../../../api/adminApi';
-import type { Brand, Category, Page, Product } from '../admin.types';
+import type { PagedResult } from '../../../api/api.types';
+import type { Brand, Category, Product } from '../admin.types';
 import { AdminShell } from '../layout/AdminShell';
 import {
   EmptyPanel,
@@ -18,7 +19,7 @@ import {
 import { lifecycleLabel } from '../adminLocale';
 import { useDebouncedValue } from '../components/useDebouncedValue';
 export function AdminProductsPage() {
-  const [data, setData] = useState<Page<Product> | null>(null);
+  const [data, setData] = useState<PagedResult<Product> | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [filters, setFilters] = useState({

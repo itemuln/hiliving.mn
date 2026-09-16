@@ -205,10 +205,7 @@ describe('admin media forms', () => {
       'Мэдээ',
       'Мэдээлэл',
     ]);
-    expect(screen.getByLabelText('Мэдээний агуулга')).toHaveAttribute(
-      'data-media-purpose',
-      'NEWS'
-    );
+    expect(screen.getByLabelText('Мэдээний агуулга')).toHaveAttribute('data-media-purpose', 'NEWS');
     expect(screen.queryByLabelText('Sort order')).not.toBeInTheDocument();
     fireEvent.change(document.querySelector('input[type="file"]') as HTMLInputElement, {
       target: { files: [file] },

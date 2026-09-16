@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
-import { AccountApiError } from '../api/accountApi';
+import { ApiRequestError } from '../api/http';
 import { CartContext, type CartContextValue } from '../features/cart/CartContext';
 import type { CartQuote } from '../features/cart/cart.types';
 import { CartPage } from './CartPage';
@@ -87,7 +87,7 @@ describe('CartPage', () => {
     const value = cartValue({
       quote: null,
       quoteStatus: 'error',
-      quoteError: new AccountApiError(409, 'QUANTITY_EXCEEDS_STOCK'),
+      quoteError: new ApiRequestError(409, 'QUANTITY_EXCEEDS_STOCK'),
     });
     renderCart(value);
 

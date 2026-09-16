@@ -1,7 +1,7 @@
-import { AccountApiError } from '../../api/accountApi';
+import { ApiRequestError } from '../../api/http';
 
 export function cartErrorMessage(error: unknown) {
-  const code = error instanceof AccountApiError ? error.code : 'REQUEST_FAILED';
+  const code = error instanceof ApiRequestError ? error.code : 'REQUEST_FAILED';
   if (code === 'OUT_OF_STOCK')
     return 'Сагсан дахь бүтээгдэхүүний нөөц дууссан. Барааг хасаж үргэлжлүүлнэ үү.';
   if (code === 'QUANTITY_EXCEEDS_STOCK')

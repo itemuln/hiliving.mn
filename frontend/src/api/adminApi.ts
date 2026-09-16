@@ -1,4 +1,5 @@
-import { apiRequest, apiUpload, type UploadOptions } from './accountApi';
+import { apiRequest, apiUpload, type UploadOptions } from './http';
+import type { PagedResult } from './api.types';
 import type {
   AdminUser,
   AdminUserOrderOverview,
@@ -18,7 +19,6 @@ import type {
   MediaUpload,
   News,
   NewsInput,
-  Page,
   Product,
   ProductInput,
 } from '../features/admin/admin.types';
@@ -55,7 +55,7 @@ export const updateBrand = (id: number, input: BrandInput) =>
 export const deleteBrand = (id: number) =>
   apiRequest<void>(`/api/v1/admin/brands/${id}`, { method: 'DELETE' });
 export const listProducts = (filters: Record<string, unknown>) =>
-  apiRequest<Page<Product>>(`/api/v1/admin/products${query(filters)}`);
+  apiRequest<PagedResult<Product>>(`/api/v1/admin/products${query(filters)}`);
 export const getProduct = (id: number) => apiRequest<Product>(`/api/v1/admin/products/${id}`);
 export const createProduct = (input: ProductInput) =>
   apiRequest<Product>('/api/v1/admin/products', json('POST', input));
@@ -66,7 +66,7 @@ export const archiveProduct = (id: number) =>
 export const restoreProduct = (id: number) =>
   apiRequest<Product>(`/api/v1/admin/products/${id}/restore`, { method: 'POST' });
 export const listUsers = (filters: Record<string, unknown>) =>
-  apiRequest<Page<AdminUserSummary>>(`/api/v1/admin/users${query(filters)}`);
+  apiRequest<PagedResult<AdminUserSummary>>(`/api/v1/admin/users${query(filters)}`);
 export const getUser = (id: number) => apiRequest<AdminUser>(`/api/v1/admin/users/${id}`);
 export const getUserAddresses = (id: number) =>
   apiRequest<Address[]>(`/api/v1/admin/users/${id}/addresses`);
@@ -82,7 +82,7 @@ export const updateUserDiscount = (id: number, discountOverridePercentage: numbe
 export const updateUserStatus = (id: number, status: string) =>
   apiRequest<AdminUser>(`/api/v1/admin/users/${id}/status`, json('PATCH', { status }));
 export const listAdminOrders = (filters: Record<string, unknown>) =>
-  apiRequest<Page<AdminOrderSummary>>(`/api/v1/admin/orders${query(filters)}`);
+  apiRequest<PagedResult<AdminOrderSummary>>(`/api/v1/admin/orders${query(filters)}`);
 export const getAdminOrder = (orderNumber: string) =>
   apiRequest<AdminOrderDetail>(`/api/v1/admin/orders/${encodeURIComponent(orderNumber)}`);
 export const updateAdminOrderStatus = (orderNumber: string, status: string) =>

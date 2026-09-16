@@ -4,13 +4,13 @@
 
 `.github/workflows/ci.yml` keeps application validation independent:
 
-- Frontend job: Node 24, `npm ci`, ESLint, Vitest, and Vite production build from `frontend/`
+- Frontend job: Node 24, `npm ci`, ESLint, Vitest, Vite production build, and gzip bundle-budget check from `frontend/`
 - Backend job: Temurin Java 21 and Maven `verify` from `backend/`
 - Production deployment job: after both validation jobs pass for a `main` push, rebuild and transfer commit-addressed artifacts to the Hostinger VPS, activate them, and verify the public origin
 
-Frontend tests mock the HTTP boundary and cover catalog, identity/account, administration, managed rich-content pages, media, and commerce behavior. Backend tests use PostgreSQL 17 Testcontainers, apply Flyway through V17, start Hibernate with schema validation, and exercise catalog, identity, administration, sanitized content pages, media, checkout/orders, email, and QPay behavior.
+Frontend tests mock the HTTP boundary and cover catalog, identity/account, administration, managed rich-content pages, media, and commerce behavior. Backend tests use PostgreSQL 17 Testcontainers, apply Flyway through V18, start Hibernate with schema validation, and exercise catalog, identity, administration, sanitized content pages, media, checkout/orders, email, and QPay behavior.
 
-The backend clean verification runs on Temurin Java 21 with PostgreSQL 17 Testcontainers and packages the JAR; the frontend starts with `npm ci`, then runs lint, tests, TypeScript compilation, and the production build.
+The backend clean verification runs on Temurin Java 21 with PostgreSQL 17 Testcontainers and packages the JAR; the frontend starts with `npm ci`, then runs lint, tests, TypeScript compilation, the production build, and budgets for initial JavaScript, initial CSS, and the largest lazy JavaScript chunk.
 
 The workflow grants read-only repository contents permission. Superseded pull-request runs are canceled, while `main` runs and production deployments are queued so a release cannot be interrupted halfway through.
 
@@ -21,7 +21,7 @@ The `production` GitHub environment holds the public `PRODUCTION_URL` variable a
 The root `Jenkinsfile` runs the `hiliving-frontend` quality and delivery flow from `frontend/`:
 
 ```text
-npm ci -> lint -> test -> build -> SonarQube analysis -> quality gate -> package -> JFrog
+npm ci -> lint -> test -> build -> bundle budget -> SonarQube analysis -> quality gate -> package -> JFrog
 ```
 
 Sonar classifies `*.test.ts`, `*.test.tsx`, and `src/test` as test code rather than production source.

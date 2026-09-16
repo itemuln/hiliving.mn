@@ -116,4 +116,15 @@ describe('catalog API adapter', () => {
       message: 'Catalog data could not be loaded.',
     } satisfies Partial<CatalogApiError>);
   });
+
+  it('keeps request cancellation distinct from service failures', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('Cancelled', 'AbortError')));
+
+    await expect(fetchCategories(controller.signal)).rejects.toMatchObject({
+      kind: 'aborted',
+      message: 'The catalog request was cancelled.',
+    } satisfies Partial<CatalogApiError>);
+  });
 });

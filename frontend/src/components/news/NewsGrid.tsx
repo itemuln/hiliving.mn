@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getPublicNews } from '../../api/contentApi';
-import type { News } from '../../features/admin/admin.types';
+import type { News } from '../../features/content/content.types';
 import { Container } from '../layout/Container';
 import { NewsCard } from './NewsCard';
 import type { NewsCategory } from '../../features/news/newsCategories';

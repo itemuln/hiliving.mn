@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ImageUploadControl } from './ImageUploadControl';
-import { AccountApiError } from '../../../api/accountApi';
+import { ApiRequestError } from '../../../api/http';
 import * as api from '../../../api/adminApi';
 
 vi.mock('../../../api/adminApi', () => ({ uploadMediaImage: vi.fn() }));
@@ -66,7 +66,7 @@ describe('ImageUploadControl', () => {
   it('supports drag and drop, safe errors, retry, and removing an existing reference', async () => {
     const change = vi.fn();
     vi.mocked(api.uploadMediaImage)
-      .mockRejectedValueOnce(new AccountApiError(400, 'MEDIA_FORMAT_UNSUPPORTED'))
+      .mockRejectedValueOnce(new ApiRequestError(400, 'MEDIA_FORMAT_UNSUPPORTED'))
       .mockResolvedValueOnce({
         id: 8,
         storageKey: 'news/retry.jpg',

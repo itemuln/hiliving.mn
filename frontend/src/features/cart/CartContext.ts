@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { AccountApiError } from '../../api/accountApi';
+import type { ApiRequestError } from '../../api/http';
 import type { CartItem, CartQuote } from './cart.types';
 
 export interface CartContextValue {
@@ -7,7 +7,7 @@ export interface CartContextValue {
   readonly itemCount: number;
   readonly quote: CartQuote | null;
   readonly quoteStatus: 'idle' | 'loading' | 'ready' | 'error';
-  readonly quoteError: AccountApiError | null;
+  readonly quoteError: ApiRequestError | null;
   addItem(productSlug: string, quantity?: number, maximum?: number): void;
   removeItem(productSlug: string): void;
   setQuantity(productSlug: string, quantity: number, maximum?: number): void;

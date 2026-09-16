@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getPublicNews } from '../../api/contentApi';
-import type { News } from '../../features/admin/admin.types';
+import type { News } from '../../features/content/content.types';
 import { Container } from '../layout/Container';
-import { NewsCard } from '../layout/ScrollToTop';
+import { HomepageNewsCard } from './HomepageNewsCard';
 import { SectionReveal } from '../ui/SectionReveal';
 import { SectionTitle } from '../ui/SectionTitle';
 
@@ -19,7 +19,7 @@ export function NewsSection() {
         <SectionTitle accent="Мэдээллийн" suffix="булан" />
         <div className="mt-9 grid gap-10 md:mt-12 md:grid-cols-3 md:gap-8">
           {items.map((item) => (
-            <NewsCard
+            <HomepageNewsCard
               key={item.id}
               item={{
                 id: String(item.id),

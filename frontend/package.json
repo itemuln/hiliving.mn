@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "bundle:check": "node scripts/check-bundle-size.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",

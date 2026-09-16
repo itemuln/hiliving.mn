@@ -70,10 +70,7 @@ describe('MobileBottomNav', () => {
       'href',
       '/hiliving-mgl'
     );
-    expect(within(menu).getByRole('link', { name: /Брэндүүд/ })).toHaveAttribute(
-      'href',
-      '/brands'
-    );
+    expect(within(menu).getByRole('link', { name: /Брэндүүд/ })).toHaveAttribute('href', '/brands');
     expect(within(menu).getByRole('link', { name: /Мэдээлэл/ })).toHaveAttribute('href', '/news');
     expect(within(menu).getByRole('link', { name: /Холбоо барих/ })).toHaveAttribute(
       'href',
@@ -93,10 +90,7 @@ describe('MobileBottomNav', () => {
     );
 
     expect(screen.getByRole('button', { name: 'Цэс' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('link', { name: 'Эхлэл' })).not.toHaveAttribute(
-      'aria-current',
-      'page'
-    );
+    expect(screen.getByRole('link', { name: 'Эхлэл' })).not.toHaveAttribute('aria-current', 'page');
   });
 
   it('shows only the opened sheet trigger as active', () => {

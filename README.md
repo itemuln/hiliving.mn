@@ -1,69 +1,144 @@
 # HiLiving
 
-HiLiving is a modular monorepo containing an independently buildable React/Vite frontend and Spring Boot backend.
+HiLiving is a full-stack e-commerce and content-management application for the Mongolian market. The repository contains a React storefront and administration UI, a Spring Boot API, PostgreSQL migrations, secure media and email workflows, QPay checkout integration, and a guarded VPS deployment pipeline.
 
-## Repository layout
+## System at a glance
 
-- `frontend/` - React, TypeScript, and Vite storefront
-- `backend/` - Java 21 and Spring Boot catalog API
-- `docs/` - project state, architecture, decisions, backlog, and CI guidance
-- `infrastructure/` - future production infrastructure assets
-- `compose.yaml` - local PostgreSQL service
+```text
+Browser (React/Vite)
+  ├─ /                    -> NGINX static SPA
+  ├─ /api/v1/**           -> Spring Boot -> PostgreSQL
+  └─ /media/**            -> Spring Boot -> managed upload storage
+
+Spring Boot
+  ├─ sessions + CSRF      -> users, memberships, addresses
+  ├─ catalog + CMS        -> products, categories, brands, pages, news, banners
+  ├─ checkout             -> authoritative pricing, inventory locks, order snapshots
+  ├─ QPay                 -> invoice creation and server-verified reconciliation
+  └─ email outbox         -> durable PostgreSQL events -> SMTP
+```
+
+## Repository structure
+
+| Path                                       | Responsibility                                                             |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| `frontend/`                                | React 18, TypeScript, Vite, storefront, account, checkout, and admin UI    |
+| `backend/`                                 | Java 21, Spring Boot 4, Spring Security, QPay, media, and email            |
+| `backend/src/main/resources/db/migration/` | Append-only PostgreSQL schema history, currently V1-V18                    |
+| `docs/human/`                              | Developer onboarding and advanced-web explanations                         |
+| `docs/agent/`                              | Rules for automated coding tools                                           |
+| `docs/*.md`                                | Architecture, decisions, status, CI, operations, and presentation material |
+| `infrastructure/production/`               | NGINX, systemd, PostgreSQL, bootstrap, and atomic release scripts          |
+| `.github/workflows/ci.yml`                 | Frontend/backend tests and push-to-`main` production deployment            |
+| `compose.yaml`                             | Loopback-only PostgreSQL for local development                             |
+
+Start with the [documentation map](docs/README.md) and [developer guide](docs/human/DEVELOPMENT_GUIDE.md). See [Architecture](docs/ARCHITECTURE.md) for the detailed design.
 
 ## Prerequisites
 
-- Node.js and npm
-- Java 21 or newer runtime capable of compiling with Java 21 release compatibility
-- Docker with Docker Compose
+- Node.js 24 and npm
+- Java 21
+- Docker with Docker Compose (required for PostgreSQL and backend integration tests)
 
-## Local environment
+## Local setup
 
-Local secrets must live only in the gitignored root `.env` file. Start from `.env.example`, replace all placeholders, and never reuse local credentials in staging or production.
+```bash
+cp .env.example .env
+```
 
-## Frontend
+Start PostgreSQL from the repository root:
+
+```bash
+docker compose up -d --wait postgres
+```
+
+Start the backend:
+
+```bash
+cd backend
+set -a
+source ../.env
+set +a
+./mvnw spring-boot:run
+```
+
+Start the frontend:
 
 ```bash
 cd frontend
 npm ci
-npm run lint
-npm test
-npm run build
 npm run dev
 ```
 
-The storefront calls same-origin `/api/v1` paths. Vite proxies `/api` to `http://localhost:8080` by default. Set `VITE_DEV_API_PROXY_TARGET` in the ignored root `.env` when the backend uses another local port, or see `frontend/README.md` for the explicit base URL option.
+Open <http://localhost:5173>. The Vite server proxies `/api` and `/media` to `http://localhost:8080` by default. Check the API at <http://localhost:8080/actuator/health>.
 
-Transactional email, verification, password recovery, outbox operations, and the explicitly opt-in manual SMTP test are documented in [`docs/TRANSACTIONAL_EMAIL.md`](docs/TRANSACTIONAL_EMAIL.md).
+QPay and outbound email are disabled by default.
+Enable them only with owner-controlled test or production credentials stored outside Git.
 
-## PostgreSQL
+## Tests
 
-From the repository root:
-
-```bash
-docker compose up -d postgres
-docker compose ps
-```
-
-PostgreSQL is exposed only on the local loopback interface.
-
-If another local PostgreSQL instance already uses port 5432, set matching `POSTGRES_PORT` and `DB_URL` overrides in the gitignored `.env`.
-
-## Backend
-
-Load the root local environment, then run Maven from `backend/`:
+Frontend:
 
 ```bash
-set -a
-source ../.env
-set +a
-./mvnw test
-./mvnw spring-boot:run
+cd frontend
+npm run lint
+npm test
+npm run build
+npm run bundle:check
+npm run format:check
 ```
 
-Verify the backend at <http://localhost:8080/actuator/health>. Public catalog reads are available at `/api/v1/categories`, `/api/v1/brands`, `/api/v1/products`, and `/api/v1/products/{slug}`. Public CSRF-protected cart quotation is at `POST /api/v1/cart/quote`; authenticated customer order placement and own-order confirmation are under `/api/v1/orders`.
+Backend (Docker must be running for Testcontainers):
 
-If another local service such as Jenkins already uses port 8080, override the backend for that run with `SERVER_PORT`, for example `SERVER_PORT=18080 ./mvnw spring-boot:run`.
+```bash
+cd backend
+./mvnw --batch-mode --no-transfer-progress verify
+```
 
-## Hostinger deployment
+Repository hygiene:
 
-The complete stack is deployed at `https://hilivingmgl.mn` on a Hostinger Ubuntu 24.04 VPS. `www.hilivingmgl.mn` and the original Hostinger hostname redirect to the canonical domain. NGINX serves versioned frontend assets and HTTPS, Spring Boot runs on localhost port 8080 under systemd, PostgreSQL 17 runs in Docker on localhost, and secrets remain in the restricted server environment. A successful GitHub Actions run for a push to `main` builds and atomically deploys the matching frontend/backend release through a restricted VPS account. Reviewed deployment assets and operating notes live in `infrastructure/production/`. Accepting production payments still requires durable scheduled off-server backups, rotated owner-controlled integration credentials, QPay rehearsals, final business details, and an authenticated sender domain.
+```bash
+git diff --check
+```
+
+## Deployment and CI/CD
+
+Pull requests and pushes to `main` run independent frontend and backend jobs. A successful push to `main` deploy the commit through the GitHub `production` environment:
+
+```text
+frontend checks + backend verify
+              -> rebuild release artifacts
+              -> checksum and pinned-SSH transfer
+              -> activate backend
+              -> local health gate
+              -> activate frontend
+              -> public smoke checks
+              -> rollback code links on failure
+```
+
+In the repository-defined production topology, NGINX terminates HTTPS and serves the Vite build, Spring Boot runs under a restricted systemd account on loopback port 8080, PostgreSQL 17 runs in Docker on loopback port 5432, and uploads plus secrets remain outside release directories. Flyway migrations are forward-only, so a code rollback does not reverse a database migration.
+
+Operational details are in [Production deployment](infrastructure/production/README.md) and [Continuous Integration](docs/CI.md).
+
+## Security and production gates
+
+- Secrets belong only in the `.env`, protected GitHub environment, or restricted VPS environment file.
+- Authentication uses server-side sessions; mutating requests use cookie-to-header CSRF protection.
+- QPay callbacks are notifications. The backend verifies the provider payment ID, invoice, amount, and MNT currency before confirming an order.
+- Uploaded images are decoded, validated, re-encoded, size-limited, and stored with generated keys.
+- Transactional email is persisted in an idempotent outbox before asynchronous SMTP delivery.
+- Before accepting real payments, complete the remaining owner-controlled backup, credential, business-data, sender-domain, and paid/expiry rehearsal gates listed in [TODO](docs/TODO.md).
+
+## Further documentation
+
+- [Documentation map](docs/README.md)
+- [Developer guide](docs/human/DEVELOPMENT_GUIDE.md)
+- [Advanced web application notes](docs/human/ADVANCED_WEB_APPLICATION.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Presentation guide](docs/PRESENTATION_GUIDE.md)
+- [Project status](docs/PROJECT_STATUS.md)
+- [Architectural decisions](docs/DECISIONS.md)
+- [Transactional email](docs/TRANSACTIONAL_EMAIL.md)
+- [CI/CD](docs/CI.md)
+- [Backlog and production gates](docs/TODO.md)
+- [Agent rules](docs/agent/README.md)

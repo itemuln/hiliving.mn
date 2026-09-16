@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { getPublicBanners } from '../../api/contentApi';
-import type { Banner } from '../../features/admin/admin.types';
+import type { Banner } from '../../features/content/content.types';
 import { CatalogErrorState } from '../catalog/CatalogErrorState';
 import { CarouselControls } from '../ui/CarouselControls';
 
