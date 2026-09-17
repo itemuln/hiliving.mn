@@ -5,6 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#ffffff" />
     <link rel="icon" href="/hiLivingLogo.svg" type="image/svg+xml" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-width: 320px;
+        background: #fff;
+      }
+
+      .app-bootstrap__header {
+        box-sizing: border-box;
+        display: flex;
+        height: 72px;
+        align-items: center;
+        border-bottom: 1px solid #f5f5f5;
+        padding: 0 16px;
+      }
+
+      .app-bootstrap__logo {
+        display: block;
+        width: 190px;
+        height: auto;
+      }
+
+      .app-bootstrap__hero {
+        height: 170px;
+        max-width: 1440px;
+        margin: 0 auto;
+        background: #fafafa;
+      }
+
+      @media (min-width: 640px) {
+        .app-bootstrap__hero {
+          height: auto;
+          aspect-ratio: 24 / 5;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .app-bootstrap__header {
+          height: 128px;
+          align-items: flex-end;
+          padding: 0 max(24px, calc((100vw - 1280px) / 2)) 24px;
+        }
+      }
+    </style>
     <meta
       name="description"
       content="Hiliving Mongolia — эрүүл, тав тухтай амьдралын бүтээгдэхүүнүүд"
@@ -12,7 +57,20 @@
     <title>Hiliving Mongolia</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-bootstrap" aria-hidden="true">
+        <div class="app-bootstrap__header">
+          <img
+            class="app-bootstrap__logo"
+            src="/hiliving-mongolia-logo.png"
+            alt=""
+            width="240"
+            height="59"
+          />
+        </div>
+        <div class="app-bootstrap__hero"></div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

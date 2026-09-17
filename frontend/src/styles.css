@@ -46,6 +46,33 @@ textarea:focus-visible {
   outline-offset: 3px;
 }
 
+.hero-entrance {
+  animation: hero-entrance 350ms ease-out both;
+}
+
+.section-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.section-reveal--visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 350ms ease-out, transform 350ms ease-out;
+}
+
+@keyframes hero-entrance {
+  from {
+    opacity: 0.84;
+    transform: scale(1.006);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .content-page-html {
   color: #525252;
   font-size: 1rem;
@@ -158,5 +185,10 @@ textarea:focus-visible {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .section-reveal {
+    opacity: 1;
+    transform: none;
   }
 }

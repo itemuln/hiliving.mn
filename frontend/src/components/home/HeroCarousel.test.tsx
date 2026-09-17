@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getPublicBanners } from '../../api/contentApi';
@@ -14,15 +13,6 @@ vi.mock('embla-carousel-react', () => ({
 
 vi.mock('embla-carousel-autoplay', () => ({
   default: () => ({ play: vi.fn(), stop: vi.fn() }),
-}));
-
-vi.mock('motion/react', () => ({
-  motion: {
-    div: ({ children, initial }: { children: ReactNode; initial: unknown }) => (
-      <div data-entrance={initial === false ? 'settled' : 'animated'}>{children}</div>
-    ),
-  },
-  useReducedMotion: () => false,
 }));
 
 describe('HeroCarousel', () => {

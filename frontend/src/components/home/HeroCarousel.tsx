@@ -1,14 +1,10 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import Autoplay from 'embla-carousel-autoplay';
 import useEmblaCarousel from 'embla-carousel-react';
-import { motion, useReducedMotion } from 'motion/react';
 import { getPublicBanners } from '../../api/contentApi';
 import type { Banner } from '../../features/content/content.types';
 import { CarouselControls } from '../ui/CarouselControls';
 
-const heroEntranceState = { opacity: 0.84, scale: 1.006 };
-const heroRestingState = { opacity: 1, scale: 1 };
-const heroEntranceTransition = { duration: 0.35, ease: 'easeOut' as const };
 const heroSessionStorageKey = 'hiliving.hero.v2';
 
 type HeroBanner = Pick<Banner, 'id' | 'title' | 'imageUrl' | 'mobileImageUrl'>;
@@ -82,8 +78,12 @@ function HeroCarouselComponent() {
   ]);
   const [selectedIndex, setSelectedIndex] = useState(initialSelectedIndex);
   const [isPlaying, setIsPlaying] = useState(true);
-  const shouldReduceMotion = useReducedMotion();
+  const shouldReduceMotion =
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   const shouldAnimateEntrance = !initialSession.hasAnimated;
+  const entranceBannerId = shouldAnimateEntrance
+    ? initialSession.banners[initialSelectedIndex]?.id ?? banners[0]?.id ?? null
+    : null;
 
   useEffect(() => {
     void getPublicBanners('HERO')
@@ -139,14 +139,15 @@ function HeroCarouselComponent() {
           <div className="flex touch-pan-y">
             {banners.map((banner, index) => (
               <div key={banner.id} className="min-w-0 flex-[0_0_100%]">
-                <motion.div
-                  initial={
-                    index === selectedIndex && shouldAnimateEntrance && !shouldReduceMotion
-                      ? heroEntranceState
-                      : false
+                <div
+                  data-entrance={
+                    banner.id === entranceBannerId && !shouldReduceMotion ? 'animated' : 'settled'
                   }
-                  animate={heroRestingState}
-                  transition={heroEntranceTransition}
+                  className={
+                    banner.id === entranceBannerId && !shouldReduceMotion
+                      ? 'hero-entrance'
+                      : undefined
+                  }
                 >
                   <picture>
                     {banner.mobileImageUrl && (
@@ -163,7 +164,7 @@ function HeroCarouselComponent() {
                       className="h-[170px] w-full object-cover sm:h-auto sm:aspect-[24/5]"
                     />
                   </picture>
-                </motion.div>
+                </div>
               </div>
             ))}
           </div>

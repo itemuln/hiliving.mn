@@ -34,6 +34,8 @@ The checkout, authentication, media, email/outbox, and deployment sequences are 
 
 The security model, RBAC/ABAC split, performance strategy, measured bundle budgets, and scaling limits are explained in [`human/ADVANCED_WEB_APPLICATION.md`](human/ADVANCED_WEB_APPLICATION.md).
 
+The storefront entry document contains a deliberately small inline bootstrap shell: the real header logo and the same reserved hero geometry used by React. It gives the browser content to paint before the module graph and external stylesheet finish downloading, then `createRoot` replaces it with the interactive application. All page routes remain lazy, and the below-the-fold promotional, news, and brand sections add their own viewport deferral. Home/catalog reveal effects use native CSS plus `IntersectionObserver`; reduced-motion media queries expose settled content and disable animation. Public APIs remain asynchronous and render loading geometry rather than blocking the initial React commit.
+
 ## Frontend architecture
 
 - `src/api`: backend response DTOs, URL/query serialization, HTTP status handling, safe error normalization, and DTO-to-domain mapping

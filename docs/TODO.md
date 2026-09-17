@@ -43,6 +43,7 @@
 - [x] Map the complete repository architecture, separate implemented behavior from environment-dependent readiness, clean misleading frontend/backend boundaries, and add a presentation guide with request flows, structure, risks, demo checklist, ownership summary, and a 3-5 minute script.
 - [x] Hide the outer browser scrollbar without disabling wheel, trackpad, keyboard, touch, or programmatic scrolling, while retaining scrollbar presentation for nested application scroll areas.
 - [x] Re-audit production security/performance, patch the OWASP sanitizer and Flyway/Jackson advisories, add an XSS regression test, configure static compression/caching, stabilize and prioritize the hero, correct measured contrast/image sizing, and add valid favicon/robots resources.
+- [x] Add a pre-JavaScript landing-page shell, remove the initial-path animation runtime in favor of native CSS/IntersectionObserver, and reduce the measured local initial JavaScript bundle without changing API ownership.
 - [x] Move `Цэс` to the third mobile bottom-navigation position between `Ангилал` and `Сагс`.
 - [x] Enlarge the five mobile bottom-navigation controls and make `Ангилал` open a lazy-loaded, keyboard-safe category sheet matching the existing `Цэс` interaction.
 - [x] Hide the shared catalog search/sort toolbar on mobile Category and Brand product views while retaining it on larger screens.
